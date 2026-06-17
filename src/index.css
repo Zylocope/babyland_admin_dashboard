@@ -1,0 +1,158 @@
+@import "tailwindcss";
+
+/*
+  Appleland Admin — Warm Corporate Design System
+  Applied via ui-ux-pro-max skill (Data-Dense Dashboard pattern).
+  Font: Inter · Icons: Tabler · Light + Dark mode via CSS variables.
+*/
+
+/* Class-based dark mode variant */
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  /* Brand */
+  --orange-primary: #f97316;
+  --orange-hover:   #ea6c0a;
+  --orange-light:   #fff4ed;
+  --orange-muted:   #fdba74;
+
+  /* Surfaces */
+  --bg-base:    #fffaf7;
+  --bg-card:    #ffffff;
+  --bg-sidebar: #fff1e6;
+
+  /* Text */
+  --text-primary:   #1a1a2e;
+  --text-secondary: #6b7280;
+  --text-muted:     #9ca3af;
+
+  /* Borders */
+  --border:        #f3ede8;
+  --border-active: #f97316;
+
+  /* Status */
+  --status-pending:    #f59e0b;
+  --status-processing: #3b82f6;
+  --status-shipped:    #8b5cf6;
+  --status-delivered:  #10b981;
+  --status-cancelled:  #ef4444;
+  --status-low-stock:  #ef4444;
+
+  /* Shadows — warm, never harsh black */
+  --shadow-card:  0 1px 3px rgba(249, 115, 22, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-hover: 0 4px 12px rgba(249, 115, 22, 0.15);
+}
+
+.dark {
+  --bg-base:    #0f0f14;
+  --bg-card:    #1a1a24;
+  --bg-sidebar: #1c1206;
+
+  --text-primary:   #f9fafb;
+  --text-secondary: #9ca3af;
+  --text-muted:     #6b7280;
+
+  --border:        #2a2a3a;
+  --border-active: #f97316;
+
+  --orange-light:  #2a1a0e;
+
+  --shadow-card:  0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-hover: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/* Map CSS variables into Tailwind utilities (inline = resolves at runtime, follows .dark) */
+@theme inline {
+  --color-base:    var(--bg-base);
+  --color-card:    var(--bg-card);
+  --color-sidebar: var(--bg-sidebar);
+
+  --color-ink:  var(--text-primary);
+  --color-sub:  var(--text-secondary);
+  --color-mute: var(--text-muted);
+
+  --color-app:        var(--border);
+  --color-app-active: var(--border-active);
+
+  --color-brand:        var(--orange-primary);
+  --color-brand-hover:  var(--orange-hover);
+  --color-brand-light:  var(--orange-light);
+  --color-brand-muted:  var(--orange-muted);
+
+  --color-pending:    var(--status-pending);
+  --color-processing: var(--status-processing);
+  --color-shipped:    var(--status-shipped);
+  --color-delivered:  var(--status-delivered);
+  --color-cancelled:  var(--status-cancelled);
+
+  --font-sans: 'Inter', 'Noto Sans Myanmar', system-ui, sans-serif;
+
+  --shadow-card:  var(--shadow-card);
+  --shadow-hover: var(--shadow-hover);
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Vivid warm gradient so glassmorphism has real depth to blur against */
+  background: linear-gradient(135deg, #FFE4CF 0%, #FFF4ED 38%, #FDF0E4 60%, #D7FbE6 100%);
+  background-attachment: fixed;
+}
+
+.dark body {
+  background: linear-gradient(135deg, #25140A 0%, #0F0F14 45%, #0B1410 70%, #07241A 100%);
+  background-attachment: fixed;
+}
+
+#root { width: 100%; min-height: 100vh; text-align: left; }
+
+/* Keep identical geometry across languages: do NOT scale the root or change
+   line-height per language (that shifted the sidebar width & rows). Both EN and
+   MY share the same font-size and line-height, so columns/rows never move.
+   Myanmar glyphs are taller but the line box is fixed by line-height. */
+
+/* Glassmorphism surface — clearly frosted: translucent + heavy blur + top sheen */
+.glass {
+  background: rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(20px) saturate(165%);
+  -webkit-backdrop-filter: blur(20px) saturate(165%);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 10px 30px -14px rgba(28, 25, 23, 0.22);
+}
+.dark .glass {
+  background: rgba(42, 38, 50, 0.38);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px -14px rgba(0, 0, 0, 0.65);
+}
+
+/* "Original" style theme — solid cards, no frosted-glass blur */
+html[data-style="original"] .glass {
+  background: var(--bg-card);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+
+/* Orange focus rings (override browser blue) */
+:focus-visible { outline: 2px solid var(--orange-primary); outline-offset: 2px; }
+
+/* Slim warm scrollbars */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--orange-muted); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
