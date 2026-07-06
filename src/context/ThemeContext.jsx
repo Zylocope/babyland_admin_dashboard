@@ -2,9 +2,10 @@ import { createContext, useContext, useEffect, useState } from 'react';
 
 const ThemeContext = createContext(null);
 
-// Visual style themes — all implemented (see html[data-style] rules in index.css).
+// Visual style themes. 'glass' and 'original' are implemented; the rest are
+// listed in Settings but not yet active.
 export const STYLE_THEMES = ['glass', 'original', 'neumorphism', 'skeuomorphism', 'flat'];
-const ACTIVE_STYLES = ['glass', 'original', 'neumorphism', 'skeuomorphism', 'flat'];
+const ACTIVE_STYLES = ['glass', 'original'];
 
 export function ThemeProvider({ children }) {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
