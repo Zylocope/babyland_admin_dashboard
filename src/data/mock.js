@@ -79,9 +79,9 @@ export const mockCustomers = [
 ];
 
 export const mockStaff = [
-  { id: 'S001', username: 'manager55', name: 'Mg Mg (Manager)', role: 'Manager', email: 'manager@appleland.mm', phone: '09-100-200-300', salary: 800000, createdAt: '2023-06-01' },
-  { id: 'S002', username: 'sale77', name: 'Su Su (Sale Staff)', role: 'SaleStaff', email: 'sale@appleland.mm', phone: '09-300-400-500', salary: 450000, createdAt: '2023-08-15' },
-  { id: 'S003', username: 'ticket77', name: 'Kyaw Kyaw (Ticket Staff)', role: 'TicketStaff', email: 'ticket@appleland.mm', phone: '09-400-500-600', salary: 400000, createdAt: '2024-01-10' },
+  { id: 'S001', username: 'manager55', name: 'Mg Mg (Manager)', role: 'Manager', email: 'manager@appleland.mm', phone: '09-100-200-300', createdAt: '2023-06-01' },
+  { id: 'S002', username: 'sale77', name: 'Su Su (Sale Staff)', role: 'SaleStaff', email: 'sale@appleland.mm', phone: '09-300-400-500', createdAt: '2023-08-15' },
+  { id: 'S003', username: 'ticket77', name: 'Kyaw Kyaw (Ticket Staff)', role: 'TicketStaff', email: 'ticket@appleland.mm', phone: '09-400-500-600', createdAt: '2024-01-10' },
 ];
 
 export const mockBookingSlots = [
