@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconPencil, IconTrash, IconEye, IconShoppingCart, IconStar } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconEye, IconShoppingCart, IconStar, IconChevronUp, IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { mockCustomers, mockOrders } from '../data/mock';
 import { useAuth } from '../context/AuthContext';
@@ -23,6 +23,32 @@ export default function Customers() {
     c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search) || c.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  const [sortCol, setSortCol] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
+
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortCol) return 0;
+    const aVal = a[sortCol];
+    const bVal = b[sortCol];
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (col) => {
+    if (sortCol === col) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(col);
+      setSortOrder('asc');
+    }
+  };
+
+  const SortIcon = ({ col }) => {
+    if (sortCol !== col) return <span className="ml-1 text-white/40">↕</span>;
+    return sortOrder === 'asc' ? <IconChevronUp size={14} className="ml-1 inline" /> : <IconChevronDown size={14} className="ml-1 inline" />;
+  };
+
   const customerOrders = (cId) => {
     const c = customers.find(x => x.id === cId);
     return mockOrders.filter(o => o.customerName === c?.name);
@@ -38,7 +64,7 @@ export default function Customers() {
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('customers.search')} />
         </div>
-        <span className="text-sm text-sub">{t('customers.count', { count: filtered.length })}</span>
+        <span className="text-sm text-sub">{t('customers.count', { count: sorted.length })}</span>
       </div>
 
       <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
@@ -49,14 +75,20 @@ export default function Customers() {
                 <th className="px-5 py-3 font-medium">{t('table.customer')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.phone')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.email')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.rewardPoints')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.orders')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.joined')}</th>
+                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('points')}>
+                  <div className="flex items-center">{t('table.rewardPoints')} <SortIcon col="points" /></div>
+                </th>
+                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('orderCount')}>
+                  <div className="flex items-center">{t('table.orders')} <SortIcon col="orderCount" /></div>
+                </th>
+                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('joinDate')}>
+                  <div className="flex items-center">{t('table.joined')} <SortIcon col="joinDate" /></div>
+                </th>
                 <th className="px-4 py-3 font-medium">{t('table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
-              {filtered.map(c => (
+              {sorted.map(c => (
                 <tr key={c.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
@@ -100,7 +132,7 @@ export default function Customers() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('customers.none')}</div>}
+          {sorted.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('customers.none')}</div>}
         </div>
       </div>
 
