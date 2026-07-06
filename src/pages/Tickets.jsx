@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconPlus, IconPencil, IconCircleX, IconCalendarEvent } from '@tabler/icons-react';
+import { IconPlus, IconPencil, IconCircleX, IconCalendarEvent, IconChevronUp, IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { mockTickets, mockBookingSlots, ticketPrice as INITIAL_PRICE } from '../data/mock';
 import { formatMMK } from '../utils/currency';
@@ -22,8 +22,15 @@ export default function Tickets() {
   const [showPriceModal, setShowPriceModal] = useState(false);
   const [showSlotsModal, setShowSlotsModal] = useState(false);
   const [confirmCancel, setConfirmCancel] = useState(null);
-  const [newTicket, setNewTicket] = useState({ customerName: '', phone: '', visitDate: '', qty: 1 });
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+  const [datePart, timePart] = localISOTime.split('T');
+  const [newTicket, setNewTicket] = useState({ customerName: '', phone: '', visitDate: datePart, visitTime: timePart, qty: 1 });
   const [newPrice, setNewPrice] = useState(price);
+
+  const [sortCol, setSortCol] = useState(null);
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const filtered = tickets.filter(t => {
     const matchSearch = t.id.includes(search) || t.customerName.toLowerCase().includes(search.toLowerCase()) || t.phone.includes(search);
@@ -31,16 +38,45 @@ export default function Tickets() {
     return matchSearch && matchStatus;
   });
 
+  const sorted = [...filtered].sort((a, b) => {
+    if (!sortCol) return 0;
+    const aVal = a[sortCol];
+    const bVal = b[sortCol];
+    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
+    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const handleSort = (col) => {
+    if (sortCol === col) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortCol(col);
+      setSortOrder('asc');
+    }
+  };
+
+  const SortIcon = ({ col }) => {
+    if (sortCol !== col) return <span className="ml-1 text-white/40">↕</span>;
+    return sortOrder === 'asc' ? <IconChevronUp size={14} className="ml-1 inline" /> : <IconChevronDown size={14} className="ml-1 inline" />;
+  };
+
   const createWalkIn = () => {
     const id = `TKT-WALKIN-${Date.now()}`;
     const ticket = {
       id, customerName: newTicket.customerName || 'Walk-in Customer', phone: newTicket.phone || '-',
-      visitDate: newTicket.visitDate, qty: newTicket.qty, amount: newTicket.qty * price,
+      visitDate: `${newTicket.visitDate} ${newTicket.visitTime}`, qty: newTicket.qty, amount: newTicket.qty * price,
       status: 'Confirmed', type: 'Walk-in',
     };
     setTickets(prev => [ticket, ...prev]);
     setShowCreateModal(false);
-    setNewTicket({ customerName: '', phone: '', visitDate: '', qty: 1 });
+    
+    // Default to current date/time for the next one
+    const now = new Date();
+    const offset = now.getTimezoneOffset() * 60000;
+    const localISOTime = (new Date(now - offset)).toISOString().slice(0, 16);
+    const [datePart, timePart] = localISOTime.split('T');
+    setNewTicket({ customerName: '', phone: '', visitDate: datePart, visitTime: timePart, qty: 1 });
   };
 
   const cancelTicket = (id) => setTickets(prev => prev.map(t => t.id === id ? { ...t, status: 'Cancelled' } : t));
@@ -59,7 +95,7 @@ export default function Tickets() {
           <option value="All">{tr('common.allStatuses')}</option>
           {['Confirmed', 'Used', 'Cancelled'].map(s => <option key={s} value={s}>{tr(`badge.${s}`)}</option>)}
         </select>
-        <span className="text-sm text-sub">{tr('tickets.count', { count: filtered.length })}</span>
+        <span className="text-sm text-sub">{tr('tickets.count', { count: sorted.length })}</span>
         <div className="flex items-center gap-2 ml-auto flex-wrap">
           {isManager && (
             <>
@@ -74,8 +110,8 @@ export default function Tickets() {
             </>
           )}
           <button onClick={() => setShowCreateModal(true)}
-            className="px-3 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover flex items-center gap-2 font-medium transition-colors">
-            <IconPlus stroke={1.5} size={14} /> {tr('tickets.walkIn')}
+            className="px-4 py-2 text-[15px] bg-brand text-white rounded-lg hover:bg-brand-hover flex items-center gap-2 font-semibold transition-colors shadow-card active:scale-[0.98] ml-2">
+            <IconPlus stroke={2.2} size={18} /> {tr('tickets.walkIn')}
           </button>
         </div>
       </div>
@@ -89,16 +125,22 @@ export default function Tickets() {
                 <th className="px-5 py-3 font-medium">{tr('table.bookingId')}</th>
                 <th className="px-4 py-3 font-medium">{tr('table.customer')}</th>
                 <th className="px-4 py-3 font-medium">{tr('table.phone')}</th>
-                <th className="px-4 py-3 font-medium">{tr('table.visitDate')}</th>
+                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('visitDate')}>
+                  <div className="flex items-center">{tr('table.visitDate')} <SortIcon col="visitDate" /></div>
+                </th>
                 <th className="px-4 py-3 font-medium">{tr('table.qty')}</th>
-                <th className="px-4 py-3 font-medium">{tr('table.amountPaid')}</th>
+                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('amount')}>
+                  <div className="flex items-center">{tr('table.amountPaid')} <SortIcon col="amount" /></div>
+                </th>
                 <th className="px-4 py-3 font-medium">{tr('table.type')}</th>
-                <th className="px-4 py-3 font-medium">{tr('table.status')}</th>
+                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('status')}>
+                  <div className="flex items-center">{tr('table.status')} <SortIcon col="status" /></div>
+                </th>
                 {isManager && <th className="px-4 py-3 font-medium">{tr('table.actions')}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
-              {filtered.map(t => (
+              {sorted.map(t => (
                 <tr key={t.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5 font-mono text-xs text-brand font-semibold">{t.id}</td>
                   <td className="px-4 py-3.5 font-medium text-ink">{t.customerName}</td>
@@ -117,7 +159,7 @@ export default function Tickets() {
                       <div className="flex items-center gap-1.5">
                         {t.status === 'Confirmed' && (
                           <button onClick={() => setConfirmCancel(t)} className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors" title={tr('orders.cancel')}>
-                            <IconCircleX stroke={1.5} size={15} />
+                            <IconCircleX stroke={1.8} size={20} />
                           </button>
                         )}
                       </div>
@@ -127,7 +169,7 @@ export default function Tickets() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <div className="text-center py-12 text-mute text-sm">{tr('tickets.none')}</div>}
+          {sorted.length === 0 && <div className="text-center py-12 text-mute text-sm">{tr('tickets.none')}</div>}
         </div>
       </div>
 
@@ -137,22 +179,26 @@ export default function Tickets() {
           <div>
             <label className="block text-xs font-medium text-ink mb-1">{tr('tickets.customerName')}</label>
             <input value={newTicket.customerName} onChange={e => setNewTicket(f => ({ ...f, customerName: e.target.value }))} placeholder="Walk-in Customer"
-              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+              className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
           <div>
             <label className="block text-xs font-medium text-ink mb-1">{tr('table.phone')}</label>
             <input value={newTicket.phone} onChange={e => setNewTicket(f => ({ ...f, phone: e.target.value }))} placeholder={tr('tickets.optional')}
-              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+              className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
           <div>
             <label className="block text-xs font-medium text-ink mb-1">{tr('tickets.visitDate')} <span className="text-red-400">*</span></label>
-            <input type="date" value={newTicket.visitDate} onChange={e => setNewTicket(f => ({ ...f, visitDate: e.target.value }))} required
-              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+            <div className="flex gap-2">
+              <input type="date" value={newTicket.visitDate} onChange={e => setNewTicket(f => ({ ...f, visitDate: e.target.value }))} required
+                className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+              <input type="time" value={newTicket.visitTime} onChange={e => setNewTicket(f => ({ ...f, visitTime: e.target.value }))} required
+                className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+            </div>
           </div>
           <div>
             <label className="block text-xs font-medium text-ink mb-1">{tr('tickets.quantity')}</label>
             <input type="number" min={1} value={newTicket.qty} onChange={e => setNewTicket(f => ({ ...f, qty: +e.target.value }))}
-              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+              className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
           <div className="bg-brand-light rounded-xl px-4 py-3 text-sm font-semibold text-brand">
             {tr('tickets.totalLabel', { amount: formatMMK(newTicket.qty * price) })}
@@ -172,7 +218,7 @@ export default function Tickets() {
             <div>
               <label className="block text-xs font-medium text-ink mb-1">{tr('tickets.pricePerTicket')}</label>
               <input type="number" value={newPrice} onChange={e => setNewPrice(+e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+                className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
             </div>
             <div className="flex justify-end gap-3 pt-1">
               <button onClick={() => setShowPriceModal(false)} className="px-4 py-2 text-sm border border-app rounded-lg text-sub hover:bg-brand-light">{tr('common.cancel')}</button>

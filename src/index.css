@@ -101,13 +101,21 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Vivid warm gradient so glassmorphism has real depth to blur against */
-  background: linear-gradient(135deg, #FFE4CF 0%, #FFF4ED 38%, #FDF0E4 60%, #D7FbE6 100%);
+  /* Colored orbs behind everything so frosted panels have something to refract */
+  background:
+    radial-gradient(38rem 38rem at 12% 16%, rgba(249, 115, 22, 0.32), transparent 60%),
+    radial-gradient(34rem 34rem at 88% 10%, rgba(16, 185, 129, 0.26), transparent 60%),
+    radial-gradient(42rem 42rem at 78% 90%, rgba(59, 130, 246, 0.22), transparent 62%),
+    linear-gradient(135deg, #FFF7F0, #FFFBF7 55%, #F3FBF6);
   background-attachment: fixed;
 }
 
 .dark body {
-  background: linear-gradient(135deg, #25140A 0%, #0F0F14 45%, #0B1410 70%, #07241A 100%);
+  background:
+    radial-gradient(38rem 38rem at 12% 16%, rgba(249, 115, 22, 0.26), transparent 60%),
+    radial-gradient(34rem 34rem at 88% 10%, rgba(16, 185, 129, 0.20), transparent 60%),
+    radial-gradient(42rem 42rem at 78% 90%, rgba(59, 130, 246, 0.22), transparent 62%),
+    linear-gradient(135deg, #140A02, #0F0F14 55%, #07120E);
   background-attachment: fixed;
 }
 
