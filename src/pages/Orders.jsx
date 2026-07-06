@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconEye, IconChevronRight, IconCircleX, IconRefresh, IconChevronUp, IconChevronDown } from '@tabler/icons-react';
+import { IconEye, IconChevronRight, IconCircleX, IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { mockOrders } from '../data/mock';
 import { formatMMK } from '../utils/currency';
@@ -21,37 +21,11 @@ export default function Orders() {
   const [confirmCancel, setConfirmCancel] = useState(null);
   const [confirmRefund, setConfirmRefund] = useState(null);
 
-  const [sortCol, setSortCol] = useState(null);
-  const [sortOrder, setSortOrder] = useState('asc');
-
   const filtered = orders.filter(o => {
     const matchSearch = o.id.includes(search) || o.customerName.toLowerCase().includes(search.toLowerCase()) || o.phone.includes(search);
     const matchStatus = statusFilter === 'All' || o.status === statusFilter;
     return matchSearch && matchStatus;
   });
-
-  const sorted = [...filtered].sort((a, b) => {
-    if (!sortCol) return 0;
-    const aVal = a[sortCol];
-    const bVal = b[sortCol];
-    if (aVal < bVal) return sortOrder === 'asc' ? -1 : 1;
-    if (aVal > bVal) return sortOrder === 'asc' ? 1 : -1;
-    return 0;
-  });
-
-  const handleSort = (col) => {
-    if (sortCol === col) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortCol(col);
-      setSortOrder('asc');
-    }
-  };
-
-  const SortIcon = ({ col }) => {
-    if (sortCol !== col) return <span className="ml-1 text-white/40">↕</span>;
-    return sortOrder === 'asc' ? <IconChevronUp size={14} className="ml-1 inline" /> : <IconChevronDown size={14} className="ml-1 inline" />;
-  };
 
   const advanceStatus = (id) => {
     setOrders(prev => prev.map(o => {
@@ -79,7 +53,7 @@ export default function Orders() {
           <option value="All">{t('common.allStatuses')}</option>
           {[...STATUS_FLOW, 'Cancelled', 'Refunded'].map(s => <option key={s} value={s}>{t(`badge.${s}`)}</option>)}
         </select>
-        <span className="text-sm text-sub">{t('orders.count', { count: sorted.length })}</span>
+        <span className="text-sm text-sub">{t('orders.count', { count: filtered.length })}</span>
       </div>
 
       {/* Table */}
@@ -91,20 +65,14 @@ export default function Orders() {
                 <th className="px-5 py-3 font-medium">{t('table.orderId')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.customer')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.phone')}</th>
-                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('date')}>
-                  <div className="flex items-center">{t('table.date')} <SortIcon col="date" /></div>
-                </th>
-                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('total')}>
-                  <div className="flex items-center">{t('table.total')} <SortIcon col="total" /></div>
-                </th>
-                <th className="px-4 py-3 font-medium cursor-pointer select-none hover:bg-white/10 transition-colors" onClick={() => handleSort('status')}>
-                  <div className="flex items-center">{t('table.status')} <SortIcon col="status" /></div>
-                </th>
+                <th className="px-4 py-3 font-medium">{t('table.date')}</th>
+                <th className="px-4 py-3 font-medium">{t('table.total')}</th>
+                <th className="px-4 py-3 font-medium">{t('table.status')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
-              {sorted.map(o => (
+              {filtered.map(o => (
                 <tr key={o.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5 font-mono text-xs text-brand font-semibold">{o.id}</td>
                   <td className="px-4 py-3.5 font-medium text-ink">{o.customerName}</td>
@@ -115,21 +83,21 @@ export default function Orders() {
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5">
                       <button onClick={() => setViewOrder(o)} className="p-1.5 rounded-lg text-mute hover:text-[#3B82F6] hover:bg-blue-50 transition-colors" title={t('common.view')}>
-                        <IconEye stroke={1.8} size={20} />
+                        <IconEye stroke={1.5} size={15} />
                       </button>
                       {canAdvance(o.status) && (
                         <button onClick={() => advanceStatus(o.id)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors" title={t('orders.advance')}>
-                          <IconChevronRight stroke={1.8} size={20} />
+                          <IconChevronRight stroke={1.5} size={15} />
                         </button>
                       )}
                       {isManager && o.status !== 'Cancelled' && o.status !== 'Refunded' && (
                         <>
                           <button onClick={() => setConfirmCancel(o)} className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors" title={t('orders.cancel')}>
-                            <IconCircleX stroke={1.8} size={20} />
+                            <IconCircleX stroke={1.5} size={15} />
                           </button>
                           {o.status === 'Delivered' && (
                             <button onClick={() => setConfirmRefund(o)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors" title={t('orders.refund')}>
-                              <IconRefresh stroke={1.8} size={20} />
+                              <IconRefresh stroke={1.5} size={15} />
                             </button>
                           )}
                         </>
@@ -140,7 +108,7 @@ export default function Orders() {
               ))}
             </tbody>
           </table>
-          {sorted.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('orders.none')}</div>}
+          {filtered.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('orders.none')}</div>}
         </div>
       </div>
 

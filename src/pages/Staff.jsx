@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { IconPlus, IconPencil, IconTrash, IconUserCog } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { mockStaff } from '../data/mock';
-import { formatMMK } from '../utils/currency';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 
-const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone: '', salary: 0, password: '' };
+const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone: '', password: '' };
 
 export default function Staff() {
   const { t } = useTranslation();
@@ -24,7 +23,7 @@ export default function Staff() {
   );
 
   const openCreate = () => { setForm(EMPTY_FORM); setShowCreate(true); };
-  const openEdit = (s) => { setEditStaff(s); setForm({ username: s.username, name: s.name, role: s.role, email: s.email, phone: s.phone, salary: s.salary || 0, password: '' }); };
+  const openEdit = (s) => { setEditStaff(s); setForm({ username: s.username, name: s.name, role: s.role, email: s.email, phone: s.phone, password: '' }); };
 
   const saveCreate = () => {
     setStaff(prev => [...prev, { id: `S${Date.now()}`, ...form, createdAt: new Date().toISOString().slice(0, 10) }]);
@@ -41,18 +40,18 @@ export default function Staff() {
   const StaffForm = ({ onSave, onCancel, isCreate }) => (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text'], ['staff.salary', 'salary', 'number']].map(([lk, k, type]) => (
+        {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text']].map(([lk, k, type]) => (
           <div key={k}>
             <label className="block text-xs font-medium text-ink mb-1">{t(lk)}</label>
-            <input type={type} value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: type === 'number' ? +e.target.value : e.target.value }))}
-              className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+            <input type={type} value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))}
+              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
         ))}
       </div>
       <div>
         <label className="block text-xs font-medium text-ink mb-1">{t('table.role')}</label>
         <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-          className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
+          className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
           <option value="SaleStaff">{t('roles.SaleStaff')}</option>
           <option value="TicketStaff">{t('roles.TicketStaff')}</option>
           <option value="Manager">{t('roles.Manager')}</option>
@@ -62,7 +61,7 @@ export default function Staff() {
         <label className="block text-xs font-medium text-ink mb-1">{isCreate ? t('staff.password') : t('staff.newPassword')}</label>
         <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
           placeholder={isCreate ? t('staff.setPassword') : t('staff.keepPassword')}
-          className="w-full px-3.5 py-2.5 text-[15px] border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+          className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
       </div>
       <div className="flex justify-end gap-3 pt-2">
         <button onClick={onCancel} className="px-4 py-2 text-sm border border-app rounded-lg text-sub hover:bg-brand-light">{t('common.cancel')}</button>
@@ -96,7 +95,6 @@ export default function Staff() {
                 <th className="px-4 py-3 font-medium">{t('table.role')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.email')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.phone')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.salary')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.created')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.actions')}</th>
               </tr>
@@ -116,7 +114,6 @@ export default function Staff() {
                   <td className="px-4 py-3.5"><Badge label={s.role} /></td>
                   <td className="px-4 py-3.5 text-sub text-xs">{s.email}</td>
                   <td className="px-4 py-3.5 text-sub">{s.phone}</td>
-                  <td className="px-4 py-3.5 font-medium text-ink">{formatMMK(s.salary || 0)}</td>
                   <td className="px-4 py-3.5 text-sub">{s.createdAt}</td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5">
