@@ -118,7 +118,8 @@
     "type": "Type",
     "product": "Product",
     "threshold": "Threshold",
-    "total": "Total"
+    "total": "Total",
+    "salary": "Salary"
   },
   "common": {
     "edit": "Edit",
@@ -151,13 +152,23 @@
     "search": "Search by name, barcode, ID...",
     "count": "{{count}} products",
     "none": "No products found.",
+    "add": "Add Product",
+    "addTitle": "Add Product",
+    "addAnother": "Add Another Product",
+    "rowLabel": "Product {{n}}",
     "editTitle": "Edit — {{name}}",
-    "salePrice": "Sale Price (MMK)",
+    "name": "Item Name",
+    "photo": "Photo",
+    "salePrice": "Sale Price (Kyat)",
+    "discount": "Discount (%)",
+    "effective": "After discount",
     "stockQty": "Stock Qty",
     "lowStockThreshold": "Low Stock Threshold",
     "visibleOnline": "Visible in online store",
     "hide": "Hide",
-    "show": "Show"
+    "show": "Show",
+    "deleteTitle": "Delete Product",
+    "deleteMsg": "Delete {{name}}? This cannot be undone."
   },
   "orders": {
     "search": "Search by order ID, customer, phone...",
@@ -235,6 +246,7 @@
     "add": "Add Staff",
     "none": "No staff accounts found.",
     "fullName": "Full Name",
+    "salary": "Salary (Kyat)",
     "password": "Password",
     "newPassword": "New Password (leave blank to keep)",
     "setPassword": "Set a password",
