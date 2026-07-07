@@ -18,11 +18,16 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    await new Promise(r => setTimeout(r, 400));
-    const result = login(username.trim(), password);
-    setLoading(false);
-    if (result.success) navigate('/');
-    else setError(t('login.invalid'));
+    try {
+      const result = await login(username.trim(), password);
+      if (result.success) {
+        navigate('/');
+      } else {
+        setError(result.error || t('login.invalid'));
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
