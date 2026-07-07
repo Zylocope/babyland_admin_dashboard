@@ -151,6 +151,8 @@
     "search": "Search by name, barcode, ID...",
     "count": "{{count}} products",
     "none": "No products found.",
+    "loading": "Loading products...",
+    "loadFailed": "Unable to load products.",
     "editTitle": "Edit — {{name}}",
     "salePrice": "Sale Price (MMK)",
     "stockQty": "Stock Qty",

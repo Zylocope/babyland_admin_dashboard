@@ -1,34 +1,61 @@
 import { createContext, useContext, useState } from 'react';
+import { loginAdmin, logoutAdmin } from '../services/baseService';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
-// Roles: Manager (full access, may overlap), SaleStaff (products + orders),
-// TicketStaff (playground). Staff roles do not overlap each other.
-// Hardcoded credentials for dev — swap for Supabase auth when backend is ready
-const CREDENTIALS = {
-  manager55: { password: 'manager55', role: 'Manager',     name: 'Mg Mg (Manager)' },
-  sale77:    { password: 'sale77',    role: 'SaleStaff',   name: 'Su Su (Sale Staff)' },
-  ticket77:  { password: 'ticket77',  role: 'TicketStaff', name: 'Kyaw Kyaw (Ticket Staff)' },
+const ROLE_MAP = {
+  SaleAdmin: 'SaleStaff',
+  PlaygroundAdmin: 'TicketStaff',
+  SuperAdmin: 'Manager',
+};
+
+const toUiRole = (role) => ROLE_MAP[role] ?? role ?? 'Staff';
+
+const hydrateUser = (value) => {
+  if (!value) return null;
+
+  return {
+    ...value,
+    role: toUiRole(value.role),
+    apiRole: value.apiRole ?? value.role ?? null,
+    name: value.name ?? value.username ?? 'Admin',
+  };
 };
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     const stored = sessionStorage.getItem('al_user');
-    return stored ? JSON.parse(stored) : null;
+    return stored ? hydrateUser(JSON.parse(stored)) : null;
   });
 
-  const login = (username, password) => {
-    const record = CREDENTIALS[username];
-    if (!record || record.password !== password) {
-      return { success: false, error: 'Invalid username or password.' };
+  const login = async (username, password) => {
+    try {
+      const account = await loginAdmin({ username, password });
+
+      const userData = {
+        id: account.id ?? null,
+        username: account.username ?? username,
+        name: account.username ?? username,
+        role: toUiRole(account.role),
+        apiRole: account.role ?? null,
+      };
+
+      sessionStorage.setItem('al_user', JSON.stringify(userData));
+      setUser(userData);
+      return { success: true, data: userData };
+    } catch (error) {
+      const message = error?.response?.data?.message || error?.message || 'Unable to sign in.';
+      return { success: false, error: message };
     }
-    const userData = { username, role: record.role, name: record.name };
-    sessionStorage.setItem('al_user', JSON.stringify(userData));
-    setUser(userData);
-    return { success: true };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    try {
+      await logoutAdmin();
+    } catch {
+      // Clear local auth state even if the server-side session is already gone.
+    }
+
     sessionStorage.removeItem('al_user');
     setUser(null);
   };
@@ -49,3 +76,5 @@ export const useAuth = () => {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 };
+
+export default AuthProvider;
