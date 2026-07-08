@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
-import { IconBabyCarriage, IconEye, IconEyeOff } from '@tabler/icons-react';
+import { IconBabyCarriage, IconEye, IconEyeOff, IconLoader2 } from '@tabler/icons-react';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -89,8 +89,15 @@ export default function Login() {
               disabled={loading}
               className="w-full py-2.5 bg-brand hover:bg-brand-hover text-white font-semibold rounded-xl transition-colors shadow-card disabled:opacity-60 disabled:cursor-not-allowed mt-2 cursor-pointer"
             >
-              {loading ? t('login.signingIn') : t('login.signIn')}
+              {loading ? (
+                <span className="inline-flex items-center justify-center gap-2">
+                  <IconLoader2 size={18} className="animate-spin" /> {t('login.signingIn')}
+                </span>
+              ) : t('login.signIn')}
             </button>
+            {loading && (
+              <p className="text-xs text-mute text-center">{t('login.waking')}</p>
+            )}
           </form>
 
           <p className="text-xs text-mute text-center mt-6">
