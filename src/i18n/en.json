@@ -70,6 +70,7 @@
     "passwordPlaceholder": "Enter password",
     "signIn": "Sign In",
     "signingIn": "Signing in...",
+    "waking": "Waking the server — this can take up to a minute.",
     "note": "Admin access only · For customer accounts use the mobile app",
     "invalid": "Invalid username or password."
   },
