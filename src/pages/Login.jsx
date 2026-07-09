@@ -104,14 +104,6 @@ export default function Login() {
             {t('login.note')}
           </p>
         </div>
-
-        {/* Dev hint */}
-        <div className="mt-4 bg-brand-light border border-app rounded-xl p-4 text-xs text-sub">
-          <p className="font-medium text-ink mb-1">Dev credentials</p>
-          <p>Manager: <code className="bg-card border border-app px-1.5 py-0.5 rounded text-brand">manager55</code> / <code className="bg-card border border-app px-1.5 py-0.5 rounded text-brand">manager55</code></p>
-          <p className="mt-1">Sale Staff: <code className="bg-card border border-app px-1.5 py-0.5 rounded text-brand">sale77</code> / <code className="bg-card border border-app px-1.5 py-0.5 rounded text-brand">sale77</code></p>
-          <p className="mt-1">Ticket Staff: <code className="bg-card border border-app px-1.5 py-0.5 rounded text-brand">ticket77</code> / <code className="bg-card border border-app px-1.5 py-0.5 rounded text-brand">ticket77</code></p>
-        </div>
       </div>
     </div>
   );
