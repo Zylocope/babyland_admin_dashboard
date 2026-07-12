@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconBell, IconSearch, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
+import { IconBell, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { mockProducts, mockDashboard } from '../../data/mock';
@@ -23,18 +23,10 @@ export default function Header({ titleKey }) {
   }, []);
 
   return (
-    <header className="h-16 glass border-b border-app flex items-center justify-between px-6 flex-shrink-0 gap-4 z-30">
-      {/* Left: title + search */}
+    <header className="h-16 surface-panel border-b flex items-center justify-between px-6 flex-shrink-0 gap-4 z-30">
+      {/* Left: title */}
       <div className="flex items-center gap-4 min-w-0">
         <h1 className="text-lg font-bold text-ink whitespace-nowrap leading-none">{t(`titles.${titleKey}`)}</h1>
-        <div className="relative hidden md:block w-[320px]">
-          <IconSearch size={16} stroke={1.5} className="absolute left-3 top-1/2 -translate-y-1/2 text-mute" />
-          <input
-            type="text"
-            placeholder={t('header.search')}
-            className="w-full pl-9 pr-4 py-2 text-[15px] leading-none rounded-lg bg-card/70 border border-app text-ink placeholder:text-mute focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand transition-shadow"
-          />
-        </div>
       </div>
 
       {/* Right: today revenue + bell + profile */}
@@ -63,7 +55,7 @@ export default function Header({ titleKey }) {
           </button>
 
           {open && (
-            <div className="absolute right-0 mt-2 w-52 bg-card border border-app rounded-xl shadow-hover py-1.5 z-40">
+            <div className="absolute right-0 mt-2 w-52 surface-card py-1.5 z-40">
               <div className="px-3.5 py-2 border-b border-app mb-1">
                 <p className="text-sm font-semibold text-ink truncate">{user?.name}</p>
                 <p className="text-[11px] text-brand">{t(`roles.${user?.role}`)}</p>

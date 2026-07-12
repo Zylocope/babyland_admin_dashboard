@@ -101,7 +101,7 @@ export default function ProductForm() {
         <IconArrowLeft size={16} stroke={1.8} /> {t('productForm.back')}
       </button>
 
-      <div className="bg-card rounded-xl shadow-card border border-app p-6">
+      <div className="surface-card p-6">
         <h2 className="text-lg font-semibold text-ink mb-5">
           {isEdit ? t('productForm.editHeading') : t('productForm.addHeading')}
         </h2>

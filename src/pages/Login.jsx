@@ -43,7 +43,7 @@ export default function Login() {
         </div>
 
         {/* Card */}
-        <div className="bg-card rounded-xl shadow-hover border border-app p-8">
+        <div className="surface-card p-8">
           <h2 className="text-lg font-semibold text-ink mb-6">{t('login.heading')}</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">

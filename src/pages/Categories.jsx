@@ -46,7 +46,7 @@ export default function Categories() {
 
   return (
     <div className="max-w-2xl space-y-5">
-      <form onSubmit={add} className="bg-card rounded-xl shadow-card border border-app p-5">
+      <form onSubmit={add} className="surface-card p-5">
         <label className="block text-xs font-medium text-ink mb-1">{t('categories.name')}</label>
         <div className="flex gap-3">
           <input
@@ -68,7 +68,7 @@ export default function Categories() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
+      <div className="surface-card overflow-hidden">
         {loading ? (
           <div className="py-12 text-center text-sm text-mute">{t('categories.loading')}</div>
         ) : categories.length === 0 ? (

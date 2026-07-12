@@ -115,7 +115,7 @@ export default function Products() {
       )}
 
       {/* Table */}
-      <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>

@@ -50,7 +50,7 @@ export default function AppLayout() {
             </button>
             <button
               onClick={() => navigate('/tickets')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg glass text-ink text-[15px] font-medium hover:shadow-hover transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 surface-card text-ink text-[15px] font-medium cursor-pointer"
             >
               <IconTicket size={16} stroke={1.8} className="text-brand" /> {t('banner.sellTicket')}
             </button>

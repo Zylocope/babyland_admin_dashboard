@@ -1,6 +1,6 @@
 import { IconArrowUpRight, IconArrowDownRight } from '@tabler/icons-react';
 
-// Glassmorphism KPI card — frosted glass, decorative corner circle, ring-bordered icon.
+// KPI card — themed via .surface-card, decorative corner circle, ring-bordered icon.
 const TONES = {
   store:     '#F97316',
   ticket:    '#10B981',
@@ -17,8 +17,8 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
   return (
     <div
       onClick={onClick}
-      className={`glass rounded-2xl p-5 relative overflow-hidden transition-all duration-200
-        hover:-translate-y-0.5 hover:shadow-hover ${onClick ? 'cursor-pointer' : ''}`}
+      className={`surface-card p-5 relative overflow-hidden
+        hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Decorative circle, top-right */}
       <span

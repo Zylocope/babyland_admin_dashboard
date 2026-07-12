@@ -34,7 +34,7 @@ export default function Dashboard() {
 
       {/* Row 2 — asymmetric bento: chart 8/12, alerts 4/12 */}
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        <div className="xl:col-span-8 bg-card rounded-xl p-6 shadow-card border border-app">
+        <div className="xl:col-span-8 surface-card p-6">
           <h3 className="font-semibold text-ink mb-4">{t('dashboard.revenue7d')}</h3>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={chartData} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
@@ -59,7 +59,7 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        <div className="xl:col-span-4 bg-card rounded-xl p-6 shadow-card border border-app">
+        <div className="xl:col-span-4 surface-card p-6">
           <h3 className="font-semibold text-ink mb-4 flex items-center gap-2">
             <IconAlertTriangle size={16} stroke={1.5} className="text-[#EF4444]" /> {t('dashboard.lowStockAlerts')}
           </h3>
@@ -84,7 +84,7 @@ export default function Dashboard() {
       </div>
 
       {/* Row 3 — full width recent orders */}
-      <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink">{t('dashboard.recentOrders')}</h3>
         </div>

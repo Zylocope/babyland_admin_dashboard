@@ -47,7 +47,7 @@ export default function Reports() {
       </div>
 
       {/* Revenue chart */}
-      <div className="bg-card rounded-xl p-6 shadow-card border border-app">
+      <div className="surface-card p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-ink">{tr('reports.revenueBreakdown')}</h3>
           <button className="text-xs text-sub flex items-center gap-1.5 border border-app px-3 py-1.5 rounded-lg hover:bg-brand-light transition-colors">
@@ -79,7 +79,7 @@ export default function Reports() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Daily orders summary */}
-        <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
+        <div className="surface-card overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-app">
             <h3 className="font-semibold text-ink">{tr('reports.onlineSales')}</h3>
             <button className="text-xs text-mute flex items-center gap-1.5 hover:text-sub"><IconDownload stroke={1.5} size={13} /> {tr('common.export')}</button>
@@ -119,7 +119,7 @@ export default function Reports() {
         </div>
 
         {/* Low stock list */}
-        <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
+        <div className="surface-card overflow-hidden">
           <div className="flex items-center justify-between px-6 py-4 border-b border-app">
             <h3 className="font-semibold text-ink flex items-center gap-2">
               <IconAlertTriangle stroke={1.5} size={15} className="text-red-500" /> {tr('reports.lowStockList')}
@@ -157,7 +157,7 @@ export default function Reports() {
       </div>
 
       {/* Playground bookings summary */}
-      <div className="bg-card rounded-xl shadow-card border border-app overflow-hidden">
+      <div className="surface-card overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink">{tr('reports.bookingsSummary')}</h3>
           <button className="text-xs text-mute flex items-center gap-1.5 hover:text-sub"><IconDownload stroke={1.5} size={13} /> {tr('common.export')}</button>
