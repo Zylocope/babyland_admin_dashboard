@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconTicket,
   IconUsers, IconChartBar, IconUserCog, IconLogout, IconBabyCarriage,
-  IconChevronLeft, IconSun, IconMoon,
+  IconChevronLeft, IconSun, IconMoon, IconTags,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +12,7 @@ import { useTheme } from '../../context/ThemeContext';
 const NAV_ITEMS = [
   { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: ['SaleStaff', 'TicketStaff'] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
+  { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
   { to: '/tickets', icon: IconTicket, key: 'playground', roles: ['TicketStaff'] },
   { to: '/customers', icon: IconUsers, key: 'customers', roles: ['SaleStaff', 'TicketStaff'] },

@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "ပစ္စည်းများ",
+    "categories": "အမျိုးအစားများ",
     "orders": "အော်ဒါ",
     "playground": "ကစားကွင်း",
     "customers": "ဖောက်သည်",
@@ -12,6 +13,7 @@
   "titles": {
     "dashboard": "Dashboard",
     "products": "ပစ္စည်းများ",
+    "categories": "အမျိုးအစားများ",
     "orders": "အော်ဒါများ",
     "tickets": "ကစားကွင်း Tickets",
     "customers": "ဖောက်သည်များ",
@@ -160,7 +162,33 @@
     "lowStockThreshold": "လက်ကျန်နည်း သတ်မှတ်ချက်",
     "visibleOnline": "Online ဆိုင်တွင် ပြသရန်",
     "hide": "ဖျောက်ရန်",
-    "show": "ပြရန်"
+    "show": "ပြရန်",
+    "add": "ပစ္စည်း ထည့်ရန်",
+    "prev": "ရှေ့သို့",
+    "next": "နောက်သို့",
+    "pageOf": "စာမျက်နှာ {{page}} / {{total}}"
+  },
+  "productForm": {
+    "addHeading": "ပစ္စည်း ထည့်ရန်",
+    "editHeading": "ပစ္စည်း ပြင်ရန်",
+    "name": "အမည်",
+    "selectCategory": "အမျိုးအစား ရွေးပါ",
+    "subCategoryNote": "Sub-category မရနိုင်သေးပါ (backend endpoint မရှိသေးပါ)။",
+    "categoryRequired": "အမျိုးအစား ရွေးပါ။",
+    "notFound": "ပစ္စည်း မတွေ့ပါ။",
+    "saveFailed": "ပစ္စည်း မသိမ်းနိုင်ပါ။",
+    "create": "ပစ္စည်း ဖန်တီးရန်",
+    "back": "ပစ္စည်းများ သို့ ပြန်သွားရန်"
+  },
+  "categories": {
+    "name": "အမျိုးအစား အမည်",
+    "namePlaceholder": "ဥပမာ — ကစားစရာ၊ Accessories",
+    "add": "ထည့်ရန်",
+    "none": "အမျိုးအစား မရှိသေးပါ။",
+    "loading": "အမျိုးအစားများ ဖတ်နေသည်...",
+    "loadFailed": "အမျိုးအစားများ မဖတ်နိုင်ပါ။",
+    "addFailed": "အမျိုးအစား မထည့်နိုင်ပါ။",
+    "editNote": "အမျိုးအစားများ ထည့်နိုင်သော်လည်း အမည်ပြင်၍ မရသေးပါ (backend endpoint မရှိသေးပါ)။"
   },
   "orders": {
     "search": "အော်ဒါ ID၊ ဖောက်သည်၊ ဖုန်းဖြင့် ရှာရန်...",

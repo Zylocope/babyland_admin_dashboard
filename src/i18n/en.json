@@ -2,6 +2,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
+    "categories": "Categories",
     "orders": "Orders",
     "playground": "Playground",
     "customers": "Customers",
@@ -12,6 +13,7 @@
   "titles": {
     "dashboard": "Dashboard",
     "products": "Products",
+    "categories": "Categories",
     "orders": "Orders",
     "tickets": "Playground Tickets",
     "customers": "Customers",
@@ -160,7 +162,33 @@
     "lowStockThreshold": "Low Stock Threshold",
     "visibleOnline": "Visible in online store",
     "hide": "Hide",
-    "show": "Show"
+    "show": "Show",
+    "add": "Add Product",
+    "prev": "Prev",
+    "next": "Next",
+    "pageOf": "Page {{page}} of {{total}}"
+  },
+  "productForm": {
+    "addHeading": "Add Product",
+    "editHeading": "Edit Product",
+    "name": "Name",
+    "selectCategory": "Select a category",
+    "subCategoryNote": "Sub-categories aren't available yet (no backend endpoint).",
+    "categoryRequired": "Please select a category.",
+    "notFound": "Product not found.",
+    "saveFailed": "Unable to save product.",
+    "create": "Create Product",
+    "back": "Back to Products"
+  },
+  "categories": {
+    "name": "Category Name",
+    "namePlaceholder": "e.g. Toys, Accessories",
+    "add": "Add",
+    "none": "No categories yet.",
+    "loading": "Loading categories...",
+    "loadFailed": "Unable to load categories.",
+    "addFailed": "Unable to add category.",
+    "editNote": "Categories can be added but not renamed yet (no backend endpoint)."
   },
   "orders": {
     "search": "Search by order ID, customer, phone...",

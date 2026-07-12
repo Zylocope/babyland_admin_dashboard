@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 const TITLE_KEYS = {
   '/':          'dashboard',
   '/products':  'products',
+  '/categories': 'categories',
   '/orders':    'orders',
   '/tickets':   'tickets',
   '/customers': 'customers',
@@ -24,7 +25,9 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const titleKey = TITLE_KEYS[pathname] ?? 'dashboard';
+  // Match on the first path segment so nested routes (/products/new,
+  // /products/:id/edit) resolve to their section title.
+  const titleKey = TITLE_KEYS['/' + (pathname.split('/')[1] || '')] ?? 'dashboard';
 
   return (
     <div className="flex h-screen overflow-hidden">
