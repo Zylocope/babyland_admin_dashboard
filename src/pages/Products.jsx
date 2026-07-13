@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -6,7 +6,7 @@ import { formatMMK } from '../utils/currency';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
-import { getProducts } from '../services/baseService';
+import { getCategories, getProducts } from '../services/baseService';
 
 const PAGE_SIZE = 20;
 
@@ -27,6 +27,7 @@ export default function Products() {
   const { isManager } = useAuth();
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
   const [catFilter, setCatFilter] = useState('All');
   const [page, setPage] = useState(1);
@@ -66,10 +67,28 @@ export default function Products() {
     };
   }, [page, t]);
 
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
-    return ['All', ...uniqueCategories];
-  }, [products]);
+  useEffect(() => {
+    let active = true;
+
+    const loadCategories = async () => {
+      try {
+        const response = await getCategories();
+        const items = Array.isArray(response) ? response : response?.data ?? [];
+
+        if (!active) return;
+        setCategories(items.map(category => category?.name).filter(Boolean));
+      } catch {
+        if (!active) return;
+        setCategories([]);
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // ponytail: search + category filter act on the loaded page only (the products
   // endpoint has no search param). Fine for this store's volume; revisit if the
