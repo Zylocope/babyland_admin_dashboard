@@ -4,15 +4,14 @@ import { useTheme } from '../context/ThemeContext';
 
 const STYLE_OPTIONS = [
   { id: 'glass',        labelKey: 'settings.styleGlass' },
-  { id: 'original',     labelKey: 'settings.styleOriginal' },
   { id: 'neumorphism',  labelKey: 'settings.styleNeu' },
-  { id: 'skeuomorphism',labelKey: 'settings.styleSkeu' },
   { id: 'flat',         labelKey: 'settings.styleFlat' },
+  { id: 'skeuomorphism',labelKey: 'settings.styleSkeu' },
 ];
 
 function Section({ title, desc, children }) {
   return (
-    <div className="glass rounded-2xl p-6">
+    <div className="surface-card p-6">
       <h3 className="font-semibold text-ink">{title}</h3>
       {desc && <p className="text-[13px] text-sub mt-0.5 mb-4">{desc}</p>}
       <div className={desc ? '' : 'mt-4'}>{children}</div>

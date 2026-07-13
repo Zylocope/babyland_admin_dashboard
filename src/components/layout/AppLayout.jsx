@@ -10,6 +10,7 @@ import { useAuth } from '../../context/AuthContext';
 const TITLE_KEYS = {
   '/':          'dashboard',
   '/products':  'products',
+  '/categories': 'categories',
   '/orders':    'orders',
   '/tickets':   'tickets',
   '/customers': 'customers',
@@ -24,7 +25,9 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
-  const titleKey = TITLE_KEYS[pathname] ?? 'dashboard';
+  // Match on the first path segment so nested routes (/products/new,
+  // /products/:id/edit) resolve to their section title.
+  const titleKey = TITLE_KEYS['/' + (pathname.split('/')[1] || '')] ?? 'dashboard';
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -47,7 +50,7 @@ export default function AppLayout() {
             </button>
             <button
               onClick={() => navigate('/tickets')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg glass text-ink text-[15px] font-medium hover:shadow-hover transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-4 py-2 surface-card text-ink text-[15px] font-medium cursor-pointer"
             >
               <IconTicket size={16} stroke={1.8} className="text-brand" /> {t('banner.sellTicket')}
             </button>

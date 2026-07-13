@@ -101,13 +101,8 @@ body {
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Vivid warm gradient so glassmorphism has real depth to blur against */
-  background: linear-gradient(135deg, #FFE4CF 0%, #FFF4ED 38%, #FDF0E4 60%, #D7FbE6 100%);
-  background-attachment: fixed;
-}
-
-.dark body {
-  background: linear-gradient(135deg, #25140A 0%, #0F0F14 45%, #0B1410 70%, #07241A 100%);
+  /* Page backdrop is theme-driven (see THEME SURFACE SYSTEM below). */
+  background: var(--page-bg);
   background-attachment: fixed;
 }
 
@@ -118,27 +113,189 @@ body {
    MY share the same font-size and line-height, so columns/rows never move.
    Myanmar glyphs are taller but the line box is fixed by line-height. */
 
-/* Glassmorphism surface — clearly frosted: translucent + heavy blur + top sheen */
-.glass {
-  background: rgba(255, 255, 255, 0.32);
-  backdrop-filter: blur(20px) saturate(165%);
-  -webkit-backdrop-filter: blur(20px) saturate(165%);
-  border: 1px solid rgba(255, 255, 255, 0.75);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 10px 30px -14px rgba(28, 25, 23, 0.22);
+/* ============================================================
+   THEME SURFACE SYSTEM
+   Every themed container uses ONE of three surface classes:
+   .surface-panel (header/sidebar), .surface-card (cards, modals,
+   dropdowns), .surface-nav-item (sidebar links). Each theme only
+   redefines the --s-* custom properties below, scoped by
+   html[data-style="…"], so toggling the attribute cross-fades every
+   surface at once. Default (:root / .dark) = Glassmorphism.
+   Values sourced from the ui-ux-pro-max style references.
+   ============================================================ */
+
+/* --- Glassmorphism (default): translucent + blur + top sheen --- */
+:root {
+  --page-bg: linear-gradient(135deg, #FFE4CF 0%, #FFF4ED 38%, #FDF0E4 60%, #D7FBE6 100%);
+  --s-radius: 16px;
+
+  --s-panel-bg: rgba(255, 255, 255, 0.32);
+  --s-panel-border: rgba(255, 255, 255, 0.75);
+  --s-panel-blur: blur(20px) saturate(165%);
+  --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 10px 30px -14px rgba(28, 25, 23, 0.22);
+
+  --s-card-bg: rgba(255, 255, 255, 0.46);
+  --s-card-border: rgba(255, 255, 255, 0.72);
+  --s-card-blur: blur(20px) saturate(160%);
+  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 30px -16px rgba(28, 25, 23, 0.18);
+
+  --s-nav-hover-bg: rgba(255, 255, 255, 0.4);
+  --s-nav-active-bg: rgba(255, 255, 255, 0.58);
+  --s-nav-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 6px 16px -6px rgba(249, 115, 22, 0.5);
+  --s-nav-active-color: var(--orange-primary);
 }
-.dark .glass {
-  background: rgba(42, 38, 50, 0.38);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px -14px rgba(0, 0, 0, 0.65);
+.dark {
+  --page-bg: linear-gradient(135deg, #25140A 0%, #0F0F14 45%, #0B1410 70%, #07241A 100%);
+
+  --s-panel-bg: rgba(42, 38, 50, 0.38);
+  --s-panel-border: rgba(255, 255, 255, 0.12);
+  --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px -14px rgba(0, 0, 0, 0.65);
+
+  --s-card-bg: rgba(42, 38, 50, 0.44);
+  --s-card-border: rgba(255, 255, 255, 0.1);
+  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -16px rgba(0, 0, 0, 0.6);
+
+  --s-nav-hover-bg: rgba(255, 255, 255, 0.06);
+  --s-nav-active-bg: rgba(255, 255, 255, 0.1);
+  --s-nav-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 16px -6px rgba(249, 115, 22, 0.55);
 }
 
-/* "Original" style theme — solid cards, no frosted-glass blur */
-html[data-style="original"] .glass {
-  background: var(--bg-card);
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
+/* --- Neumorphism: bg = page bg, dual soft shadows, no border --- */
+html[data-style="neumorphism"] {
+  --page-bg: #ece7e1;
+  --s-radius: 12px;
+
+  --s-panel-bg: #ece7e1;
+  --s-panel-border: transparent;
+  --s-panel-blur: none;
+  --s-panel-shadow: 6px 6px 14px #cec7bf, -6px -6px 14px #ffffff;
+
+  --s-card-bg: #ece7e1;
+  --s-card-border: transparent;
+  --s-card-blur: none;
+  --s-card-shadow: 6px 6px 14px #cec7bf, -6px -6px 14px #ffffff;
+
+  --s-nav-hover-bg: transparent;
+  --s-nav-active-bg: #ece7e1;
+  --s-nav-active-shadow: inset 4px 4px 8px #cec7bf, inset -4px -4px 8px #ffffff;
+  --s-nav-active-color: var(--orange-primary);
+}
+html.dark[data-style="neumorphism"] {
+  --page-bg: #23252b;
+  --s-panel-bg: #23252b;
+  --s-panel-border: transparent;
+  --s-panel-shadow: 6px 6px 14px #17181d, -6px -6px 14px #2f323b;
+  --s-card-bg: #23252b;
+  --s-card-border: transparent;
+  --s-card-shadow: 6px 6px 14px #17181d, -6px -6px 14px #2f323b;
+  --s-nav-active-bg: #23252b;
+  --s-nav-active-shadow: inset 4px 4px 8px #17181d, inset -4px -4px 8px #2f323b;
+}
+
+/* --- Flat: solid opaque bg, no blur/shadow, 1px border, sharp edges --- */
+html[data-style="flat"] {
+  --page-bg: #f4f5f7;
+  --s-radius: 3px;
+
+  --s-panel-bg: #ffffff;
+  --s-panel-border: var(--border);
+  --s-panel-blur: none;
+  --s-panel-shadow: none;
+
+  --s-card-bg: #ffffff;
+  --s-card-border: var(--border);
+  --s-card-blur: none;
+  --s-card-shadow: none;
+
+  --s-nav-hover-bg: var(--orange-light);
+  --s-nav-active-bg: var(--orange-light);
+  --s-nav-active-shadow: none;
+  --s-nav-active-color: var(--orange-primary);
+}
+html.dark[data-style="flat"] {
+  --page-bg: #0f0f14;
+  --s-panel-bg: #1a1a24;
+  --s-panel-border: var(--border);
+  --s-card-bg: #1a1a24;
+  --s-card-border: var(--border);
+  --s-nav-hover-bg: rgba(249, 115, 22, 0.14);
+  --s-nav-active-bg: rgba(249, 115, 22, 0.18);
+}
+
+/* --- Skeuomorphism: material gradient, inner+outer shadow, top bevel --- */
+html[data-style="skeuomorphism"] {
+  --page-bg: linear-gradient(135deg, #efe6da 0%, #e7d9c8 100%);
+  --s-radius: 10px;
+
+  --s-panel-bg: linear-gradient(180deg, #fdfbf8 0%, #f0e7db 100%);
+  --s-panel-border: rgba(120, 90, 60, 0.35);
+  --s-panel-blur: none;
+  --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 4px rgba(60, 40, 20, 0.25);
+
+  --s-card-bg: linear-gradient(180deg, #ffffff 0%, #f1e8dc 100%);
+  --s-card-border: rgba(120, 90, 60, 0.3);
+  --s-card-blur: none;
+  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -2px 4px rgba(120, 90, 60, 0.12), 0 3px 6px rgba(60, 40, 20, 0.22);
+
+  --s-nav-hover-bg: linear-gradient(180deg, #fbf4ea 0%, #f0e5d6 100%);
+  --s-nav-active-bg: linear-gradient(180deg, #ecdcc8 0%, #e0cdb4 100%);
+  --s-nav-active-shadow: inset 0 2px 4px rgba(90, 60, 30, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
+  --s-nav-active-color: #7a4a12;
+}
+html.dark[data-style="skeuomorphism"] {
+  --page-bg: linear-gradient(135deg, #2a241d 0%, #1c1712 100%);
+
+  --s-panel-bg: linear-gradient(180deg, #2e2a24 0%, #211d17 100%);
+  --s-panel-border: rgba(0, 0, 0, 0.55);
+  --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.55);
+
+  --s-card-bg: linear-gradient(180deg, #302b24 0%, #211d17 100%);
+  --s-card-border: rgba(0, 0, 0, 0.5);
+  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -2px 4px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.5);
+
+  --s-nav-hover-bg: linear-gradient(180deg, #35302a 0%, #29241e 100%);
+  --s-nav-active-bg: linear-gradient(180deg, #241f19 0%, #2c2720 100%);
+  --s-nav-active-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
+  --s-nav-active-color: #e0b877;
+}
+
+/* ---- Shared surface classes — every themed container uses these ---- */
+.surface-panel,
+.surface-card,
+.surface-nav-item {
+  /* Cross-fade every surface property on theme switch (300–400ms). */
+  transition: background-color 350ms ease, backdrop-filter 350ms ease,
+              box-shadow 350ms ease, border-color 350ms ease;
+}
+
+.surface-panel {
+  background: var(--s-panel-bg);
+  border-color: var(--s-panel-border);
+  box-shadow: var(--s-panel-shadow);
+  backdrop-filter: var(--s-panel-blur);
+  -webkit-backdrop-filter: var(--s-panel-blur);
+}
+
+.surface-card {
+  background: var(--s-card-bg);
+  border: 1px solid var(--s-card-border);
+  border-radius: var(--s-radius);
+  box-shadow: var(--s-card-shadow);
+  backdrop-filter: var(--s-card-blur);
+  -webkit-backdrop-filter: var(--s-card-blur);
+}
+
+.surface-nav-item {
+  background-color: transparent;
+  border-radius: 8px;
+}
+.surface-nav-item:hover:not(.is-active) {
+  background: var(--s-nav-hover-bg);
+}
+.surface-nav-item.is-active {
+  background: var(--s-nav-active-bg);
+  box-shadow: var(--s-nav-active-shadow);
+  color: var(--s-nav-active-color);
 }
 
 /* Orange focus rings (override browser blue) */

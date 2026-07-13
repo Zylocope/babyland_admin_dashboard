@@ -5,6 +5,8 @@ import AppLayout from './components/layout/AppLayout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
+import ProductForm from './pages/ProductForm';
+import Categories from './pages/Categories';
 import Orders from './pages/Orders';
 import Tickets from './pages/Tickets';
 import Customers from './pages/Customers';
@@ -34,6 +36,9 @@ function AppRoutes() {
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         <Route index element={<Dashboard />} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
+        <Route path="products/new" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
+        <Route path="products/:id/edit" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
+        <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
         <Route path="tickets" element={<RoleRoute roles={['TicketStaff']}><Tickets /></RoleRoute>} />
         <Route path="customers" element={<RoleRoute roles={['SaleStaff', 'TicketStaff']}><Customers /></RoleRoute>} />

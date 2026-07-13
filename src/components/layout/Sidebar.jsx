@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconTicket,
   IconUsers, IconChartBar, IconUserCog, IconLogout, IconBabyCarriage,
-  IconChevronLeft, IconSun, IconMoon,
+  IconChevronLeft, IconSun, IconMoon, IconTags,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -12,6 +12,7 @@ import { useTheme } from '../../context/ThemeContext';
 const NAV_ITEMS = [
   { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: ['SaleStaff', 'TicketStaff'] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
+  { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
   { to: '/tickets', icon: IconTicket, key: 'playground', roles: ['TicketStaff'] },
   { to: '/customers', icon: IconUsers, key: 'customers', roles: ['SaleStaff', 'TicketStaff'] },
@@ -27,7 +28,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const visibleItems = NAV_ITEMS.filter(i => can(...i.roles));
 
   return (
-    <aside className={`flex flex-col bg-sidebar border-r border-app transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
+    <aside className={`flex flex-col surface-panel border-r transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
       {/* Logo — 64px */}
       <div className={`flex items-center gap-3 px-5 h-16 border-b border-app ${collapsed ? 'justify-center px-0' : ''}`}>
         <div className="bg-brand text-white rounded-lg p-1.5 flex-shrink-0">
@@ -49,9 +50,9 @@ export default function Sidebar({ collapsed, onToggle }) {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `relative flex items-center gap-3 px-4 py-2.5 rounded-lg mb-1 text-[15px] transition-colors active:scale-[0.98] ${isActive
-                ? 'bg-card text-brand font-semibold shadow-card'
-                : 'text-ink/75 hover:bg-white/50 dark:hover:bg-white/5 hover:text-brand font-normal'
+              `surface-nav-item relative flex items-center gap-3 px-4 py-2.5 mb-1 text-[15px] active:scale-[0.98] ${isActive
+                ? 'is-active font-semibold'
+                : 'text-ink/75 hover:text-brand font-normal'
               } ${collapsed ? 'justify-center' : ''}`
             }
           >
