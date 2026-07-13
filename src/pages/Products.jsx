@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
@@ -6,9 +6,11 @@ import { formatMMK } from '../utils/currency';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
-import { getProducts } from '../services/baseService';
+import { searchProductsSimple } from '../services/productService';
+import { getCategories } from '../services/baseService';
 
-const PAGE_SIZE = 20;
+
+const PAGE_SIZE = 10;
 
 const normalizeProduct = (product) => ({
   id: product.id,
@@ -26,8 +28,11 @@ export default function Products() {
   const { t } = useTranslation();
   const { isManager } = useAuth();
   const navigate = useNavigate();
+
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [catFilter, setCatFilter] = useState('All');
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -35,6 +40,19 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 1000);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [search]);
+
+  // 2. Fetch products whenever page or debounced search changes
   useEffect(() => {
     let active = true;
 
@@ -43,7 +61,11 @@ export default function Products() {
       setError('');
 
       try {
-        const response = await getProducts({ page, limit: PAGE_SIZE });
+        const offset = (page - 1) * PAGE_SIZE;
+        // Call the backend search API directly with pagination parameters
+        const response = await searchProductsSimple(debouncedSearch, PAGE_SIZE, offset);
+
+        // Handle both raw arrays and paginated object wrappers
         const items = Array.isArray(response) ? response : response?.data ?? [];
 
         if (!active) return;
@@ -54,6 +76,8 @@ export default function Products() {
         if (!active) return;
         setError(loadError?.message || t('products.loadFailed'));
         setProducts([]);
+        setTotalItems(0);
+        setTotalPages(1);
       } finally {
         if (active) setLoading(false);
       }
@@ -64,20 +88,35 @@ export default function Products() {
     return () => {
       active = false;
     };
-  }, [page, t]);
+  }, [page, debouncedSearch, t]);
 
-  const categories = useMemo(() => {
-    const uniqueCategories = [...new Set(products.map(p => p.category).filter(Boolean))];
-    return ['All', ...uniqueCategories];
-  }, [products]);
+  // 3. Load drop-down categories on mount
+  useEffect(() => {
+    let active = true;
 
-  // ponytail: search + category filter act on the loaded page only (the products
-  // endpoint has no search param). Fine for this store's volume; revisit if the
-  // catalog grows and cross-page search is needed.
+    const loadCategories = async () => {
+      try {
+        const response = await getCategories();
+        const items = Array.isArray(response) ? response : response?.data ?? [];
+
+        if (!active) return;
+        setCategories(items.map(category => category?.name).filter(Boolean));
+      } catch {
+        if (!active) return;
+        setCategories([]);
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // 4. Local Category filtering still happens on the current paginated view block
   const filtered = products.filter(p => {
-    const matchSearch = p.name.toLowerCase().includes(search.toLowerCase()) || p.barcode.includes(search) || p.id.includes(search);
-    const matchCat = catFilter === 'All' || p.category === catFilter;
-    return matchSearch && matchCat;
+    return catFilter === 'All' || p.category === catFilter;
   });
 
   const lowStockIds = new Set(products.filter(p => p.quantity_in_stock <= p.lowStockThreshold).map(p => p.id));

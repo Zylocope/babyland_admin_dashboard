@@ -4,9 +4,9 @@ import { loginAdmin, logoutAdmin } from '../services/baseService';
 export const AuthContext = createContext(null);
 
 const ROLE_MAP = {
-  SaleAdmin: 'SaleStaff',
-  PlaygroundAdmin: 'TicketStaff',
-  SuperAdmin: 'Manager',
+  "sale_admin": 'SaleStaff',
+  "playground_admin": 'TicketStaff',
+  "super_admin": 'Manager',
 };
 
 const toUiRole = (role) => ROLE_MAP[role] ?? role ?? 'Staff';
