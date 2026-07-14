@@ -56,7 +56,8 @@ export default function Categories() {
             className="flex-1 px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand"
           />
           <button type="submit" disabled={saving || !name.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover font-medium disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
+            className="btn-primary">
+
             {saving ? <IconLoader2 size={16} className="animate-spin" /> : <IconPlus size={16} stroke={2} />}
             {t('categories.add')}
           </button>

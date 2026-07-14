@@ -44,7 +44,7 @@ export default function AppLayout() {
           <div className="flex items-center gap-3">
             <button
               onClick={() => navigate('/orders')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-[15px] font-medium hover:bg-brand-hover transition-colors cursor-pointer shadow-card"
+              className="btn-primary"
             >
               <IconPlus size={16} stroke={2} /> {t('banner.newOrder')}
             </button>

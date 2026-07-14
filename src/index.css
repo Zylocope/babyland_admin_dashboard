@@ -298,6 +298,30 @@ html.dark[data-style="skeuomorphism"] {
   color: var(--s-nav-active-color);
 }
 
+/* Prominent primary action button — elevated + brand glow so page CTAs read
+   as strongly as the chart/data cards. Brand orange is constant across themes. */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--orange-primary);
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px -6px rgba(249, 115, 22, 0.55), 0 2px 6px rgba(0, 0, 0, 0.1);
+  transition: transform 150ms ease, box-shadow 220ms ease, background-color 200ms ease;
+}
+.btn-primary:hover {
+  background: var(--orange-hover);
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px -8px rgba(249, 115, 22, 0.7), 0 4px 10px rgba(0, 0, 0, 0.12);
+}
+.btn-primary:active { transform: translateY(0); box-shadow: 0 4px 12px -4px rgba(249, 115, 22, 0.5); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+
 /* Orange focus rings (override browser blue) */
 :focus-visible { outline: 2px solid var(--orange-primary); outline-offset: 2px; }
 

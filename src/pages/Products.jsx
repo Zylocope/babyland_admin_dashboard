@@ -140,7 +140,7 @@ export default function Products() {
         {isManager && (
           <button
             onClick={() => navigate('/products/new')}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-brand text-white text-sm font-medium hover:bg-brand-hover transition-colors cursor-pointer shadow-card"
+            className="btn-primary"
           >
             <IconPlus size={16} stroke={2} /> {t('products.add')}
           </button>
