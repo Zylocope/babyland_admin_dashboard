@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import {
-  IconLayoutDashboard, IconPackage, IconShoppingCart, IconTicket,
+  IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
   IconUsers, IconChartBar, IconUserCog, IconLogout, IconBabyCarriage,
   IconChevronLeft, IconSun, IconMoon, IconTags,
 } from '@tabler/icons-react';
@@ -14,7 +14,7 @@ const NAV_ITEMS = [
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
   { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
-  { to: '/tickets', icon: IconTicket, key: 'playground', roles: ['TicketStaff'] },
+  { to: '/playground', icon: IconGift, key: 'playground', roles: ['TicketStaff'] },
   { to: '/customers', icon: IconUsers, key: 'customers', roles: ['SaleStaff', 'TicketStaff'] },
   { to: '/reports', icon: IconChartBar, key: 'reports', roles: [] },
   { to: '/staff', icon: IconUserCog, key: 'staff', roles: [] },

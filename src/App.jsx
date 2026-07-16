@@ -8,7 +8,7 @@ import Products from './pages/Products';
 import ProductForm from './pages/ProductForm';
 import Categories from './pages/Categories';
 import Orders from './pages/Orders';
-import Tickets from './pages/Tickets';
+import Playground from './pages/Playground';
 import Customers from './pages/Customers';
 import Reports from './pages/Reports';
 import Staff from './pages/Staff';
@@ -34,13 +34,14 @@ function AppRoutes() {
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        <Route index element={<Dashboard />} />
+        {/* Playground staff get the playground dashboard, not the store one. */}
+        <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground" replace /> : <Dashboard />} />
+        <Route path="playground" element={<RoleRoute roles={['TicketStaff']}><Playground /></RoleRoute>} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
         <Route path="products/new" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
         <Route path="products/:id/edit" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
-        <Route path="tickets" element={<RoleRoute roles={['TicketStaff']}><Tickets /></RoleRoute>} />
         <Route path="customers" element={<RoleRoute roles={['SaleStaff', 'TicketStaff']}><Customers /></RoleRoute>} />
         <Route path="reports" element={<RoleRoute roles={[]}><Reports /></RoleRoute>} />
         <Route path="staff" element={<RoleRoute roles={[]}><Staff /></RoleRoute>} />

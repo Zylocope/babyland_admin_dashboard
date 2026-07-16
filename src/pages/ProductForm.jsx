@@ -4,7 +4,9 @@ import { useTranslation } from 'react-i18next';
 import { IconLoader2, IconArrowLeft } from '@tabler/icons-react';
 import { getAllProducts, getCategories, createProduct, updateProduct } from '../services/baseService';
 
-const EMPTY = { barcode: '', name: '', price: '', category_id: '', is_active: true, quantity_in_stock: 0 };
+// Mirrors the backend CreateProductPayload/UpdateProductPayload exactly.
+// Stock is NOT part of it — inventory has its own PUT /admin/inventory/{product_id}.
+const EMPTY = { barcode: '', name: '', price: '', category_id: '', sub_category_id: '', is_active: true, description: '' };
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -41,8 +43,9 @@ export default function ProductForm() {
               name: found.name ?? '',
               price: found.price ?? '',
               category_id: found.category_id ?? '',
+              sub_category_id: found.sub_category_id ?? '',
               is_active: found.is_active ?? true,
-              quantity_in_stock: found.quantity_in_stock ?? 0,
+              description: found.description ?? '',
             });
           } else {
             setError(t('productForm.notFound'));
@@ -69,11 +72,10 @@ export default function ProductForm() {
       barcode: form.barcode.trim(),
       name: form.name.trim(),
       category_id: form.category_id,
-      sub_category_id: null,
+      sub_category_id: form.sub_category_id || null,
       price: String(form.price || 0),
       is_active: form.is_active,
-      quantity_in_stock: Number(form.quantity_in_stock) || 0,
-      description: null,
+      description: form.description.trim() || null,
     };
 
     setSaving(true);
@@ -124,21 +126,32 @@ export default function ProductForm() {
                 className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-ink mb-1">{t('products.stockQty')}</label>
-              <input type="number" min="0" step="1" value={form.quantity_in_stock} onChange={e => set('quantity_in_stock', e.target.value)}
-                className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+              <label className="block text-xs font-medium text-ink mb-1">{t('table.category')}</label>
+              <select value={form.category_id} onChange={e => set('category_id', e.target.value)} required
+                className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
+                <option value="">{t('productForm.selectCategory')}</option>
+                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
             </div>
           </div>
 
+          {/* sub_category_id is a FK to categories(id) — same table, so reuse the list. */}
           <div>
-            <label className="block text-xs font-medium text-ink mb-1">{t('table.category')}</label>
-            <select value={form.category_id} onChange={e => set('category_id', e.target.value)} required
+            <label className="block text-xs font-medium text-ink mb-1">{t('productForm.subCategory')}</label>
+            <select value={form.sub_category_id} onChange={e => set('sub_category_id', e.target.value)}
               className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
-              <option value="">{t('productForm.selectCategory')}</option>
-              {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              <option value="">{t('productForm.noSubCategory')}</option>
+              {categories.filter(c => c.id !== form.category_id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
-            <p className="text-xs text-mute mt-1">{t('productForm.subCategoryNote')}</p>
           </div>
+
+          <div>
+            <label className="block text-xs font-medium text-ink mb-1">{t('productForm.description')}</label>
+            <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={2}
+              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+          </div>
+
+          <p className="text-xs text-mute">{t('productForm.stockNote')}</p>
 
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-ink">{t('products.visibleOnline')}</label>

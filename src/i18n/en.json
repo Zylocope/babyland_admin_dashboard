@@ -4,22 +4,22 @@
     "products": "Products",
     "categories": "Categories",
     "orders": "Orders",
-    "playground": "Playground",
     "customers": "Customers",
     "reports": "Reports",
     "staff": "Staff",
-    "settings": "Settings"
+    "settings": "Settings",
+    "playground": "Playground"
   },
   "titles": {
     "dashboard": "Dashboard",
     "products": "Products",
     "categories": "Categories",
     "orders": "Orders",
-    "tickets": "Playground Tickets",
     "customers": "Customers",
     "reports": "Reports",
     "staff": "Staff Management",
-    "settings": "Settings"
+    "settings": "Settings",
+    "playground": "Playground Rewards"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -59,8 +59,7 @@
   },
   "banner": {
     "welcome": "Welcome back, {{name}}",
-    "newOrder": "New Order",
-    "sellTicket": "Sell Ticket"
+    "newOrder": "New Order"
   },
   "login": {
     "brand": "Appleland Admin",
@@ -78,8 +77,6 @@
   },
   "dashboard": {
     "storeSales": "Store Sales Today",
-    "ticketSales": "Ticket Sales Today",
-    "combinedRevenue": "Combined Revenue",
     "pendingOrders": "Pending Orders",
     "completedOrders": "Completed Orders",
     "lowStockItems": "Low Stock Items",
@@ -88,8 +85,7 @@
     "allStocked": "All products are well-stocked.",
     "left": "{{count}} left",
     "recentOrders": "Recent Orders",
-    "store": "Store",
-    "playground": "Playground"
+    "store": "Store"
   },
   "table": {
     "orderId": "Order ID",
@@ -114,11 +110,7 @@
     "username": "Username",
     "role": "Role",
     "created": "Created",
-    "bookingId": "Booking ID",
-    "visitDate": "Visit Date",
     "qty": "Qty",
-    "amountPaid": "Amount Paid",
-    "type": "Type",
     "product": "Product",
     "threshold": "Threshold",
     "total": "Total"
@@ -140,8 +132,6 @@
     "Delivered": "Delivered",
     "Cancelled": "Cancelled",
     "Refunded": "Refunded",
-    "Confirmed": "Confirmed",
-    "Used": "Used",
     "Active": "Active",
     "Hidden": "Hidden",
     "Low": "Low",
@@ -173,12 +163,15 @@
     "editHeading": "Edit Product",
     "name": "Name",
     "selectCategory": "Select a category",
-    "subCategoryNote": "Sub-categories aren't available yet (no backend endpoint).",
     "categoryRequired": "Please select a category.",
     "notFound": "Product not found.",
     "saveFailed": "Unable to save product.",
     "create": "Create Product",
-    "back": "Back to Products"
+    "back": "Back to Products",
+    "subCategory": "Sub-category (optional)",
+    "noSubCategory": "None",
+    "description": "Description (optional)",
+    "stockNote": "Stock is managed separately from this form."
   },
   "categories": {
     "name": "Category Name",
@@ -209,32 +202,6 @@
     "refundMsg": "Issue a refund for order {{id}} ({{amount}})?",
     "issueRefund": "Issue Refund"
   },
-  "tickets": {
-    "search": "Search by booking ID, customer, phone...",
-    "count": "{{count}} bookings",
-    "none": "No bookings found.",
-    "ticketPrice": "Ticket Price ({{price}})",
-    "manageSlots": "Manage Slots",
-    "walkIn": "Walk-in Ticket",
-    "createTitle": "Create Walk-in Ticket",
-    "customerName": "Customer Name",
-    "visitDate": "Visit Date",
-    "quantity": "Quantity",
-    "totalLabel": "Total: {{amount}}",
-    "createTicket": "Create Ticket",
-    "setPriceTitle": "Set Ticket Price",
-    "pricePerTicket": "Price per ticket (MMK)",
-    "savePrice": "Save Price",
-    "slotsTitle": "Manage Booking Slots",
-    "booked": "{{booked}}/{{max}} booked",
-    "cancelTitle": "Cancel Booking",
-    "cancelMsg": "Cancel booking {{id}}?",
-    "cancelBooking": "Cancel Booking",
-    "refundTitle": "Issue Refund",
-    "refundMsg": "Issue refund for booking {{id}} ({{amount}})?",
-    "issueRefund": "Issue Refund",
-    "optional": "Optional"
-  },
   "customers": {
     "search": "Search by name, phone, email...",
     "count": "{{count}} customers",
@@ -250,15 +217,11 @@
   },
   "reports": {
     "storeRevenue7d": "7-Day Store Revenue",
-    "ticketRevenue7d": "7-Day Ticket Revenue",
-    "totalRevenue7d": "Total Revenue (7 days)",
     "lowStockItems": "Low Stock Items",
     "revenueBreakdown": "Daily Revenue Breakdown (Last 7 Days)",
     "onlineSales": "Online Sales Summary",
     "lowStockList": "Low Stock Items",
-    "bookingsSummary": "Playground Bookings Summary",
-    "chartStore": "Store Sales",
-    "chartTicket": "Ticket Sales"
+    "chartStore": "Store Sales"
   },
   "staff": {
     "search": "Search staff...",
@@ -275,5 +238,31 @@
     "createAccount": "Create Account",
     "deleteTitle": "Delete Account",
     "deleteMsg": "Delete {{name}}'s account? They will lose all access."
+  },
+  "playground": {
+    "checkInTitle": "Walk-in Check-in",
+    "checkInDesc": "Enter phone number and name. Every visit earns 1 point — at {{n}} points the next visit is free.",
+    "checkIn": "Check In",
+    "customerName": "Customer Name",
+    "nameMismatch": "This phone is already registered to \"{{name}}\". Same phone must use the same name — pick one, or correct it with the customer in person.",
+    "useExisting": "Use \"{{name}}\"",
+    "updateName": "Rename to \"{{name}}\"",
+    "pointAdded": "point added — now {{points}}/{{n}}.",
+    "nextIsFree": "Next visit is FREE!",
+    "freeVisit": "FREE VISIT",
+    "freeVisitDesc": "{{name}} reached the reward — this visit is free. Card reset to 0.",
+    "todayLog": "Today's Check-ins",
+    "noCheckIns": "No check-ins yet today.",
+    "free": "FREE",
+    "cardsTitle": "Reward Cards",
+    "searchVisitor": "Search by name or phone...",
+    "progress": "Progress",
+    "visits": "Visits",
+    "lastVisit": "Last Visit",
+    "noVisitors": "No visitors found.",
+    "totalVisitors": "Total Visitors",
+    "checkInsToday": "Check-ins Today",
+    "readyForFree": "Ready for Free",
+    "freeGivenToday": "Free Given Today"
   }
 }

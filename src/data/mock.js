@@ -342,69 +342,6 @@ export const mockOrders = [
   },
 ];
 
-export const mockTickets = [
-  {
-    id: "TKT-2024-001",
-    customerName: "မ မြင့်မြတ်",
-    phone: "09-123-456-789",
-    visitDate: "2024-06-08",
-    qty: 2,
-    amount: 20000,
-    status: "Confirmed",
-    type: "Online",
-  },
-  {
-    id: "TKT-2024-002",
-    customerName: "ဦး ကျော်မင်း",
-    phone: "09-987-654-321",
-    visitDate: "2024-06-08",
-    qty: 3,
-    amount: 30000,
-    status: "Confirmed",
-    type: "Online",
-  },
-  {
-    id: "TKT-2024-003",
-    customerName: "Walk-in Customer",
-    phone: "-",
-    visitDate: "2024-06-07",
-    qty: 1,
-    amount: 10000,
-    status: "Used",
-    type: "Walk-in",
-  },
-  {
-    id: "TKT-2024-004",
-    customerName: "Daw Su Su Lwin",
-    phone: "09-555-111-222",
-    visitDate: "2024-06-09",
-    qty: 4,
-    amount: 40000,
-    status: "Confirmed",
-    type: "Online",
-  },
-  {
-    id: "TKT-2024-005",
-    customerName: "Walk-in Family",
-    phone: "-",
-    visitDate: "2024-06-07",
-    qty: 2,
-    amount: 20000,
-    status: "Used",
-    type: "Walk-in",
-  },
-  {
-    id: "TKT-2024-006",
-    customerName: "Ko Thiha",
-    phone: "09-112-233-445",
-    visitDate: "2024-06-10",
-    qty: 2,
-    amount: 20000,
-    status: "Cancelled",
-    type: "Online",
-  },
-];
-
 export const mockCustomers = [
   {
     id: "C001",
@@ -498,19 +435,20 @@ export const mockStaff = [
   },
 ];
 
-export const mockBookingSlots = [
-  { date: "2024-06-08", maxCapacity: 50, booked: 25, open: true },
-  { date: "2024-06-09", maxCapacity: 50, booked: 40, open: true },
-  { date: "2024-06-10", maxCapacity: 50, booked: 10, open: true },
-  { date: "2024-06-11", maxCapacity: 50, booked: 0, open: false },
-  { date: "2024-06-12", maxCapacity: 50, booked: 5, open: true },
-];
+// Playground walk-in reward card. Identity is the phone number; points are
+// unrelated to store reward points (mockCustomers.points) by design.
+// ponytail: local mock — no backend table exists yet.
+export const PLAYGROUND_FREE_AT = 10;
 
-export const ticketPrice = 10000;
+export const mockPlaygroundVisitors = [
+  { id: "PG001", phone: "09-123-456-789", name: "မ မြင့်မြတ်",   points: 10, visits: 14, lastVisit: "2024-06-11" },
+  { id: "PG002", phone: "09-987-654-321", name: "ကို အောင်အောင်", points: 7,  visits: 7,  lastVisit: "2024-06-12" },
+  { id: "PG003", phone: "09-555-111-222", name: "မ စုစု",         points: 3,  visits: 3,  lastVisit: "2024-06-10" },
+  { id: "PG004", phone: "09-444-333-111", name: "ကို ဇော်ဇော်",   points: 0,  visits: 11, lastVisit: "2024-06-09" },
+];
 
 export const mockDashboard = {
   todayStoreSales: 81500,
-  todayTicketSales: 70000,
   pendingOrders: 2,
   completedOrders: 2,
   lowStockCount: 5,
@@ -519,12 +457,12 @@ export const mockDashboard = {
 
 export const mockReports = {
   dailySales: [
-    { date: "2024-06-01", storeSales: 125000, ticketSales: 60000 },
-    { date: "2024-06-02", storeSales: 87000, ticketSales: 80000 },
-    { date: "2024-06-03", storeSales: 210000, ticketSales: 50000 },
-    { date: "2024-06-04", storeSales: 95000, ticketSales: 100000 },
-    { date: "2024-06-05", storeSales: 155000, ticketSales: 70000 },
-    { date: "2024-06-06", storeSales: 97500, ticketSales: 90000 },
-    { date: "2024-06-07", storeSales: 81500, ticketSales: 70000 },
+    { date: "2024-06-01", storeSales: 125000 },
+    { date: "2024-06-02", storeSales: 87000 },
+    { date: "2024-06-03", storeSales: 210000 },
+    { date: "2024-06-04", storeSales: 95000 },
+    { date: "2024-06-05", storeSales: 155000 },
+    { date: "2024-06-06", storeSales: 97500 },
+    { date: "2024-06-07", storeSales: 81500 },
   ],
 };

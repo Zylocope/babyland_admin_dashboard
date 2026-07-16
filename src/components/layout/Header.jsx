@@ -14,7 +14,7 @@ export default function Header({ titleKey }) {
   const menuRef = useRef(null);
 
   const lowStock = mockProducts.filter(p => p.stock <= p.lowStockThreshold).length;
-  const todayRevenue = mockDashboard.todayStoreSales + mockDashboard.todayTicketSales;
+  const todayRevenue = mockDashboard.todayStoreSales;
 
   useEffect(() => {
     const onClick = (e) => { if (menuRef.current && !menuRef.current.contains(e.target)) setOpen(false); };

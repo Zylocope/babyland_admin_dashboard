@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { IconPlus, IconTicket } from '@tabler/icons-react';
+import { IconPlus } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import Sidebar from './Sidebar';
@@ -12,7 +12,7 @@ const TITLE_KEYS = {
   '/products':  'products',
   '/categories': 'categories',
   '/orders':    'orders',
-  '/tickets':   'tickets',
+  '/playground': 'playground',
   '/customers': 'customers',
   '/reports':   'reports',
   '/staff':     'staff',
@@ -47,12 +47,6 @@ export default function AppLayout() {
               className="btn-primary"
             >
               <IconPlus size={16} stroke={2} /> {t('banner.newOrder')}
-            </button>
-            <button
-              onClick={() => navigate('/tickets')}
-              className="inline-flex items-center gap-1.5 px-4 py-2 surface-card text-ink text-[15px] font-medium cursor-pointer"
-            >
-              <IconTicket size={16} stroke={1.8} className="text-brand" /> {t('banner.sellTicket')}
             </button>
           </div>
         </div>

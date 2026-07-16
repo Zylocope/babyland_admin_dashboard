@@ -1,4 +1,4 @@
-import { IconCash, IconTicket, IconReportMoney, IconClock, IconCircleCheck, IconAlertTriangle } from '@tabler/icons-react';
+import { IconCash, IconClock, IconCircleCheck, IconAlertTriangle } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import StatCard from '../components/common/StatCard';
 import Badge from '../components/common/Badge';
@@ -12,21 +12,17 @@ const lowStockItems = mockProducts.filter(p => p.stock <= p.lowStockThreshold);
 export default function Dashboard() {
   const { t } = useTranslation();
   const d = mockDashboard;
-  const combined = d.todayStoreSales + d.todayTicketSales;
 
   const chartData = mockReports.dailySales.map(r => ({
     date: format(new Date(r.date), 'MMM d'),
     [t('dashboard.store')]: r.storeSales,
-    [t('dashboard.playground')]: r.ticketSales,
   }));
 
   return (
     <div className="space-y-6">
       {/* Row 1 — 6 stat cards, equal width */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={IconCash}          tone="store"     label={t('dashboard.storeSales')}      value={formatMMKShort(d.todayStoreSales)}  trend={{ dir: 'up', value: '8.2%' }} />
-        <StatCard icon={IconTicket}        tone="ticket"    label={t('dashboard.ticketSales')}     value={formatMMKShort(d.todayTicketSales)} trend={{ dir: 'up', value: '4.1%' }} />
-        <StatCard icon={IconReportMoney}   tone="combined"  label={t('dashboard.combinedRevenue')} value={formatMMKShort(combined)}           trend={{ dir: 'up', value: '6.5%' }} />
         <StatCard icon={IconClock}         tone="pending"   label={t('dashboard.pendingOrders')}   value={d.pendingOrders} />
         <StatCard icon={IconCircleCheck}   tone="completed" label={t('dashboard.completedOrders')} value={d.completedOrders} />
         <StatCard icon={IconAlertTriangle} tone="low"       label={t('dashboard.lowStockItems')}   value={lowStockItems.length} trend={{ dir: 'down', value: '2' }} />
@@ -43,10 +39,6 @@ export default function Dashboard() {
                   <stop offset="5%" stopColor="#F97316" stopOpacity={0.25}/>
                   <stop offset="95%" stopColor="#F97316" stopOpacity={0}/>
                 </linearGradient>
-                <linearGradient id="colorPG" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.25}/>
-                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
-                </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
@@ -54,7 +46,6 @@ export default function Dashboard() {
               <Tooltip formatter={(v) => formatMMK(v)} contentStyle={{ borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, color: 'var(--text-primary)' }} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Area type="monotone" dataKey={t('dashboard.store')} stroke="#F97316" strokeWidth={2.5} fill="url(#colorStore)" />
-              <Area type="monotone" dataKey={t('dashboard.playground')} stroke="#10B981" strokeWidth={2.5} fill="url(#colorPG)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>

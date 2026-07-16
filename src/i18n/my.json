@@ -4,22 +4,22 @@
     "products": "ပစ္စည်းများ",
     "categories": "အမျိုးအစားများ",
     "orders": "အော်ဒါ",
-    "playground": "ကစားကွင်း",
     "customers": "ဖောက်သည်",
     "reports": "အစီရင်ခံစာ",
     "staff": "ဝန်ထမ်း",
-    "settings": "settings"
+    "settings": "settings",
+    "playground": "ကစားကွင်း"
   },
   "titles": {
     "dashboard": "Dashboard",
     "products": "ပစ္စည်းများ",
     "categories": "အမျိုးအစားများ",
     "orders": "အော်ဒါများ",
-    "tickets": "ကစားကွင်း Tickets",
     "customers": "ဖောက်သည်များ",
     "reports": "အစီရင်ခံစာများ",
     "staff": "ဝန်ထမ်း စီမံခန့်ခွဲမှု",
-    "settings": "ဆက်တင်"
+    "settings": "ဆက်တင်",
+    "playground": "ကစားကွင်း Rewards"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -59,8 +59,7 @@
   },
   "banner": {
     "welcome": "ကြိုဆိုပါတယ် မောင်/မ {{name}}",
-    "newOrder": "အော်ဒါအသစ်",
-    "sellTicket": "Tickets ရောင်းရန်"
+    "newOrder": "အော်ဒါအသစ်"
   },
   "login": {
     "brand": "Appleland Admin",
@@ -78,8 +77,6 @@
   },
   "dashboard": {
     "storeSales": "ယနေ့ ဆိုင်အရောင်း",
-    "ticketSales": "ယနေ့ Ticket အရောင်း",
-    "combinedRevenue": "စုစုပေါင်း ဝင်ငွေ",
     "pendingOrders": "ဆိုင်းငံ့ အော်ဒါ",
     "completedOrders": "ပြီးစီး အော်ဒါ",
     "lowStockItems": "လက်ကျန်နည်း ပစ္စည်း",
@@ -88,8 +85,7 @@
     "allStocked": "ပစ္စည်းအားလုံး လုံလောက်စွာ ရှိနေပါသည်။",
     "left": "{{count}} ခု ကျန်",
     "recentOrders": "လတ်တလော အော်ဒါများ",
-    "store": "ဆိုင်",
-    "playground": "ကစားကွင်း"
+    "store": "ဆိုင်"
   },
   "table": {
     "orderId": "အော်ဒါ ID",
@@ -114,11 +110,7 @@
     "username": "အသုံးပြုသူအမည်",
     "role": "ရာထူး",
     "created": "ဖန်တီးသည့်နေ့",
-    "bookingId": "Booking ID",
-    "visitDate": "လာရောက်မည့်နေ့",
     "qty": "အရေအတွက်",
-    "amountPaid": "ပေးချေငွေ",
-    "type": "အမျိုးအစား",
     "product": "ပစ္စည်း",
     "threshold": "သတ်မှတ်ချက်",
     "total": "စုစုပေါင်း"
@@ -140,8 +132,6 @@
     "Delivered": "ရောက်ရှိပြီး",
     "Cancelled": "ပယ်ဖျက်ပြီး",
     "Refunded": "ပြန်အမ်းပြီး",
-    "Confirmed": "အတည်ပြုပြီး",
-    "Used": "သုံးပြီး",
     "Active": "ဖွင့်ထား",
     "Hidden": "ပိတ်ထား",
     "Low": "နည်း",
@@ -173,12 +163,15 @@
     "editHeading": "ပစ္စည်း ပြင်ရန်",
     "name": "အမည်",
     "selectCategory": "အမျိုးအစား ရွေးပါ",
-    "subCategoryNote": "Sub-category မရနိုင်သေးပါ (backend endpoint မရှိသေးပါ)။",
     "categoryRequired": "အမျိုးအစား ရွေးပါ။",
     "notFound": "ပစ္စည်း မတွေ့ပါ။",
     "saveFailed": "ပစ္စည်း မသိမ်းနိုင်ပါ။",
     "create": "ပစ္စည်း ဖန်တီးရန်",
-    "back": "ပစ္စည်းများ သို့ ပြန်သွားရန်"
+    "back": "ပစ္စည်းများ သို့ ပြန်သွားရန်",
+    "subCategory": "Sub-category (ရွေးချယ်နိုင်)",
+    "noSubCategory": "မရှိ",
+    "description": "ဖော်ပြချက် (ရွေးချယ်နိုင်)",
+    "stockNote": "လက်ကျန်ကို ဤဖောင်နှင့် သီးခြား စီမံပါသည်။"
   },
   "categories": {
     "name": "အမျိုးအစား အမည်",
@@ -209,32 +202,6 @@
     "refundMsg": "အော်ဒါ {{id}} ({{amount}}) အတွက် ပြန်အမ်းငွေ ထုတ်မှာလား။",
     "issueRefund": "ပြန်အမ်းရန်"
   },
-  "tickets": {
-    "search": "Booking ID၊ ဖောက်သည်၊ ဖုန်းဖြင့် ရှာရန်...",
-    "count": "Booking {{count}} ခု",
-    "none": "Booking မတွေ့ပါ။",
-    "ticketPrice": "Ticket ဈေး ({{price}})",
-    "manageSlots": "အချိန်နေရာ စီမံရန်",
-    "walkIn": "Walk-in Ticket",
-    "createTitle": "Walk-in Ticket ဖန်တီးရန်",
-    "customerName": "ဖောက်သည်အမည်",
-    "visitDate": "လာရောက်မည့်နေ့",
-    "quantity": "အရေအတွက်",
-    "totalLabel": "စုစုပေါင်း: {{amount}}",
-    "createTicket": "Ticket ဖန်တီးရန်",
-    "setPriceTitle": "Ticket ဈေး သတ်မှတ်ရန်",
-    "pricePerTicket": "Ticket တစ်စောင် ဈေး (MMK)",
-    "savePrice": "ဈေး သိမ်းရန်",
-    "slotsTitle": "Booking အချိန်နေရာ စီမံရန်",
-    "booked": "{{booked}}/{{max}} ဘွတ်ကင်",
-    "cancelTitle": "Booking ပယ်ဖျက်ရန်",
-    "cancelMsg": "Booking {{id}} ကို ပယ်ဖျက်မှာလား။",
-    "cancelBooking": "Booking ပယ်ဖျက်ရန်",
-    "refundTitle": "ပြန်အမ်းငွေ ထုတ်ရန်",
-    "refundMsg": "Booking {{id}} ({{amount}}) အတွက် ပြန်အမ်းငွေ ထုတ်မှာလား။",
-    "issueRefund": "ပြန်အမ်းရန်",
-    "optional": "ရွေးချယ်နိုင်"
-  },
   "customers": {
     "search": "အမည်၊ ဖုန်း၊ Email ဖြင့် ရှာရန်...",
     "count": "ဖောက်သည် {{count}} ဦး",
@@ -250,15 +217,11 @@
   },
   "reports": {
     "storeRevenue7d": "၇ ရက် ဆိုင်ဝင်ငွေ",
-    "ticketRevenue7d": "၇ ရက် Ticket ဝင်ငွေ",
-    "totalRevenue7d": "စုစုပေါင်းဝင်ငွေ (၇ ရက်)",
     "lowStockItems": "လက်ကျန်နည်း ပစ္စည်း",
     "revenueBreakdown": "နေ့စဉ် ဝင်ငွေ အသေးစိတ် (ပြီးခဲ့သည့် ၇ ရက်)",
     "onlineSales": "Online အရောင်း အကျဉ်းချုပ်",
     "lowStockList": "လက်ကျန်နည်း ပစ္စည်းများ",
-    "bookingsSummary": "ကစားကွင်း Booking အကျဉ်းချုပ်",
-    "chartStore": "ဆိုင် အရောင်း",
-    "chartTicket": "Ticket အရောင်း"
+    "chartStore": "ဆိုင် အရောင်း"
   },
   "staff": {
     "search": "ဝန်ထမ်း ရှာရန်...",
@@ -275,5 +238,31 @@
     "createAccount": "အကောင့် ဖန်တီးရန်",
     "deleteTitle": "အကောင့် ဖျက်ရန်",
     "deleteMsg": "{{name}} ၏ အကောင့်ကို ဖျက်မှာလား။ ဝင်ရောက်ခွင့် အားလုံး ဆုံးရှုံးပါမည်။"
+  },
+  "playground": {
+    "checkInTitle": "Walk-in ဝင်ရောက်မှတ်တမ်း",
+    "checkInDesc": "ဖုန်းနံပါတ်နှင့် အမည် ထည့်ပါ။ တစ်ကြိမ်လာတိုင်း point ၁ ရမည် — {{n}} points ပြည့်လျှင် နောက်တစ်ကြိမ် အခမဲ့။",
+    "checkIn": "ဝင်ရောက်မှတ်ရန်",
+    "customerName": "ဖောက်သည်အမည်",
+    "nameMismatch": "ဤဖုန်းနံပါတ်ကို \"{{name}}\" ဖြင့် မှတ်ပုံတင်ထားပြီးဖြစ်သည်။ ဖုန်းတူလျှင် အမည်တူရမည် — တစ်ခုရွေးပါ၊ သို့မဟုတ် ဖောက်သည်နှင့် တိုက်ရိုက် ပြင်ပါ။",
+    "useExisting": "\"{{name}}\" ကို သုံးရန်",
+    "updateName": "\"{{name}}\" သို့ ပြောင်းရန်",
+    "pointAdded": "point ထည့်ပြီး — ယခု {{points}}/{{n}}။",
+    "nextIsFree": "နောက်တစ်ကြိမ် အခမဲ့!",
+    "freeVisit": "အခမဲ့ ဝင်ခွင့်",
+    "freeVisitDesc": "{{name}} သည် ဆုပြည့်ပြီ — ဤတစ်ကြိမ် အခမဲ့။ Card ကို 0 ပြန်စသည်။",
+    "todayLog": "ယနေ့ ဝင်ရောက်မှတ်တမ်း",
+    "noCheckIns": "ယနေ့ မှတ်တမ်း မရှိသေးပါ။",
+    "free": "အခမဲ့",
+    "cardsTitle": "Reward Cards",
+    "searchVisitor": "အမည် သို့မဟုတ် ဖုန်းဖြင့် ရှာရန်...",
+    "progress": "တိုးတက်မှု",
+    "visits": "လာရောက်ကြိမ်",
+    "lastVisit": "နောက်ဆုံးလာသည့်နေ့",
+    "noVisitors": "ဖောက်သည် မတွေ့ပါ။",
+    "totalVisitors": "စုစုပေါင်း ဖောက်သည်",
+    "checkInsToday": "ယနေ့ ဝင်ရောက်မှု",
+    "readyForFree": "အခမဲ့ ရမည့်သူ",
+    "freeGivenToday": "ယနေ့ အခမဲ့ ပေးပြီး"
   }
 }
