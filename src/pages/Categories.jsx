@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconLoader2, IconPlus, IconTag } from '@tabler/icons-react';
-import { getCategories, createCategory } from '../services/baseService';
+import { getCategories, createCategory } from '../services/categoryService';
 
 export default function Categories() {
   const { t } = useTranslation();

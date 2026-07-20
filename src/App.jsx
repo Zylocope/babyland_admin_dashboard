@@ -38,8 +38,8 @@ function AppRoutes() {
         <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground" replace /> : <Dashboard />} />
         <Route path="playground" element={<RoleRoute roles={['TicketStaff']}><Playground /></RoleRoute>} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
-        <Route path="products/new" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
-        <Route path="products/:id/edit" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
+        <Route path="products/new" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
+        <Route path="products/:id/edit" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
         <Route path="customers" element={<RoleRoute roles={['SaleStaff', 'TicketStaff']}><Customers /></RoleRoute>} />
