@@ -447,6 +447,94 @@ export const mockPlaygroundVisitors = [
   { id: "PG004", phone: "09-444-333-111", name: "ကို ဇော်ဇော်",   points: 0,  visits: 11, lastVisit: "2024-06-09" },
 ];
 
+// In-store POS dashboard — demo data until sales are recorded (POST /admin/sales).
+// ponytail: local mock; every field maps to a real sales/sale_items/inventory query later.
+export const mockPos = {
+  kpis: {
+    today: { sales: 385000, profit: 96250, margin: 25, txns: 42, basket: 9167, items: 118, returns: 2 },
+    week:  { sales: 2410000, profit: 602500, margin: 25, txns: 268, basket: 8993, items: 742, returns: 11 },
+    month: { sales: 9860000, profit: 2465000, margin: 25, txns: 1094, basket: 9012, items: 3120, returns: 43 },
+  },
+  trend: [
+    { day: 'Mon', revenue: 210000, profit: 52000 },
+    { day: 'Tue', revenue: 268000, profit: 66000 },
+    { day: 'Wed', revenue: 184000, profit: 45000 },
+    { day: 'Thu', revenue: 312000, profit: 78000 },
+    { day: 'Fri', revenue: 245000, profit: 60000 },
+    { day: 'Sat', revenue: 362000, profit: 90000 },
+    { day: 'Sun', revenue: 298000, profit: 74000 },
+  ],
+  hourly: [
+    { h: '9', v: 42000 }, { h: '10', v: 68000 }, { h: '11', v: 96000 }, { h: '12', v: 84000 },
+    { h: '13', v: 71000 }, { h: '14', v: 105000 }, { h: '15', v: 126000 }, { h: '16', v: 172000, peak: true },
+    { h: '17', v: 160000, peak: true }, { h: '18', v: 112000 }, { h: '19', v: 66000 }, { h: '20', v: 38000 },
+  ],
+  topProducts: [
+    { name: 'Diaper M-40', profit: 44960 }, { name: 'Baby wipes', profit: 33500 },
+    { name: 'Backpack 16"', profit: 28500 }, { name: 'Toothbrush', profit: 19400 },
+    { name: 'Cereal 350g', profit: 12600 },
+  ],
+  categories: [
+    { name: 'Diaper/Lotion', amount: 158000 }, { name: 'Toys', amount: 116000 },
+    { name: 'Bags', amount: 73000 }, { name: 'Clothes', amount: 38000 },
+  ],
+  payments: [
+    { name: 'Cash', amount: 239000 }, { name: 'KBZPay', amount: 115000 }, { name: 'Wave', amount: 31000 },
+  ],
+  cashiers: [
+    { name: 'thesalesman', amount: 285000 }, { name: 'cyclops', amount: 100000 },
+  ],
+  lowStock: [
+    { name: 'Water bottle 600ml', left: 2, level: 'red' }, { name: 'Baby wash 570ml', left: 3, level: 'red' },
+    { name: 'Toothbrush A4159', left: 6, level: 'amber' }, { name: 'Pencil case 5590', left: 8, level: 'amber' },
+  ],
+  recent: [
+    { voucher: 'A2607-0042', time: '16:58', items: 3, total: 21900 },
+    { voucher: 'A2607-0041', time: '16:44', items: 1, total: 8100 },
+    { voucher: 'A2607-0040', time: '16:31', items: 5, total: 44100 },
+    { voucher: 'A2607-0039', time: '16:12', items: 2, total: 13300 },
+    { voucher: 'A2607-0038', time: '15:57', items: 4, total: 50600 },
+  ],
+  // Online = a sale linked to an orders row (has shipping). Demo data.
+  online: {
+    kpis: { revenue: 214000, orders: 12, pending: 5, aov: 17833 },
+    trend: [
+      { day: 'Mon', orders: 8 }, { day: 'Tue', orders: 11 }, { day: 'Wed', orders: 9 },
+      { day: 'Thu', orders: 14 }, { day: 'Fri', orders: 12 }, { day: 'Sat', orders: 18 }, { day: 'Sun', orders: 15 },
+    ],
+    status: [
+      { name: 'Pending', n: 5 }, { name: 'Processing', n: 3 }, { name: 'Shipped', n: 2 }, { name: 'Delivered', n: 2 },
+    ],
+    topProducts: [
+      { name: 'Diaper jumbo', amount: 62000 }, { name: 'Stroller', amount: 48000 },
+      { name: 'Formula 900g', amount: 40000 }, { name: 'Car seat', amount: 34000 },
+    ],
+    cities: [
+      { name: 'Naypyidaw', n: 8 }, { name: 'Mandalay', n: 3 }, { name: 'Yangon', n: 1 },
+    ],
+    recent: [
+      { order: 'ORD-1042', city: 'Naypyidaw', total: 24500, status: 'Pending' },
+      { order: 'ORD-1041', city: 'Mandalay', total: 41000, status: 'Processing' },
+      { order: 'ORD-1040', city: 'Naypyidaw', total: 12800, status: 'Shipped' },
+      { order: 'ORD-1039', city: 'Yangon', total: 33500, status: 'Delivered' },
+      { order: 'ORD-1038', city: 'Naypyidaw', total: 18900, status: 'Pending' },
+    ],
+  },
+  // Comparison — both channels side by side (today) + 7-day revenue.
+  compare: {
+    glance: {
+      instore: { revenue: 385000, profit: 96250, txns: 42, items: 118 },
+      online:  { revenue: 214000, profit: 52300, txns: 12, items: 39 },
+    },
+    daily: [
+      { day: 'Mon', instore: 210000, online: 64000 }, { day: 'Tue', instore: 268000, online: 82000 },
+      { day: 'Wed', instore: 184000, online: 78000 }, { day: 'Thu', instore: 312000, online: 96000 },
+      { day: 'Fri', instore: 245000, online: 104000 }, { day: 'Sat', instore: 362000, online: 150000 },
+      { day: 'Sun', instore: 298000, online: 128000 },
+    ],
+  },
+};
+
 export const mockDashboard = {
   todayStoreSales: 81500,
   pendingOrders: 2,

@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
   IconUsers, IconChartBar, IconUserCog, IconLogout, IconBabyCarriage,
-  IconChevronLeft, IconSun, IconMoon, IconTags,
+  IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -11,6 +11,8 @@ import { useTheme } from '../../context/ThemeContext';
 // `roles` = staff roles allowed (besides Manager, who sees everything).
 const NAV_ITEMS = [
   { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: ['SaleStaff', 'TicketStaff'] },
+  { to: '/pos', icon: IconCashRegister, key: 'pos', roles: ['SaleStaff'] },
+  { to: '/sales', icon: IconChartHistogram, key: 'sales', roles: ['SaleStaff'] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
   { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },

@@ -46,6 +46,15 @@ export const searchProductsSimple = (query, { page = 1, page_size = 10, category
   });
 };
 
+// PENDING BACKEND: POST /admin/sales does not exist yet (sales are read-only).
+// Proposed minimal contract — backend resolves inventory batch (FIFO), cost_price,
+// and total from these lines. Confirm shape with set-kaung before relying on it.
+export const createSale = (items) =>
+  request("/admin/sales", {
+    method: "POST",
+    body: JSON.stringify({ items }), // items: [{ product_id, quantity, selling_price }]
+  });
+
 export const searchProductsAdvanced = (body, { page = 1, limit = 10 } = {}) => {
   const params = new URLSearchParams({
     page: page.toString(),

@@ -9,6 +9,8 @@ import { useAuth } from '../../context/AuthContext';
 
 const TITLE_KEYS = {
   '/':          'dashboard',
+  '/pos':       'pos',
+  '/sales':     'sales',
   '/products':  'products',
   '/categories': 'categories',
   '/orders':    'orders',

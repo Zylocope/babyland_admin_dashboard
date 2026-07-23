@@ -8,6 +8,8 @@ import Products from './pages/Products';
 import ProductForm from './pages/ProductForm';
 import Categories from './pages/Categories';
 import Orders from './pages/Orders';
+import POS from './pages/POS';
+import SalesDashboard from './pages/SalesDashboard';
 import Playground from './pages/Playground';
 import Customers from './pages/Customers';
 import Reports from './pages/Reports';
@@ -37,6 +39,8 @@ function AppRoutes() {
         {/* Playground staff get the playground dashboard, not the store one. */}
         <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground" replace /> : <Dashboard />} />
         <Route path="playground" element={<RoleRoute roles={['TicketStaff']}><Playground /></RoleRoute>} />
+        <Route path="pos" element={<RoleRoute roles={['SaleStaff']}><POS /></RoleRoute>} />
+        <Route path="sales" element={<RoleRoute roles={['SaleStaff']}><SalesDashboard /></RoleRoute>} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
         <Route path="products/new" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
         <Route path="products/:id/edit" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
