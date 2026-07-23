@@ -148,6 +148,8 @@
     "loadFailed": "ပစ္စည်းများ မဖတ်နိုင်ပါ။",
     "editTitle": "ပြင်ရန် — {{name}}",
     "salePrice": "ရောင်းဈေး (MMK)",
+    "sellingPrice": "ရောင်းဈေး (MMK)",
+    "costPrice": "အရင်းအနှီး (MMK)",
     "stockQty": "လက်ကျန် အရေအတွက်",
     "lowStockThreshold": "လက်ကျန်နည်း သတ်မှတ်ချက်",
     "visibleOnline": "Online ဆိုင်တွင် ပြသရန်",

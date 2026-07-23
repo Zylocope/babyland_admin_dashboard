@@ -95,9 +95,9 @@ export default function Login() {
                 </span>
               ) : t('login.signIn')}
             </button>
-            {loading && (
+            {/* {loading && (
               <p className="text-xs text-mute text-center">{t('login.waking')}</p>
-            )}
+            )} */}
           </form>
 
           <p className="text-xs text-mute text-center mt-6">

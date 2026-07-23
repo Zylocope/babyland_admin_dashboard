@@ -2,11 +2,10 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IconLoader2, IconArrowLeft } from '@tabler/icons-react';
-import { getAllProducts, getCategories, createProduct, updateProduct } from '../services/baseService';
+import { getCategories } from '../services/categoryService';
+import { getProductById, createProduct, updateProduct } from '../services/productService';
 
-// Mirrors the backend CreateProductPayload/UpdateProductPayload exactly.
-// Stock is NOT part of it — inventory has its own PUT /admin/inventory/{product_id}.
-const EMPTY = { barcode: '', name: '', price: '', category_id: '', sub_category_id: '', is_active: true, description: '' };
+const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, description: '' };
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -31,17 +30,15 @@ export default function ProductForm() {
         // Categories are best-effort; the form still renders without them.
       }
 
-      // No GET /admin/products/{id} route exists, so look the product up in the list.
       if (isEdit) {
         try {
-          const all = await getAllProducts();
-          const found = (Array.isArray(all) ? all : []).find(p => p.id === id);
+          const found = await getProductById(id);
           if (!active) return;
           if (found) {
             setForm({
               barcode: found.barcode ?? '',
               name: found.name ?? '',
-              price: found.price ?? '',
+              selling_price: found.selling_price ?? '',
               category_id: found.category_id ?? '',
               sub_category_id: found.sub_category_id ?? '',
               is_active: found.is_active ?? true,
@@ -73,7 +70,7 @@ export default function ProductForm() {
       name: form.name.trim(),
       category_id: form.category_id,
       sub_category_id: form.sub_category_id || null,
-      price: String(form.price || 0),
+      selling_price: String(form.selling_price || 0),
       is_active: form.is_active,
       description: form.description.trim() || null,
     };
@@ -121,8 +118,8 @@ export default function ProductForm() {
                 className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
             </div>
             <div>
-              <label className="block text-xs font-medium text-ink mb-1">{t('products.salePrice')}</label>
-              <input type="number" min="0" step="1" value={form.price} onChange={e => set('price', e.target.value)} required
+              <label className="block text-xs font-medium text-ink mb-1">{t('products.sellingPrice')}</label>
+              <input type="number" min="0" step="1" value={form.selling_price} onChange={e => set('selling_price', e.target.value)} required
                 className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
             </div>
             <div>

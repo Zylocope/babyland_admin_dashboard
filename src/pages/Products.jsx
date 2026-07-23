@@ -7,7 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import { searchProductsSimple } from '../services/productService';
-import { getCategories } from '../services/baseService';
+import { getCategories } from '../services/categoryService';
 
 
 const PAGE_SIZE = 10;
@@ -18,8 +18,11 @@ const normalizeProduct = (product) => ({
   name: product.name ?? '',
   category: product.category,
   category_id: product.category_id,
+  sub_category: product.sub_category,
+  sub_category_id: product.sub_category_id,
   quantity_in_stock: Number(product.quantity_in_stock ?? 0),
-  price: Number(product.price ?? 0),
+  selling_price: Number(product.selling_price ?? 0),
+  description: product.description ?? '',
   is_active: product.is_active ?? true,
   lowStockThreshold: product.lowStockThreshold ?? 10,
 });
@@ -52,7 +55,7 @@ export default function Products() {
     };
   }, [search]);
 
-  // 2. Fetch products whenever page or debounced search changes
+  // 2. Fetch products whenever page, debounced search, or category changes
   useEffect(() => {
     let active = true;
 
@@ -61,9 +64,11 @@ export default function Products() {
       setError('');
 
       try {
-        const offset = (page - 1) * PAGE_SIZE;
-        // Call the backend search API directly with pagination parameters
-        const response = await searchProductsSimple(debouncedSearch, PAGE_SIZE, offset);
+        const response = await searchProductsSimple(debouncedSearch || '', {
+          page,
+          page_size: PAGE_SIZE,
+          category_id: catFilter === 'All' ? undefined : catFilter,
+        });
 
         // Handle both raw arrays and paginated object wrappers
         const items = Array.isArray(response) ? response : response?.data ?? [];
@@ -88,7 +93,7 @@ export default function Products() {
     return () => {
       active = false;
     };
-  }, [page, debouncedSearch, t]);
+  }, [page, debouncedSearch, catFilter, t]);
 
   // 3. Load drop-down categories on mount
   useEffect(() => {
@@ -100,7 +105,7 @@ export default function Products() {
         const items = Array.isArray(response) ? response : response?.data ?? [];
 
         if (!active) return;
-        setCategories(items.map(category => category?.name).filter(Boolean));
+        setCategories(items.filter(Boolean));
       } catch {
         if (!active) return;
         setCategories([]);
@@ -114,11 +119,6 @@ export default function Products() {
     };
   }, []);
 
-  // 4. Local Category filtering still happens on the current paginated view block
-  const filtered = products.filter(p => {
-    return catFilter === 'All' || p.category === catFilter;
-  });
-
   const lowStockIds = new Set(products.filter(p => p.quantity_in_stock <= p.lowStockThreshold).map(p => p.id));
 
   return (
@@ -130,11 +130,11 @@ export default function Products() {
         </div>
         <select
           value={catFilter}
-          onChange={e => setCatFilter(e.target.value)}
+          onChange={e => { setCatFilter(e.target.value); setPage(1); }}
           className="px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand"
         >
           <option value="All">{t('common.allCategories')}</option>
-          {categories.filter(c => c !== 'All').map(c => <option key={c}>{c}</option>)}
+          {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
         <div className="text-sm text-sub">{t('products.count', { count: totalItems })}</div>
         {isManager && (
@@ -175,7 +175,7 @@ export default function Products() {
                     {t('products.loading')}
                   </td>
                 </tr>
-              ) : filtered.map(p => (
+              ) : products.map(p => (
                 <tr key={p.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
@@ -198,7 +198,7 @@ export default function Products() {
                       {lowStockIds.has(p.id) && <Badge label="Low" />}
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 font-medium text-ink">{formatMMK(p.price)}</td>
+                  <td className="px-4 py-3.5 font-medium text-ink">{formatMMK(p.selling_price)}</td>
                   <td className="px-4 py-3.5">
                     <Badge label={p.is_active ? 'Active' : 'Hidden'} />
                   </td>
@@ -213,7 +213,7 @@ export default function Products() {
               ))}
             </tbody>
           </table>
-          {!loading && filtered.length === 0 && (
+          {!loading && products.length === 0 && (
             <div className="text-center py-12 text-mute text-sm">{t('products.none')}</div>
           )}
         </div>

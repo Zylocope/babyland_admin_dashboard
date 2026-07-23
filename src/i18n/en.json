@@ -148,6 +148,8 @@
     "loadFailed": "Unable to load products.",
     "editTitle": "Edit — {{name}}",
     "salePrice": "Sale Price (MMK)",
+    "sellingPrice": "Selling Price (MMK)",
+    "costPrice": "Cost Price (MMK)",
     "stockQty": "Stock Qty",
     "lowStockThreshold": "Low Stock Threshold",
     "visibleOnline": "Visible in online store",
