@@ -39,6 +39,7 @@ export type AdminProduct = {
     created_by: string;
     description?: string | null;
     id: string;
+    image_url?: string | null;
     is_active: boolean;
     name: string;
     quantity_in_stock: number;
@@ -76,6 +77,7 @@ export type CreateProductPayload = {
     barcode: string;
     category_id?: string | null;
     description?: string | null;
+    image_url?: string | null;
     inventory?: null | NewInventoryPayload;
     is_active: boolean;
     name: string;
@@ -89,7 +91,6 @@ export type LoginRequest = {
 };
 
 export type NewInventoryPayload = {
-    product_id: string;
     quantity_received: number;
     unit_cost: string;
 };
@@ -104,6 +105,7 @@ export type PaginatedResponseAdminProduct = {
         created_by: string;
         description?: string | null;
         id: string;
+        image_url?: string | null;
         is_active: boolean;
         name: string;
         quantity_in_stock: number;
@@ -135,6 +137,7 @@ export type PaginatedResponseUserProduct = {
         category?: string | null;
         description?: string | null;
         id: string;
+        image_url?: string | null;
         name: string;
         quantity_in_stock: number;
         selling_price: string;
@@ -178,10 +181,16 @@ export type SaleItem = {
     selling_price: string;
 };
 
+export type UpdateCategoryPayload = {
+    name: string;
+    updated_by: string;
+};
+
 export type UpdateProductPayload = {
     barcode: string;
     category_id: string;
     description?: string | null;
+    image_url?: string | null;
     is_active: boolean;
     name: string;
     selling_price: string;
@@ -193,6 +202,7 @@ export type UserProduct = {
     category?: string | null;
     description?: string | null;
     id: string;
+    image_url?: string | null;
     name: string;
     quantity_in_stock: number;
     selling_price: string;
@@ -238,6 +248,26 @@ export type CreateCategoryResponses = {
 };
 
 export type CreateCategoryResponse = CreateCategoryResponses[keyof CreateCategoryResponses];
+
+export type UpdateCategoryData = {
+    body: UpdateCategoryPayload;
+    path?: never;
+    query?: never;
+    url: '/admin/categories/{id}';
+};
+
+export type UpdateCategoryErrors = {
+    400: unknown;
+    401: unknown;
+    409: unknown;
+    500: unknown;
+};
+
+export type UpdateCategoryResponses = {
+    201: AdminCategory;
+};
+
+export type UpdateCategoryResponse = UpdateCategoryResponses[keyof UpdateCategoryResponses];
 
 export type InsertInventoryData = {
     body: NewInventoryPayload;

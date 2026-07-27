@@ -1,7 +1,9 @@
 import { request } from "./baseService";
 import type {
+  AdminInventory,
   AdminProduct,
   CreateProductPayload,
+  NewInventoryPayload,
   UpdateProductPayload,
   ProductSearchParamsAdmin,
   PaginatedResponseAdminProduct,
@@ -84,3 +86,12 @@ export const searchProductsAdvanced = (
     body: JSON.stringify(body),
   });
 };
+
+export const insertInventory = (
+  productId: string,
+  body: Omit<NewInventoryPayload, "product_id">
+): Promise<AdminInventory> =>
+  request(`/admin/inventory/${productId}`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });

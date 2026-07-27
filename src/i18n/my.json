@@ -173,7 +173,10 @@
     "subCategory": "Sub-category (ရွေးချယ်နိုင်)",
     "noSubCategory": "မရှိ",
     "description": "ဖော်ပြချက် (ရွေးချယ်နိုင်)",
-    "stockNote": "လက်ကျန်ကို ဤဖောင်နှင့် သီးခြား စီမံပါသည်။"
+    "addInventory": "အစပျိုး လက်ကျန် ထည့်ရန်",
+    "addStock": "လက်ကျန် မှတ်တမ်း ထည့်ရန်",
+    "quantityReceived": "လက်ခံရရှိသည့် အရေအတွက်",
+    "unitCost": "တစ်ယူနစ် အရင်းအနှီး (MMK)"
   },
   "categories": {
     "name": "အမျိုးအစား အမည်",

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { IconLoader2, IconArrowLeft } from '@tabler/icons-react';
 import { getCategories } from '../services/categoryService';
-import { getProductById, createProduct, updateProduct } from '../services/productService';
+import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
 
 const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, description: '' };
 
@@ -18,6 +18,9 @@ export default function ProductForm() {
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [addInventory, setAddInventory] = useState(false);
+  const [quantityReceived, setQuantityReceived] = useState('');
+  const [unitCost, setUnitCost] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -65,6 +68,8 @@ export default function ProductForm() {
     setError('');
     if (!form.category_id) { setError(t('productForm.categoryRequired')); return; }
 
+    const hasInventory = addInventory && quantityReceived && unitCost;
+
     const body = {
       barcode: form.barcode.trim(),
       name: form.name.trim(),
@@ -73,12 +78,28 @@ export default function ProductForm() {
       selling_price: String(form.selling_price || 0),
       is_active: form.is_active,
       description: form.description.trim() || null,
+      ...(hasInventory ? {
+        inventory: {
+          product_id: '',
+          quantity_received: Number(quantityReceived),
+          unit_cost: String(unitCost),
+        },
+      } : {}),
     };
 
     setSaving(true);
     try {
-      if (isEdit) await updateProduct(id, body);
-      else await createProduct(body);
+      if (isEdit) {
+        await updateProduct(id, body);
+        if (hasInventory) {
+          await insertInventory(id, {
+            quantity_received: Number(quantityReceived),
+            unit_cost: String(unitCost),
+          });
+        }
+      } else {
+        await createProduct(body);
+      }
       navigate('/products');
     } catch (err) {
       setError(err?.message || t('productForm.saveFailed'));
@@ -148,7 +169,29 @@ export default function ProductForm() {
               className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
 
-          <p className="text-xs text-mute">{t('productForm.stockNote')}</p>
+          <div className="border border-app rounded-lg p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <label className="text-sm font-medium text-ink">{isEdit ? t('productForm.addStock') : t('productForm.addInventory')}</label>
+              <button type="button" onClick={() => setAddInventory(!addInventory)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${addInventory ? 'bg-brand' : 'bg-app'}`}>
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${addInventory ? 'translate-x-6' : 'translate-x-1'}`} />
+              </button>
+            </div>
+            {addInventory && (
+              <div className="grid grid-cols-2 gap-4 pt-2">
+                <div>
+                  <label className="block text-xs font-medium text-ink mb-1">{t('productForm.quantityReceived')}</label>
+                  <input type="number" min="1" step="1" value={quantityReceived} onChange={e => setQuantityReceived(e.target.value)} required={addInventory}
+                    className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-ink mb-1">{t('productForm.unitCost')}</label>
+                  <input type="number" min="0" step="1" value={unitCost} onChange={e => setUnitCost(e.target.value)} required={addInventory}
+                    className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-ink">{t('products.visibleOnline')}</label>

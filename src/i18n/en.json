@@ -173,7 +173,10 @@
     "subCategory": "Sub-category (optional)",
     "noSubCategory": "None",
     "description": "Description (optional)",
-    "stockNote": "Stock is managed separately from this form."
+    "addInventory": "Add Initial Stock",
+    "addStock": "Add Stock Record",
+    "quantityReceived": "Quantity Received",
+    "unitCost": "Unit Cost (MMK)"
   },
   "categories": {
     "name": "Category Name",
