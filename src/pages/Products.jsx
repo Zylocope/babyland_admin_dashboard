@@ -23,6 +23,7 @@ const normalizeProduct = (product) => ({
   quantity_in_stock: Number(product.quantity_in_stock ?? 0),
   selling_price: Number(product.selling_price ?? 0),
   description: product.description ?? '',
+  image_url: product.image_url ?? null,
   is_active: product.is_active ?? true,
   lowStockThreshold: product.lowStockThreshold ?? 10,
 });
@@ -179,9 +180,13 @@ export default function Products() {
                 <tr key={p.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5">
                     <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
-                        <IconPackage stroke={1.5} size={16} className="text-brand" />
-                      </div>
+                      {p.image_url ? (
+                        <img src={p.image_url} alt={p.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
+                          <IconPackage stroke={1.5} size={20} className="text-brand" />
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium text-ink">{p.name}</p>
                         <p className="text-xs text-mute">{p.id}</p>
