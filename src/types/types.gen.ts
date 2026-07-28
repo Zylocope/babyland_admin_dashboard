@@ -85,6 +85,10 @@ export type CreateProductPayload = {
     sub_category_id?: string | null;
 };
 
+export type CreateSalePayload = {
+    sale_products: Array<SaleProduct>;
+};
+
 export type LoginRequest = {
     password: string;
     username: string;
@@ -181,6 +185,28 @@ export type SaleItem = {
     selling_price: string;
 };
 
+export type SaleProduct = {
+    product_id: string;
+    quantity: number;
+};
+
+export type SaleSummary = {
+    avg_basket: string;
+    is_online_sale: boolean;
+    items_sold: number;
+    margin: string;
+    margin_percentage: number;
+    sale_date: string;
+    total_cost: string;
+    total_sale: string;
+    transactions: number;
+};
+
+export type SaleSummaryFilter = {
+    end_date?: string | null;
+    start_date?: string | null;
+};
+
 export type UpdateCategoryPayload = {
     name: string;
     updated_by: string;
@@ -269,7 +295,7 @@ export type UpdateCategoryResponses = {
 
 export type UpdateCategoryResponse = UpdateCategoryResponses[keyof UpdateCategoryResponses];
 
-export type InsertInventoryData = {
+export type CreateInventoryData = {
     body: NewInventoryPayload;
     path: {
         /**
@@ -281,18 +307,18 @@ export type InsertInventoryData = {
     url: '/admin/inventory/{product_id}';
 };
 
-export type InsertInventoryErrors = {
+export type CreateInventoryErrors = {
     400: unknown;
     401: unknown;
     404: unknown;
     500: unknown;
 };
 
-export type InsertInventoryResponses = {
+export type CreateInventoryResponses = {
     200: AdminInventory;
 };
 
-export type InsertInventoryResponse = InsertInventoryResponses[keyof InsertInventoryResponses];
+export type CreateInventoryResponse = CreateInventoryResponses[keyof CreateInventoryResponses];
 
 export type AdminLoginHandlerData = {
     body: LoginRequest;
@@ -386,7 +412,7 @@ export type GetAllProductsResponses = {
 
 export type GetAllProductsResponse = GetAllProductsResponses[keyof GetAllProductsResponses];
 
-export type FindProductsAdminData = {
+export type SearchProductsAdminData = {
     body?: never;
     path?: never;
     query: {
@@ -398,7 +424,7 @@ export type FindProductsAdminData = {
     url: '/admin/products/search';
 };
 
-export type FindProductsAdminErrors = {
+export type SearchProductsAdminErrors = {
     /**
      * Invalid query parameters or JSON payload validation failed
      */
@@ -417,16 +443,16 @@ export type FindProductsAdminErrors = {
     500: unknown;
 };
 
-export type FindProductsAdminResponses = {
+export type SearchProductsAdminResponses = {
     /**
      * Successfully retrieved paginated admin products
      */
     200: PaginatedResponseAdminProduct;
 };
 
-export type FindProductsAdminResponse = FindProductsAdminResponses[keyof FindProductsAdminResponses];
+export type SearchProductsAdminResponse = SearchProductsAdminResponses[keyof SearchProductsAdminResponses];
 
-export type FindProductsAdminAdvancedData = {
+export type SearchProductsAdminAdvancedData = {
     body: ProductSearchParamsAdmin;
     path?: never;
     query?: {
@@ -442,7 +468,7 @@ export type FindProductsAdminAdvancedData = {
     url: '/admin/products/search/advanced';
 };
 
-export type FindProductsAdminAdvancedErrors = {
+export type SearchProductsAdminAdvancedErrors = {
     /**
      * Invalid query parameters or JSON payload validation failed
      */
@@ -461,14 +487,14 @@ export type FindProductsAdminAdvancedErrors = {
     500: unknown;
 };
 
-export type FindProductsAdminAdvancedResponses = {
+export type SearchProductsAdminAdvancedResponses = {
     /**
      * Successfully retrieved paginated admin products
      */
     200: PaginatedResponseAdminProduct;
 };
 
-export type FindProductsAdminAdvancedResponse = FindProductsAdminAdvancedResponses[keyof FindProductsAdminAdvancedResponses];
+export type SearchProductsAdminAdvancedResponse = SearchProductsAdminAdvancedResponses[keyof SearchProductsAdminAdvancedResponses];
 
 export type DeleteProductData = {
     body?: never;
@@ -545,32 +571,6 @@ export type UpdateProductResponses = {
 
 export type UpdateProductResponse = UpdateProductResponses[keyof UpdateProductResponses];
 
-export type GetSaleDetailByIdData = {
-    body?: never;
-    path: {
-        /**
-         * Sale UUID
-         */
-        sale_id: string;
-    };
-    query?: never;
-    url: '/api/products/{sale_id}';
-};
-
-export type GetSaleDetailByIdErrors = {
-    /**
-     * Sale Detail not found
-     */
-    404: unknown;
-    500: unknown;
-};
-
-export type GetSaleDetailByIdResponses = {
-    200: AdminSaleDetails;
-};
-
-export type GetSaleDetailByIdResponse = GetSaleDetailByIdResponses[keyof GetSaleDetailByIdResponses];
-
 export type GetSalesPaginatedData = {
     body?: never;
     path?: never;
@@ -578,7 +578,7 @@ export type GetSalesPaginatedData = {
         page?: number;
         page_size?: number;
     };
-    url: '/api/sales';
+    url: '/admin/sales';
 };
 
 export type GetSalesPaginatedErrors = {
@@ -596,3 +596,77 @@ export type GetSalesPaginatedResponses = {
 };
 
 export type GetSalesPaginatedResponse = GetSalesPaginatedResponses[keyof GetSalesPaginatedResponses];
+
+export type CreateSaleData = {
+    body: CreateSalePayload;
+    path?: never;
+    query?: never;
+    url: '/admin/sales';
+};
+
+export type CreateSaleErrors = {
+    /**
+     * Invalid request or insufficient inventory
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    500: unknown;
+};
+
+export type CreateSaleResponses = {
+    /**
+     * Sale created
+     */
+    201: string;
+};
+
+export type CreateSaleResponse = CreateSaleResponses[keyof CreateSaleResponses];
+
+export type SaleSummaryData = {
+    body?: never;
+    path?: never;
+    query?: {
+        start_date?: string;
+        end_date?: string;
+    };
+    url: '/admin/sales/summary';
+};
+
+export type SaleSummaryErrors = {
+    500: unknown;
+};
+
+export type SaleSummaryResponses = {
+    200: Array<SaleSummary>;
+};
+
+export type SaleSummaryResponse = SaleSummaryResponses[keyof SaleSummaryResponses];
+
+export type GetSaleDetailByIdData = {
+    body?: never;
+    path: {
+        /**
+         * Sale UUID
+         */
+        sale_id: string;
+    };
+    query?: never;
+    url: '/admin/sales/{sale_id}';
+};
+
+export type GetSaleDetailByIdErrors = {
+    /**
+     * Sale Detail not found
+     */
+    404: unknown;
+    500: unknown;
+};
+
+export type GetSaleDetailByIdResponses = {
+    200: AdminSaleDetails;
+};
+
+export type GetSaleDetailByIdResponse = GetSaleDetailByIdResponses[keyof GetSaleDetailByIdResponses];

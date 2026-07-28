@@ -3,6 +3,7 @@ import type {
   AdminInventory,
   AdminProduct,
   CreateProductPayload,
+  CreateSalePayload,
   NewInventoryPayload,
   UpdateProductPayload,
   ProductSearchParamsAdmin,
@@ -86,6 +87,12 @@ export const searchProductsAdvanced = (
     body: JSON.stringify(body),
   });
 };
+
+export const createSale = (body: CreateSalePayload): Promise<string> =>
+  request("/admin/sales", {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 
 export const insertInventory = (
   productId: string,
