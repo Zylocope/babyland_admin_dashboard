@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IconLoader2, IconPlus, IconTag } from '@tabler/icons-react';
 import { getCategories, createCategory } from '../services/categoryService';
@@ -11,7 +11,7 @@ export default function Categories() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
-  const load = async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
@@ -23,9 +23,10 @@ export default function Categories() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
-  useEffect(() => { load(); }, []);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { load(); }, [load]);
 
   const add = async (e) => {
     e.preventDefault();

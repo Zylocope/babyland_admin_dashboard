@@ -1,6 +1,6 @@
 import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/theme-helpers';
 
 const STYLE_OPTIONS = [
   { id: 'glass',        labelKey: 'settings.styleGlass' },
@@ -19,12 +19,8 @@ function Section({ title, desc, children }) {
   );
 }
 
-export default function Settings() {
-  const { t, i18n } = useTranslation();
-  const { darkMode, toggleDark, styleTheme, setStyle, activeStyles } = useTheme();
-  const isMy = i18n.resolvedLanguage === 'my';
-
-  const Toggle = ({ active, onClick, children }) => (
+function Toggle({ active, onClick, children }) {
+  return (
     <button
       onClick={onClick}
       className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${
@@ -34,6 +30,12 @@ export default function Settings() {
       {children}
     </button>
   );
+}
+
+export default function Settings() {
+  const { t, i18n } = useTranslation();
+  const { darkMode, toggleDark, styleTheme, setStyle, activeStyles } = useTheme();
+  const isMy = i18n.resolvedLanguage === 'my';
 
   return (
     <div className="max-w-3xl space-y-5">

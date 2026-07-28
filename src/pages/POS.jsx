@@ -32,22 +32,24 @@ export default function POS() {
     inputRef.current?.focus();
   }, []);
 
+  const trimmedQuery = query.trim();
+
   // Debounced live product search (real backend).
   useEffect(() => {
-    const q = query.trim();
-    if (!q) { setResults([]); setSearchError(''); return; }
+    if (!trimmedQuery) return;
 
     let active = true;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- standard loading-flag before async work
     setSearching(true);
     const h = setTimeout(async () => {
       try {
-        const res = await searchProductsSimple(q, { page: 1, page_size: 12 });
+        const res = await searchProductsSimple(trimmedQuery, { page: 1, page_size: 12 });
         const items = Array.isArray(res) ? res : res?.data ?? [];
         if (!active) return;
         setResults(items);
         setSearchError('');
         // Scanner behaviour: an exact barcode match auto-adds and clears.
-        const exact = items.find(p => p.barcode?.toLowerCase() === q.toLowerCase());
+        const exact = items.find(p => p.barcode?.toLowerCase() === trimmedQuery.toLowerCase());
         if (exact && items.length === 1) { addToCart(exact); setQuery(''); setResults([]); }
       } catch (e) {
         if (active) { setSearchError(e?.message || t('pos.searchFailed')); setResults([]); }
@@ -58,7 +60,7 @@ export default function POS() {
 
     return () => { active = false; clearTimeout(h); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query, addToCart]);
+  }, [trimmedQuery, addToCart]);
 
   const setQty = (id, qty) => setCart(prev => prev.flatMap(l => {
     if (l.id !== id) return [l];
@@ -110,18 +112,18 @@ export default function POS() {
             placeholder={t('pos.searchPlaceholder')}
             className="w-full pl-11 pr-4 py-3 text-[15px] border border-app rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          {searching && <IconLoader2 size={18} className="animate-spin absolute right-4 top-1/2 -translate-y-1/2 text-mute" />}
+          {trimmedQuery && searching && <IconLoader2 size={18} className="animate-spin absolute right-4 top-1/2 -translate-y-1/2 text-mute" />}
         </div>
 
-        {searchError && (
+        {trimmedQuery && searchError && (
           <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{searchError}</div>
         )}
 
         <div className="flex-1 overflow-y-auto pr-1">
-          {results.length === 0 ? (
+          {(!trimmedQuery ? [] : results).length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-mute text-sm gap-2">
               <IconBarcode size={40} stroke={1.2} />
-              {query.trim() ? t('pos.noResults') : t('pos.startTyping')}
+              {trimmedQuery ? t('pos.noResults') : t('pos.startTyping')}
             </div>
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">

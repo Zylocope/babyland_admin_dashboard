@@ -8,35 +8,8 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone: '', password: '' };
 
-export default function Staff() {
-  const { t } = useTranslation();
-  const [staff, setStaff] = useState([]);
-  const [search, setSearch] = useState('');
-  const [showCreate, setShowCreate] = useState(false);
-  const [editStaff, setEditStaff] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [confirmDelete, setConfirmDelete] = useState(null);
-
-  const filtered = staff.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) || s.username.includes(search) || s.email.includes(search)
-  );
-
-  const openCreate = () => { setForm(EMPTY_FORM); setShowCreate(true); };
-  const openEdit = (s) => { setEditStaff(s); setForm({ username: s.username, name: s.name, role: s.role, email: s.email, phone: s.phone, password: '' }); };
-
-  const saveCreate = () => {
-    setStaff(prev => [...prev, { id: `S${Date.now()}`, ...form, createdAt: new Date().toISOString().slice(0, 10) }]);
-    setShowCreate(false);
-  };
-
-  const saveEdit = () => {
-    setStaff(prev => prev.map(s => s.id === editStaff.id ? { ...s, ...form } : s));
-    setEditStaff(null);
-  };
-
-  const deleteStaff = (id) => setStaff(prev => prev.filter(s => s.id !== id));
-
-  const StaffForm = ({ onSave, onCancel, isCreate }) => (
+function StaffForm({ form, setForm, onSave, onCancel, isCreate, t }) {
+  return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text']].map(([lk, k, type]) => (
@@ -70,6 +43,35 @@ export default function Staff() {
       </div>
     </div>
   );
+}
+
+export default function Staff() {
+  const { t } = useTranslation();
+  const [staff, setStaff] = useState([]);
+  const [search, setSearch] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [editStaff, setEditStaff] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  const filtered = staff.filter(s =>
+    s.name.toLowerCase().includes(search.toLowerCase()) || s.username.includes(search) || s.email.includes(search)
+  );
+
+  const openCreate = () => { setForm(EMPTY_FORM); setShowCreate(true); };
+  const openEdit = (s) => { setEditStaff(s); setForm({ username: s.username, name: s.name, role: s.role, email: s.email, phone: s.phone, password: '' }); };
+
+  const saveCreate = () => {
+    setStaff(prev => [...prev, { id: `S${Date.now()}`, ...form, createdAt: new Date().toISOString().slice(0, 10) }]);
+    setShowCreate(false);
+  };
+
+  const saveEdit = () => {
+    setStaff(prev => prev.map(s => s.id === editStaff.id ? { ...s, ...form } : s));
+    setEditStaff(null);
+  };
+
+  const deleteStaff = (id) => setStaff(prev => prev.filter(s => s.id !== id));
 
   return (
     <div className="space-y-5">
@@ -138,11 +140,11 @@ export default function Staff() {
       </div>
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title={t('staff.addTitle')}>
-        <StaffForm onSave={saveCreate} onCancel={() => setShowCreate(false)} isCreate />
+        <StaffForm form={form} setForm={setForm} onSave={saveCreate} onCancel={() => setShowCreate(false)} isCreate t={t} />
       </Modal>
 
       <Modal open={!!editStaff} onClose={() => setEditStaff(null)} title={t('staff.editTitle', { name: editStaff?.name })}>
-        <StaffForm onSave={saveEdit} onCancel={() => setEditStaff(null)} isCreate={false} />
+        <StaffForm form={form} setForm={setForm} onSave={saveEdit} onCancel={() => setEditStaff(null)} isCreate={false} t={t} />
       </Modal>
 
       <ConfirmDialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}
