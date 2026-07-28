@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { IconPlus, IconPencil, IconTrash, IconUserCog } from '@tabler/icons-react';
+import { IconPlus, IconPencil, IconTrash, IconUserCog, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { mockStaff } from '../data/mock';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
@@ -11,7 +10,7 @@ const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone
 
 export default function Staff() {
   const { t } = useTranslation();
-  const [staff, setStaff] = useState(mockStaff);
+  const [staff, setStaff] = useState([]);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [editStaff, setEditStaff] = useState(null);
@@ -129,7 +128,12 @@ export default function Staff() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('staff.none')}</div>}
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+              <IconDatabase size={28} stroke={1.2} />
+              {t('staff.noData')}
+            </div>
+          )}
         </div>
       </div>
 

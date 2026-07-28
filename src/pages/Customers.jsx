@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { IconPencil, IconTrash, IconEye, IconShoppingCart, IconStar } from '@tabler/icons-react';
+import { IconPencil, IconTrash, IconEye, IconShoppingCart, IconStar, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { mockCustomers, mockOrders } from '../data/mock';
 import { useAuth } from '../context/AuthContext';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
@@ -12,7 +11,7 @@ import { formatMMK } from '../utils/currency';
 export default function Customers() {
   const { t } = useTranslation();
   const { isManager } = useAuth();
-  const [customers, setCustomers] = useState(mockCustomers);
+  const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [viewCustomer, setViewCustomer] = useState(null);
   const [editCustomer, setEditCustomer] = useState(null);
@@ -23,9 +22,8 @@ export default function Customers() {
     c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search) || c.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const customerOrders = (cId) => {
-    const c = customers.find(x => x.id === cId);
-    return mockOrders.filter(o => o.customerName === c?.name);
+  const customerOrders = () => {
+    return [];
   };
 
   const openEdit = (c) => { setEditCustomer(c); setEditForm({ name: c.name, phone: c.phone, email: c.email, address: c.address, points: c.points }); };
@@ -100,11 +98,15 @@ export default function Customers() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('customers.none')}</div>}
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+              <IconDatabase size={28} stroke={1.2} />
+              {t('customers.noData')}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* View modal */}
       <Modal open={!!viewCustomer} onClose={() => setViewCustomer(null)} title={viewCustomer?.name} size="lg">
         {viewCustomer && (
           <div className="space-y-5">
@@ -144,7 +146,6 @@ export default function Customers() {
         )}
       </Modal>
 
-      {/* Edit modal */}
       <Modal open={!!editCustomer} onClose={() => setEditCustomer(null)} title={t('customers.editTitle', { name: editCustomer?.name })}>
         {editCustomer && (
           <div className="space-y-4">
