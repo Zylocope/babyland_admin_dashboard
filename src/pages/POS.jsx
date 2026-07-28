@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { IconSearch, IconPlus, IconMinus, IconTrash, IconShoppingCart, IconCircleCheck, IconBarcode, IconLoader2, IconAlertTriangle } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
@@ -17,6 +17,20 @@ export default function POS() {
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState(null);   // { lines, total, recorded }
   const inputRef = useRef(null);
+
+  const addToCart = useCallback((p) => {
+    const stock = num(p.quantity_in_stock);
+    setCart(prev => {
+      const line = prev.find(l => l.id === p.id);
+      if (line) {
+        if (line.qty >= stock) return prev;             // never oversell
+        return prev.map(l => l.id === p.id ? { ...l, qty: l.qty + 1 } : l);
+      }
+      if (stock <= 0) return prev;
+      return [...prev, { id: p.id, name: p.name, barcode: p.barcode, price: num(p.selling_price), stock, qty: 1 }];
+    });
+    inputRef.current?.focus();
+  }, []);
 
   // Debounced live product search (real backend).
   useEffect(() => {
@@ -40,25 +54,11 @@ export default function POS() {
       } finally {
         if (active) setSearching(false);
       }
-    }, 300);
+    }, 500);
 
     return () => { active = false; clearTimeout(h); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [query]);
-
-  const addToCart = (p) => {
-    const stock = num(p.quantity_in_stock);
-    setCart(prev => {
-      const line = prev.find(l => l.id === p.id);
-      if (line) {
-        if (line.qty >= stock) return prev;             // never oversell
-        return prev.map(l => l.id === p.id ? { ...l, qty: l.qty + 1 } : l);
-      }
-      if (stock <= 0) return prev;
-      return [...prev, { id: p.id, name: p.name, barcode: p.barcode, price: num(p.selling_price), stock, qty: 1 }];
-    });
-    inputRef.current?.focus();
-  };
+  }, [query, addToCart]);
 
   const setQty = (id, qty) => setCart(prev => prev.flatMap(l => {
     if (l.id !== id) return [l];
@@ -76,20 +76,22 @@ export default function POS() {
   const completeSale = async () => {
     if (cart.length === 0) return;
     setSubmitting(true);
-    const items = cart.map(l => ({ product_id: l.id, quantity: l.qty, selling_price: String(l.price) }));
+    const items = cart.map(l => ({ product_id: l.id, quantity: l.qty }));
     const lines = cart.map(l => ({ name: l.name, qty: l.qty, price: l.price, lineTotal: l.qty * l.price }));
 
     let recorded = false;
     try {
       // Forward-wired: succeeds the moment POST /admin/sales exists; until then we
       // still complete the sale locally so the till is usable for the migration demo.
-      await createSale(items);
+      await createSale({ sale_products: items });
       recorded = true;
     } catch {
       recorded = false;
     } finally {
       setReceipt({ lines, total, recorded });
       setCart([]);
+      setQuery('');
+      setResults([]);
       setSubmitting(false);
     }
   };
@@ -198,23 +200,40 @@ export default function POS() {
         </div>
       </div>
 
-      {/* Receipt */}
-      <Modal open={!!receipt} onClose={() => setReceipt(null)} title={t('pos.receiptTitle')} size="sm">
+      {/* Sale result dialog */}
+      <Modal open={!!receipt} onClose={() => setReceipt(null)} title="" size="sm">
         {receipt && (
-          <div className="space-y-4">
-            <div className={`rounded-lg px-3 py-2 text-sm flex items-center gap-2 ${receipt.recorded ? 'bg-green-50 text-green-700' : 'bg-amber-50 text-amber-800'}`}>
-              {receipt.recorded ? <IconCircleCheck size={16} /> : <IconAlertTriangle size={16} />}
-              {receipt.recorded ? t('pos.recorded') : t('pos.heldLocally')}
-            </div>
-            <div className="divide-y divide-app">
+          <div className="flex flex-col items-center text-center space-y-4 py-2">
+            {receipt.recorded ? (
+              <>
+                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
+                  <IconCircleCheck size={32} className="text-green-600" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-green-800">{t('pos.saleSuccess')}</p>
+                  <p className="text-sm text-mute mt-1">{t('pos.saleSuccessDesc')}</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
+                  <IconAlertTriangle size={32} className="text-red-600" />
+                </div>
+                <div>
+                  <p className="text-lg font-semibold text-red-800">{t('pos.saleFailed')}</p>
+                  <p className="text-sm text-mute mt-1">{t('pos.saleFailedDesc')}</p>
+                </div>
+              </>
+            )}
+            <div className="w-full border-t border-app pt-4 space-y-2">
               {receipt.lines.map((l, i) => (
-                <div key={i} className="flex justify-between py-2 text-sm">
+                <div key={i} className="flex justify-between text-sm">
                   <span className="text-ink">{l.name} <span className="text-mute">×{l.qty}</span></span>
                   <span className="tabular-nums text-ink">{formatMMK(l.lineTotal)}</span>
                 </div>
               ))}
             </div>
-            <div className="flex justify-between font-bold text-ink border-t border-app pt-3">
+            <div className="flex justify-between w-full font-bold text-ink border-t border-app pt-3">
               <span>{t('pos.total')}</span>
               <span className="tabular-nums">{formatMMK(receipt.total)}</span>
             </div>
