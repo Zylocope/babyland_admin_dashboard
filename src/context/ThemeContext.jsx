@@ -1,9 +1,6 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { ThemeContext, STYLE_THEMES } from './theme-helpers';
 
-const ThemeContext = createContext(null);
-
-// Visual style themes — all backed by the shared surface-token system in index.css.
-export const STYLE_THEMES = ['glass', 'neumorphism', 'flat', 'skeuomorphism'];
 const ACTIVE_STYLES = STYLE_THEMES;
 
 export function ThemeProvider({ children }) {
@@ -34,9 +31,3 @@ export function ThemeProvider({ children }) {
     </ThemeContext.Provider>
   );
 }
-
-export const useTheme = () => {
-  const ctx = useContext(ThemeContext);
-  if (!ctx) throw new Error('useTheme must be used within ThemeProvider');
-  return ctx;
-};

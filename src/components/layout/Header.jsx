@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { IconBell, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-helpers';
 import { mockProducts, mockDashboard } from '../../data/mock';
 import { formatMMKShort } from '../../utils/currency';
 

@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import Sidebar from './Sidebar';
 import Header from './Header';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/auth-helpers';
 
 const TITLE_KEYS = {
   '/':          'dashboard',

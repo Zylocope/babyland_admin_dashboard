@@ -5,8 +5,8 @@ import {
   IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../../context/AuthContext';
-import { useTheme } from '../../context/ThemeContext';
+import { useAuth } from '../../context/auth-helpers';
+import { useTheme } from '../../context/theme-helpers';
 
 // `roles` = staff roles allowed (besides Manager, who sees everything).
 const NAV_ITEMS = [

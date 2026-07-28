@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth-helpers';
 import { IconBabyCarriage, IconEye, IconEyeOff, IconLoader2 } from '@tabler/icons-react';
 
 export default function Login() {

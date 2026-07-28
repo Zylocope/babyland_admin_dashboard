@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { IconPencil, IconTrash, IconEye, IconShoppingCart, IconStar, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth-helpers';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';

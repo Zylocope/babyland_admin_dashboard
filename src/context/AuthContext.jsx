@@ -1,26 +1,6 @@
-import { createContext, useContext, useState } from 'react';
+import { useState } from 'react';
 import { loginAdmin, logoutAdmin } from '../services/authService';
-
-export const AuthContext = createContext(null);
-
-const ROLE_MAP = {
-  "sale_admin": 'SaleStaff',
-  "playground_admin": 'TicketStaff',
-  "super_admin": 'Manager',
-};
-
-const toUiRole = (role) => ROLE_MAP[role] ?? role ?? 'Staff';
-
-const hydrateUser = (value) => {
-  if (!value) return null;
-
-  return {
-    ...value,
-    role: toUiRole(value.role),
-    apiRole: value.apiRole ?? value.role ?? null,
-    name: value.name ?? value.username ?? 'Admin',
-  };
-};
+import { AuthContext, hydrateUser, toUserData } from './auth-helpers';
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -31,14 +11,7 @@ export function AuthProvider({ children }) {
   const login = async (username, password) => {
     try {
       const account = await loginAdmin({ username, password });
-
-      const userData = {
-        id: account.id ?? null,
-        username: account.username ?? username,
-        name: account.username ?? username,
-        role: toUiRole(account.role),
-        apiRole: account.role ?? null,
-      };
+      const userData = toUserData(account, username);
 
       sessionStorage.setItem('al_user', JSON.stringify(userData));
       setUser(userData);
@@ -70,11 +43,5 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
-export const useAuth = () => {
-  const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
-  return ctx;
-};
 
 export default AuthProvider;

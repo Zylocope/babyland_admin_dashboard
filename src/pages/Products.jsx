@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../context/auth-helpers';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import { searchProductsSimple } from '../services/productService';
