@@ -3,24 +3,23 @@ import { IconGift, IconUserPlus, IconCheck, IconAlertTriangle, IconUsers, IconTi
 import { useTranslation } from 'react-i18next';
 import StatCard from '../components/common/StatCard';
 import SearchInput from '../components/common/SearchInput';
-import { mockPlaygroundVisitors, PLAYGROUND_FREE_AT } from '../data/mock';
 
+const PLAYGROUND_FREE_AT = 10;
 const today = () => new Date().toISOString().slice(0, 10);
 
 export default function Playground() {
   const { t } = useTranslation();
-  const [visitors, setVisitors] = useState(mockPlaygroundVisitors);
+  const [visitors, setVisitors] = useState([]);
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [search, setSearch] = useState('');
-  const [result, setResult] = useState(null);   // { kind, visitor }
-  const [conflict, setConflict] = useState(null); // { visitor, typedName }
+  const [result, setResult] = useState(null);
+  const [conflict, setConflict] = useState(null);
   const [log, setLog] = useState([]);
 
   const reset = () => { setPhone(''); setName(''); setConflict(null); };
 
   const award = (existing, typedName) => {
-    // At the threshold the visit is free: it consumes the card and earns no point.
     const isFree = existing && existing.points >= PLAYGROUND_FREE_AT;
     let updated;
 
@@ -50,8 +49,6 @@ export default function Playground() {
     if (!p || !n) return;
 
     const existing = visitors.find(v => v.phone === p);
-    // Same phone must always carry the same name — surface the mismatch instead
-    // of silently creating a second card or overwriting the name.
     if (existing && existing.name.toLowerCase() !== n.toLowerCase()) {
       setConflict({ visitor: existing, typedName: n });
       return;
@@ -76,7 +73,6 @@ export default function Playground() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-        {/* Check-in */}
         <div className="xl:col-span-5 surface-card p-6">
           <h3 className="font-semibold text-ink mb-1">{t('playground.checkInTitle')}</h3>
           <p className="text-[13px] text-sub mb-4">{t('playground.checkInDesc', { n: PLAYGROUND_FREE_AT })}</p>
@@ -146,7 +142,6 @@ export default function Playground() {
           )}
         </div>
 
-        {/* Today's log */}
         <div className="xl:col-span-7 surface-card p-6">
           <h3 className="font-semibold text-ink mb-4">{t('playground.todayLog')}</h3>
           {log.length === 0 ? (
@@ -174,7 +169,6 @@ export default function Playground() {
         </div>
       </div>
 
-      {/* Reward cards */}
       <div className="surface-card overflow-hidden">
         <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink flex-1">{t('playground.cardsTitle')}</h3>
