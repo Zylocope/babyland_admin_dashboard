@@ -1,29 +1,22 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage, IconArrowBackUp, IconInfoCircle, IconTruck, IconClock, IconWorld } from '@tabler/icons-react';
-import { AreaChart, Area, BarChart, Bar, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage, IconArrowBackUp, IconInfoCircle, IconTruck, IconClock, IconWorld, IconDatabase } from '@tabler/icons-react';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import Badge from '../components/common/Badge';
 import { formatMMK, formatMMKShort } from '../utils/currency';
-import { mockPos } from '../data/mock';
+import { getSaleSummary } from '../services/salesService';
+import { format, subDays, startOfDay } from 'date-fns';
 
 const CHANNELS = ['instore', 'online', 'compare'];
 const PERIODS = ['today', 'week', 'month'];
 const tip = { borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, color: 'var(--text-primary)' };
 
-function BarList({ rows, tone = 'var(--color-brand)', fmt = formatMMK }) {
-  const top = Math.max(...rows.map(r => r.value), 1);
+function Empty({ label }) {
   return (
-    <div className="space-y-2.5">
-      {rows.map(r => (
-        <div key={r.label} className="flex items-center gap-3 text-sm">
-          <span className="w-28 truncate text-sub">{r.label}</span>
-          <span className="flex-1 h-2.5 rounded-full bg-app overflow-hidden">
-            <span className="block h-full rounded-full" style={{ width: `${Math.min(100, (r.value / top) * 100)}%`, background: tone }} />
-          </span>
-          <span className="w-20 text-right text-ink tabular-nums">{fmt(r.value)}</span>
-        </div>
-      ))}
+    <div className="flex flex-col items-center justify-center py-8 text-mute text-sm gap-2">
+      <IconDatabase size={28} stroke={1.2} />
+      {label}
     </div>
   );
 }
@@ -41,11 +34,68 @@ function Card({ title, pending, span, children }) {
   );
 }
 
+function periodToDates(period) {
+  const today = startOfDay(new Date());
+  const end = format(today, 'yyyy-MM-dd');
+  if (period === 'today') return { start: end, end };
+  if (period === 'week') return { start: format(subDays(today, 6), 'yyyy-MM-dd'), end };
+  if (period === 'month') return { start: format(subDays(today, 29), 'yyyy-MM-dd'), end };
+  return { start: end, end };
+}
+
+function useSaleSummary(period) {
+  const [records, setRecords] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    const { start, end } = periodToDates(period);
+    setLoading(true);
+    getSaleSummary({ start_date: start, end_date: end })
+      .then(data => {
+        if (!active) return;
+        setRecords(Array.isArray(data) ? data : []);
+      })
+      .catch(() => { if (active) setRecords([]); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [period]);
+
+  return { records, loading };
+}
+
+function computeKpis(records, isOnline) {
+  const filtered = records.filter(r => r.is_online_sale === isOnline);
+  const sales = filtered.reduce((sum, r) => sum + Number(r.total_sale || 0), 0);
+  const txns = filtered.reduce((sum, r) => sum + Number(r.transactions || 0), 0);
+  const items = filtered.reduce((sum, r) => sum + Number(r.items_sold || 0), 0);
+  const basket = filtered.length ? sales / filtered.length : 0;
+  const margin = filtered.reduce((sum, r) => sum + Number(r.margin || 0), 0);
+  const marginPct = sales ? Math.round((margin / sales) * 100) : 0;
+  return { sales, txns, items, basket, margin, marginPct };
+}
+
+function buildTrend(records, isOnline, days) {
+  const end = startOfDay(new Date());
+  const daysArray = Array.from({ length: days }, (_, i) => {
+    const d = subDays(end, days - 1 - i);
+    return { date: d, dateStr: format(d, 'yyyy-MM-dd'), label: format(d, 'MMM d') };
+  });
+
+  return daysArray.map(d => {
+    const dayRecords = records.filter(r => r.sale_date === d.dateStr && r.is_online_sale === isOnline);
+    const total = dayRecords.reduce((sum, r) => sum + Number(r.total_sale || 0), 0);
+    return { day: d.label, revenue: total };
+  });
+}
+
 function InStoreView() {
   const { t } = useTranslation();
   const [period, setPeriod] = useState('today');
-  const k = mockPos.kpis[period];
-  const trend = mockPos.trend.map(d => ({ day: d.day, [t('posDash.revenue')]: d.revenue, [t('posDash.profit')]: d.profit }));
+  const { records, loading } = useSaleSummary(period);
+  const k = useMemo(() => computeKpis(records, false), [records]);
+  const days = period === 'today' ? 1 : period === 'week' ? 7 : 30;
+  const trend = useMemo(() => buildTrend(records, false, days).map(d => ({ day: d.day, [t('posDash.revenue')]: d.revenue })), [records, period, t]);
 
   return (
     <div className="space-y-4">
@@ -61,12 +111,12 @@ function InStoreView() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
-        <StatCard icon={IconCash}        tone="store"     label={t('posDash.sales')}   value={formatMMKShort(k.sales)} />
-        <StatCard icon={IconReportMoney} tone="completed" label={t('posDash.profit')}  value={formatMMKShort(k.profit)} trend={{ dir: 'up', value: t('posDash.margin', { n: k.margin }) }} />
-        <StatCard icon={IconReceipt}     tone="combined"  label={t('posDash.txns')}    value={k.txns} />
-        <StatCard icon={IconShoppingBag} tone="pending"   label={t('posDash.basket')}  value={formatMMKShort(k.basket)} />
-        <StatCard icon={IconPackage}     tone="store"     label={t('posDash.items')}   value={k.items} />
-        <StatCard icon={IconArrowBackUp} tone="low"       label={t('posDash.returns')} value={k.returns} />
+        <StatCard icon={IconCash}        tone="store"     label={t('posDash.sales')}   value={loading ? '...' : formatMMKShort(k.sales)} />
+        <StatCard icon={IconReportMoney} tone="completed" label={t('posDash.profit')}  value={loading ? '...' : formatMMKShort(k.margin)} trend={{ dir: 'up', value: t('posDash.margin', { n: k.marginPct }) }} />
+        <StatCard icon={IconReceipt}     tone="combined"  label={t('posDash.txns')}    value={loading ? '...' : k.txns} />
+        <StatCard icon={IconShoppingBag} tone="pending"   label={t('posDash.basket')}  value={loading ? '...' : formatMMKShort(k.basket)} />
+        <StatCard icon={IconPackage}     tone="store"     label={t('posDash.items')}   value={loading ? '...' : k.items} />
+        <StatCard icon={IconArrowBackUp} tone="low"       label={t('posDash.returns')} value={t('posDash.noData')} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
@@ -76,7 +126,6 @@ function InStoreView() {
             <AreaChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="pRev" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#F97316" stopOpacity={0.25} /><stop offset="95%" stopColor="#F97316" stopOpacity={0} /></linearGradient>
-                <linearGradient id="pPro" x1="0" y1="0" x2="0" y2="1"><stop offset="5%" stopColor="#10B981" stopOpacity={0.25} /><stop offset="95%" stopColor="#10B981" stopOpacity={0} /></linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis dataKey="day" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
@@ -84,80 +133,39 @@ function InStoreView() {
               <Tooltip formatter={v => formatMMK(v)} contentStyle={tip} />
               <Legend wrapperStyle={{ fontSize: 12 }} />
               <Area type="monotone" dataKey={t('posDash.revenue')} stroke="#F97316" strokeWidth={2.5} fill="url(#pRev)" />
-              <Area type="monotone" dataKey={t('posDash.profit')} stroke="#10B981" strokeWidth={2.5} fill="url(#pPro)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
         <Card title={t('posDash.paymentMethod')} pending="posDash.needsPayments">
-          <BarList tone="#F59E0B" rows={mockPos.payments.map(p => ({ label: p.name, value: p.amount }))} />
-          <p className="text-[13px] font-semibold text-ink mt-4">{t('posDash.cashInDrawer')}</p>
-          <p className="text-lg font-bold text-ink tabular-nums">{formatMMK(mockPos.payments[0].amount)}</p>
+          <Empty label={t('posDash.noPaymentData')} />
         </Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="surface-card p-5 xl:col-span-2">
           <h3 className="text-[13px] font-semibold text-ink mb-3">{t('posDash.hoursTitle')}</h3>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={mockPos.hourly} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-              <XAxis dataKey="h" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
-              <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
-              <Tooltip formatter={v => formatMMK(v)} contentStyle={tip} />
-              <Bar dataKey="v" radius={[3, 3, 0, 0]}>
-                {mockPos.hourly.map((h, i) => <Cell key={i} fill={h.peak ? '#F59E0B' : '#F97316'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
+          <Empty label={t('posDash.noHourlyData')} />
         </div>
         <Card title={t('posDash.byCashier')} pending="posDash.needsCashier">
-          <BarList rows={mockPos.cashiers.map(c => ({ label: c.name, value: c.amount }))} />
+          <Empty label={t('posDash.noCashierData')} />
         </Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <Card title={t('posDash.topProducts')} pending="posDash.byProfit">
-          <BarList tone="#10B981" rows={mockPos.topProducts.map(p => ({ label: p.name, value: p.profit }))} />
+          <Empty label={t('posDash.noProductData')} />
         </Card>
         <Card title={t('posDash.byCategory')}>
-          <BarList rows={mockPos.categories.map(c => ({ label: c.name, value: c.amount }))} />
+          <Empty label={t('posDash.noCategoryData')} />
         </Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <Card title={t('posDash.lowStock')} pending="posDash.fromInventory">
-          <div className="divide-y divide-app">
-            {mockPos.lowStock.map(s => (
-              <div key={s.name} className="flex items-center justify-between py-2 text-sm">
-                <span className="text-ink">{s.name}</span>
-                <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${s.level === 'red' ? 'bg-red-50 text-red-600' : 'bg-amber-50 text-amber-700'}`}>
-                  {t('posDash.left', { n: s.left })}
-                </span>
-              </div>
-            ))}
-          </div>
+          <Empty label={t('posDash.noLowStockData')} />
         </Card>
         <Card title={t('posDash.recentReceipts')}>
-          <table className="w-full text-xs">
-            <thead>
-              <tr className="text-left text-mute">
-                <th className="py-1.5 font-medium">{t('posDash.voucher')}</th>
-                <th className="py-1.5 font-medium">{t('posDash.time')}</th>
-                <th className="py-1.5 font-medium text-center">{t('posDash.items')}</th>
-                <th className="py-1.5 font-medium text-right">{t('posDash.total')}</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-app">
-              {mockPos.recent.map(r => (
-                <tr key={r.voucher}>
-                  <td className="py-2 font-mono text-brand">{r.voucher}</td>
-                  <td className="py-2 text-sub">{r.time}</td>
-                  <td className="py-2 text-center text-ink tabular-nums">{r.items}</td>
-                  <td className="py-2 text-right text-ink tabular-nums">{formatMMK(r.total)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <Empty label={t('posDash.noReceiptData')} />
         </Card>
       </div>
     </div>
@@ -166,21 +174,24 @@ function InStoreView() {
 
 function OnlineView() {
   const { t } = useTranslation();
-  const o = mockPos.online;
+  const { records, loading } = useSaleSummary('week');
+  const k = useMemo(() => computeKpis(records, true), [records]);
+  const trend = useMemo(() => buildTrend(records, true, 7).map(d => ({ day: d.day, orders: Math.round(d.revenue / 10000) })), [records]);
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={IconWorld}   tone="combined"  label={t('posDash.onlineRevenue')} value={formatMMKShort(o.kpis.revenue)} />
-        <StatCard icon={IconReceipt} tone="store"     label={t('posDash.orders')}        value={o.kpis.orders} />
-        <StatCard icon={IconTruck}   tone="pending"   label={t('posDash.pending')}       value={o.kpis.pending} />
-        <StatCard icon={IconShoppingBag} tone="completed" label={t('posDash.aov')}       value={formatMMKShort(o.kpis.aov)} />
+        <StatCard icon={IconWorld}       tone="combined"  label={t('posDash.onlineRevenue')} value={loading ? '...' : formatMMKShort(k.sales)} />
+        <StatCard icon={IconReceipt}     tone="store"     label={t('posDash.orders')}        value={loading ? '...' : k.txns} />
+        <StatCard icon={IconTruck}       tone="pending"   label={t('posDash.pending')}       value={t('posDash.noData')} />
+        <StatCard icon={IconShoppingBag} tone="completed" label={t('posDash.aov')}           value={loading ? '...' : formatMMKShort(k.basket)} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="surface-card p-5 xl:col-span-2">
           <h3 className="text-[13px] font-semibold text-ink mb-3">{t('posDash.ordersTrend')}</h3>
           <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={o.trend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+            <BarChart data={trend} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
               <XAxis dataKey="day" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} allowDecimals={false} />
@@ -190,40 +201,21 @@ function OnlineView() {
           </ResponsiveContainer>
         </div>
         <Card title={t('posDash.orderStatus')}>
-          <BarList tone="#3B82F6" fmt={v => v} rows={o.status.map(s => ({ label: t(`badge.${s.name}`), value: s.n }))} />
+          <Empty label={t('posDash.noOrderStatusData')} />
         </Card>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
         <Card title={t('posDash.topProducts')}>
-          <BarList tone="#3B82F6" rows={o.topProducts.map(p => ({ label: p.name, value: p.amount }))} />
+          <Empty label={t('posDash.noProductData')} />
         </Card>
         <Card title={t('posDash.deliveryByCity')} pending="posDash.fromShipping">
-          <BarList tone="#3B82F6" fmt={v => v} rows={o.cities.map(c => ({ label: c.name, value: c.n }))} />
+          <Empty label={t('posDash.noShippingData')} />
         </Card>
       </div>
 
       <Card title={t('posDash.recentOrders')}>
-        <table className="w-full text-xs">
-          <thead>
-            <tr className="text-left text-mute">
-              <th className="py-1.5 font-medium">{t('posDash.order')}</th>
-              <th className="py-1.5 font-medium">{t('posDash.city')}</th>
-              <th className="py-1.5 font-medium text-right">{t('posDash.total')}</th>
-              <th className="py-1.5 font-medium text-right">{t('table.status')}</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-app">
-            {o.recent.map(r => (
-              <tr key={r.order}>
-                <td className="py-2 font-mono text-brand">{r.order}</td>
-                <td className="py-2 text-sub">{r.city}</td>
-                <td className="py-2 text-right text-ink tabular-nums">{formatMMK(r.total)}</td>
-                <td className="py-2 text-right"><Badge label={r.status} /></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <Empty label={t('posDash.noOrderData')} />
       </Card>
     </div>
   );
@@ -231,16 +223,26 @@ function OnlineView() {
 
 function CompareView() {
   const { t } = useTranslation();
-  const g = mockPos.compare.glance;
+  const { records, loading } = useSaleSummary('week');
+  const instore = useMemo(() => computeKpis(records, false), [records]);
+  const online = useMemo(() => computeKpis(records, true), [records]);
+  const totalRev = instore.sales + online.sales;
+  const posPct = totalRev ? Math.round((instore.sales / totalRev) * 100) : 0;
+  const daily = useMemo(() => {
+    const end = startOfDay(new Date());
+    return Array.from({ length: 7 }, (_, i) => {
+      const d = subDays(end, 6 - i);
+      const str = format(d, 'yyyy-MM-dd');
+      const instoreTotal = records.filter(r => r.sale_date === str && !r.is_online_sale).reduce((s, r) => s + Number(r.total_sale || 0), 0);
+      const onlineTotal = records.filter(r => r.sale_date === str && r.is_online_sale).reduce((s, r) => s + Number(r.total_sale || 0), 0);
+      return { day: format(d, 'MMM d'), [t('posDash.chInstore')]: instoreTotal, [t('posDash.chOnline')]: onlineTotal };
+    });
+  }, [records, t]);
+
   const rows = [
-    { key: 'revenue', label: t('posDash.revenue'), fmt: formatMMK },
-    { key: 'profit', label: t('posDash.profit'), fmt: formatMMK },
+    { key: 'sales', label: t('posDash.revenue'), fmt: formatMMK },
     { key: 'txns', label: t('posDash.txns'), fmt: v => v },
-    { key: 'items', label: t('posDash.items'), fmt: v => v },
   ];
-  const daily = mockPos.compare.daily.map(d => ({ day: d.day, [t('posDash.chInstore')]: d.instore, [t('posDash.chOnline')]: d.online }));
-  const totalRev = g.instore.revenue + g.online.revenue;
-  const posPct = Math.round((g.instore.revenue / totalRev) * 100);
 
   return (
     <div className="space-y-4">
@@ -259,9 +261,9 @@ function CompareView() {
               {rows.map(r => (
                 <tr key={r.key}>
                   <td className="py-2.5 text-sub">{r.label}</td>
-                  <td className="py-2.5 text-right text-ink tabular-nums">{r.fmt(g.instore[r.key])}</td>
-                  <td className="py-2.5 text-right text-ink tabular-nums">{r.fmt(g.online[r.key])}</td>
-                  <td className="py-2.5 text-right font-medium text-ink tabular-nums">{r.fmt(g.instore[r.key] + g.online[r.key])}</td>
+                  <td className="py-2.5 text-right text-ink tabular-nums">{loading ? '...' : r.fmt(instore[r.key])}</td>
+                  <td className="py-2.5 text-right text-ink tabular-nums">{loading ? '...' : r.fmt(online[r.key])}</td>
+                  <td className="py-2.5 text-right font-medium text-ink tabular-nums">{loading ? '...' : r.fmt(instore[r.key] + online[r.key])}</td>
                 </tr>
               ))}
             </tbody>
@@ -299,10 +301,6 @@ export default function SalesDashboard() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-xs text-mute">
-        <IconInfoCircle size={14} stroke={1.6} /> {t('posDash.demoNote')}
-      </div>
-
       <div className="inline-flex rounded-lg border border-app overflow-hidden">
         {CHANNELS.map(c => {
           const Icon = icons[c];

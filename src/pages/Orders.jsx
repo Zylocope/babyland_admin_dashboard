@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import { IconEye, IconChevronRight, IconCircleX, IconRefresh } from '@tabler/icons-react';
+import { IconEye, IconChevronRight, IconCircleX, IconRefresh, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { mockOrders } from '../data/mock';
 import { formatMMK } from '../utils/currency';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
@@ -14,7 +13,7 @@ const STATUS_FLOW = ['Pending', 'Processing', 'Shipped', 'Delivered'];
 export default function Orders() {
   const { t } = useTranslation();
   const { isManager } = useAuth();
-  const [orders, setOrders] = useState(mockOrders);
+  const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [viewOrder, setViewOrder] = useState(null);
@@ -43,7 +42,6 @@ export default function Orders() {
 
   return (
     <div className="space-y-5">
-      {/* Toolbar */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('orders.search')} />
@@ -56,7 +54,6 @@ export default function Orders() {
         <span className="text-sm text-sub">{t('orders.count', { count: filtered.length })}</span>
       </div>
 
-      {/* Table */}
       <div className="surface-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
@@ -108,11 +105,15 @@ export default function Orders() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && <div className="text-center py-12 text-mute text-sm">{t('orders.none')}</div>}
+          {filtered.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+              <IconDatabase size={28} stroke={1.2} />
+              {t('orders.noData')}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* View order modal */}
       <Modal open={!!viewOrder} onClose={() => setViewOrder(null)} title={t('orders.orderTitle', { id: viewOrder?.id })} size="lg">
         {viewOrder && (
           <div className="space-y-5">
@@ -169,7 +170,6 @@ export default function Orders() {
                 </table>
               </div>
             </div>
-            {/* Status advance */}
             {canAdvance(viewOrder.status) && (
               <div className="flex justify-end pt-2">
                 <button onClick={() => { advanceStatus(viewOrder.id); setViewOrder(o => ({ ...o, status: STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1] })); }}
