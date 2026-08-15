@@ -47,14 +47,15 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 py-3 px-2 overflow-y-auto">
+      {/* Rows are compact so all 11 items fit a ~690px window without scrolling. */}
+      <nav className="flex-1 py-2 px-2 overflow-y-auto">
         {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `surface-nav-item relative flex items-center gap-3 px-4 py-2.5 mb-1 text-[15px] active:scale-[0.98] ${isActive
+              `surface-nav-item relative flex items-center gap-3 px-4 py-1.5 mb-0.5 text-[15px] active:scale-[0.98] ${isActive
                 ? 'is-active font-semibold'
                 : 'text-ink/75 hover:text-brand font-normal'
               } ${collapsed ? 'justify-center' : ''}`
@@ -72,9 +73,9 @@ export default function Sidebar({ collapsed, onToggle }) {
       </nav>
 
       {/* Bottom: user + language + dark toggle + logout */}
-      <div className="border-t border-app p-3">
+      <div className="border-t border-app p-2">
         {!collapsed && (
-          <div className="px-2 py-2 mb-1 flex items-center justify-between gap-2">
+          <div className="px-2 py-1.5 mb-0.5 flex items-center justify-between gap-2">
             <div className="min-w-0">
               <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
               <span className="inline-block mt-0.5 text-[11px] text-brand font-medium">{t(`roles.${user?.role}`)}</span>
@@ -90,7 +91,7 @@ export default function Sidebar({ collapsed, onToggle }) {
         )}
 
         {/* Language toggle — EN / မြန်မာ */}
-        <div className={`flex items-center gap-1 mb-1 rounded-lg border border-app p-0.5 ${collapsed ? 'flex-col' : ''}`}>
+        <div className={`flex items-center gap-1 mb-0.5 rounded-lg border border-app p-0.5 ${collapsed ? 'flex-col' : ''}`}>
           <button
             onClick={() => i18n.changeLanguage('en')}
             className={`flex-1 px-2 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${!isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
@@ -113,14 +114,14 @@ export default function Sidebar({ collapsed, onToggle }) {
         )}
         <button
           onClick={logout}
-          className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center' : ''}`}
+          className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center' : ''}`}
         >
           <IconLogout size={16} stroke={1.5} />
           {!collapsed && <span>{t('sidebar.logout')}</span>}
         </button>
         <button
           onClick={onToggle}
-          className={`flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-mute hover:bg-brand-light transition-colors mt-1 cursor-pointer ${collapsed ? 'justify-center' : ''}`}
+          className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-mute hover:bg-brand-light transition-colors mt-0.5 cursor-pointer ${collapsed ? 'justify-center' : ''}`}
         >
           <IconChevronLeft size={16} stroke={1.5} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
           {!collapsed && <span>{t('sidebar.collapse')}</span>}
