@@ -10,7 +10,8 @@
     "settings": "settings",
     "playground": "ကစားကွင်း",
     "pos": "POS",
-    "sales": "အရောင်း"
+    "sales": "အရောင်း",
+    "assistant": "AI Assistant"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -23,7 +24,8 @@
     "settings": "ဆက်တင်",
     "playground": "ကစားကွင်း Rewards",
     "pos": "ရောင်းချမှု (POS)",
-    "sales": "ဆိုင်တွင်း အရောင်း"
+    "sales": "ဆိုင်တွင်း အရောင်း",
+    "assistant": "AI Assistant"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -139,7 +141,6 @@
     "Shipped": "ပို့ဆောင်ပြီး",
     "Delivered": "ရောက်ရှိပြီး",
     "Cancelled": "ပယ်ဖျက်ပြီး",
-    "Refunded": "ပြန်အမ်းပြီး",
     "Active": "ဖွင့်ထား",
     "Hidden": "ပိတ်ထား",
     "Low": "နည်း",
@@ -197,22 +198,21 @@
     "editNote": "အမျိုးအစားများ ထည့်နိုင်သော်လည်း အမည်ပြင်၍ မရသေးပါ (backend endpoint မရှိသေးပါ)။"
   },
   "pos": {
-    "searchPlaceholder": "အမည် သို့မဟုတ် barcode ဖြင့် ရှာရန်...",
-    "searchFailed": "ရှာဖွေမှု မအောင်မြင်ပါ။",
-    "noResults": "ရှာဖွေထားသော ပစ္စည်း မတွေ့ပါ။",
-    "startTyping": "စတင်ရိုက်ပါ သို့မဟုတ် barcode ဖတ်ပါ",
-    "outOfStock": "ကုန်နေသည်",
-    "inStock": "{{n}} ခု ကျန်",
-    "cart": "ခြင်းတောင်း",
-    "itemCount": "{{n}} ခု",
-    "emptyCart": "ခြင်းတောင်း ဗလာ",
+    "searchPlaceholder": "Barcode စကင်ဖတ်ပါ သို့မဟုတ် ပစ္စည်းရှာပါ...",
+    "startTyping": "ပစ္စည်းရှာရန် စကင်ဖတ်ပါ သို့မဟုတ် ရိုက်ထည့်ပါ",
+    "noResults": "ပစ္စည်း မတွေ့ပါ။",
+    "searchFailed": "ပစ္စည်းရှာဖွေမှု မအောင်မြင်ပါ။",
+    "inStock": "လက်ကျန် {{n}}",
+    "outOfStock": "ကုန်သွားပြီ",
+    "cart": "ခြင်း",
+    "emptyCart": "ခြင်း ဗလာဖြစ်နေသည် — ပစ္စည်း ထည့်ပါ။",
+    "itemCount": "ပစ္စည်း {{n}} ခု",
     "total": "စုစုပေါင်း",
     "completeSale": "ရောင်းချမှု ပြီးဆုံးရန်",
-    "pendingNote": "ဆိုင်းငံ့ရောင်းချမှု — ဆာဗာ စတင်နေနိုင်ပါသည်",
-    "saleSuccess": "ရောင်းချမှု အောင်မြင်ပါသည်!",
-    "saleSuccessDesc": "ရောင်းချမှုကို အောင်မြင်စွာ မှတ်တမ်းတင်ပြီးပါပြီ။",
-    "saleFailed": "ရောင်းချမှု မအောင်မြင်ပါ",
-    "saleFailedDesc": "ဆာဗာတွင် မှတ်တမ်းတင်ရန် မအောင်မြင်ပါ။ ငွေစာရင်းကို ဒေသခံတွင် သိမ်းထားပါမည်။",
+    "pendingNote": "ရောင်းချမှုများကို local တွင် သိမ်းထားသည် — backend မှတ်တမ်းတင်ခြင်း ဆိုင်းငံ့ဆဲ။",
+    "receiptTitle": "ရောင်းချမှု ပြီးဆုံး",
+    "recorded": "Backend သို့ မှတ်တမ်းတင်ပြီး။",
+    "heldLocally": "Local တွင်သာ သိမ်းထား — backend သို့ မပို့ရသေးပါ။",
     "newSale": "ရောင်းချမှုအသစ်"
   },
   "orders": {
@@ -221,7 +221,6 @@
     "none": "အော်ဒါ မတွေ့ပါ။",
     "advance": "အဆင့်တိုးရန်",
     "cancel": "ပယ်ဖျက်ရန်",
-    "refund": "ပြန်အမ်းရန်",
     "orderTitle": "အော်ဒါ {{id}}",
     "deliveryAddress": "ပို့ဆောင်ရမည့်လိပ်စာ",
     "itemsOrdered": "မှာယူထားသော ပစ္စည်းများ",
@@ -230,9 +229,6 @@
     "cancelTitle": "အော်ဒါ ပယ်ဖျက်ရန်",
     "cancelMsg": "အော်ဒါ {{id}} ကို ပယ်ဖျက်မှာလား။ ပြန်ပြင်၍မရပါ။",
     "cancelOrder": "အော်ဒါ ပယ်ဖျက်ရန်",
-    "refundTitle": "ပြန်အမ်းငွေ ထုတ်ရန်",
-    "refundMsg": "အော်ဒါ {{id}} ({{amount}}) အတွက် ပြန်အမ်းငွေ ထုတ်မှာလား။",
-    "issueRefund": "ပြန်အမ်းရန်",
     "noData": "အော်ဒါ မရှိပါ — backend endpoint မရှိသေးပါ"
   },
   "customers": {
@@ -304,24 +300,6 @@
     "readyForFree": "အခမဲ့ ရမည့်သူ",
     "freeGivenToday": "ယနေ့ အခမဲ့ ပေးပြီး"
   },
-  "pos": {
-    "searchPlaceholder": "Barcode စကင်ဖတ်ပါ သို့မဟုတ် ပစ္စည်းရှာပါ...",
-    "startTyping": "ပစ္စည်းရှာရန် စကင်ဖတ်ပါ သို့မဟုတ် ရိုက်ထည့်ပါ",
-    "noResults": "ပစ္စည်း မတွေ့ပါ။",
-    "searchFailed": "ပစ္စည်းရှာဖွေမှု မအောင်မြင်ပါ။",
-    "inStock": "လက်ကျန် {{n}}",
-    "outOfStock": "ကုန်သွားပြီ",
-    "cart": "ခြင်း",
-    "emptyCart": "ခြင်း ဗလာဖြစ်နေသည် — ပစ္စည်း ထည့်ပါ။",
-    "itemCount": "ပစ္စည်း {{n}} ခု",
-    "total": "စုစုပေါင်း",
-    "completeSale": "ရောင်းချမှု ပြီးဆုံးရန်",
-    "pendingNote": "ရောင်းချမှုများကို local တွင် သိမ်းထားသည် — backend မှတ်တမ်းတင်ခြင်း ဆိုင်းငံ့ဆဲ။",
-    "receiptTitle": "ရောင်းချမှု ပြီးဆုံး",
-    "recorded": "Backend သို့ မှတ်တမ်းတင်ပြီး။",
-    "heldLocally": "Local တွင်သာ သိမ်းထား — backend သို့ မပို့ရသေးပါ။",
-    "newSale": "ရောင်းချမှုအသစ်"
-  },
   "posDash": {
     "heading": "ဆိုင်တွင်း အရောင်း",
     "summaryNote": "အရောင်း၊ ဝင်ငွေ၊ ငွေသွင်းမှု နှင့် ပစ္စည်းအရေအတွက်ကို API မှ live ပြသထားသည်။ ကျန်အပိုင်းများ ဗလာ — backend endpoint မရှိသေးပါ။",
@@ -345,7 +323,6 @@
     "txns": "အရောင်းအရေအတွက်",
     "basket": "ပျမ်းမျှ တစ်ကြိမ်",
     "items": "ရောင်းသည့် ပစ္စည်း",
-    "returns": "ပြန်အမ်း",
     "trendTitle": "အရောင်း & အမြတ် — ပြီးခဲ့သည့် ၇ ရက်",
     "revenue": "ဝင်ငွေ",
     "hoursTitle": "အရောင်းသွက်သည့် အချိန်",
@@ -385,5 +362,21 @@
     "chOnline": "Online",
     "compareTrend": "ဆိုင်တွင်း vs Online — ၇ ရက်",
     "shareToday": "ယနေ့ ဝင်ငွေ အချိုး"
+  },
+  "assistant": {
+    "emptyTitle": "ဆိုင်အကြောင်း မေးလိုက်ပါ",
+    "emptyBody": "အဖြေတွေက အရောင်း နဲ့ stock data အစစ်ကနေ ထုတ်ပေးတာပါ။",
+    "placeholder": "အရောင်း၊ stock၊ ပစ္စည်း အကြောင်း မေးပါ...",
+    "thinking": "စဉ်းစားနေသည်...",
+    "checking": "{{tool}} ကို ကြည့်နေသည်",
+    "s1": "ဒီလ အရောင်း ဘယ်လိုလဲ။",
+    "s2": "ဘယ်ပစ္စည်းတွေ stock နည်းနေလဲ။",
+    "s3": "ဒီအပတ် ဆိုင်တွင်း နဲ့ online ဘယ်လိုလဲ။",
+    "tool": {
+      "sales_summary": "အရောင်း data",
+      "low_stock": "stock အရေအတွက်",
+      "search_products": "ပစ္စည်း စာရင်း",
+      "list_categories": "category များ"
+    }
   }
 }

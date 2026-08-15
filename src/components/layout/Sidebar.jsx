@@ -3,6 +3,7 @@ import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
   IconUsers, IconChartBar, IconUserCog, IconLogout, IconBabyCarriage,
   IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
+  IconSparkles,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -20,6 +21,7 @@ const NAV_ITEMS = [
   { to: '/customers', icon: IconUsers, key: 'customers', roles: ['SaleStaff', 'TicketStaff'] },
   { to: '/reports', icon: IconChartBar, key: 'reports', roles: [] },
   { to: '/staff', icon: IconUserCog, key: 'staff', roles: [] },
+  { to: '/assistant', icon: IconSparkles, key: 'assistant', roles: [] },
 ];
 
 export default function Sidebar({ collapsed, onToggle }) {

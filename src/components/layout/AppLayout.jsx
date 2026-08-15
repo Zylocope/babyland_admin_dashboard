@@ -19,6 +19,7 @@ const TITLE_KEYS = {
   '/reports':   'reports',
   '/staff':     'staff',
   '/settings':  'settings',
+  '/assistant': 'assistant',
 };
 
 export default function AppLayout() {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage, IconArrowBackUp, IconInfoCircle, IconTruck, IconClock, IconWorld, IconDatabase } from '@tabler/icons-react';
+import { IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage, IconInfoCircle, IconTruck, IconClock, IconWorld, IconDatabase } from '@tabler/icons-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import Badge from '../components/common/Badge';
@@ -110,13 +110,12 @@ function InStoreView() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard icon={IconCash}        tone="store"     label={t('posDash.sales')}   value={loading ? '...' : formatMMKShort(k.sales)} />
         <StatCard icon={IconReportMoney} tone="completed" label={t('posDash.profit')}  value={loading ? '...' : formatMMKShort(k.margin)} trend={{ dir: 'up', value: t('posDash.margin', { n: k.marginPct }) }} />
         <StatCard icon={IconReceipt}     tone="combined"  label={t('posDash.txns')}    value={loading ? '...' : k.txns} />
         <StatCard icon={IconShoppingBag} tone="pending"   label={t('posDash.basket')}  value={loading ? '...' : formatMMKShort(k.basket)} />
         <StatCard icon={IconPackage}     tone="store"     label={t('posDash.items')}   value={loading ? '...' : k.items} />
-        <StatCard icon={IconArrowBackUp} tone="low"       label={t('posDash.returns')} value={t('posDash.noData')} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">

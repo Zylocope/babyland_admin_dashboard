@@ -451,9 +451,9 @@ export const mockPlaygroundVisitors = [
 // ponytail: local mock; every field maps to a real sales/sale_items/inventory query later.
 export const mockPos = {
   kpis: {
-    today: { sales: 385000, profit: 96250, margin: 25, txns: 42, basket: 9167, items: 118, returns: 2 },
-    week:  { sales: 2410000, profit: 602500, margin: 25, txns: 268, basket: 8993, items: 742, returns: 11 },
-    month: { sales: 9860000, profit: 2465000, margin: 25, txns: 1094, basket: 9012, items: 3120, returns: 43 },
+    today: { sales: 385000, profit: 96250, margin: 25, txns: 42, basket: 9167, items: 118 },
+    week:  { sales: 2410000, profit: 602500, margin: 25, txns: 268, basket: 8993, items: 742 },
+    month: { sales: 9860000, profit: 2465000, margin: 25, txns: 1094, basket: 9012, items: 3120 },
   },
   trend: [
     { day: 'Mon', revenue: 210000, profit: 52000 },

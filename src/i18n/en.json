@@ -10,7 +10,8 @@
     "settings": "Settings",
     "playground": "Playground",
     "pos": "POS",
-    "sales": "Sales"
+    "sales": "Sales",
+    "assistant": "AI Assistant"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -23,7 +24,8 @@
     "settings": "Settings",
     "playground": "Playground Rewards",
     "pos": "Point of Sale",
-    "sales": "In-store Sales"
+    "sales": "In-store Sales",
+    "assistant": "AI Assistant"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -139,7 +141,6 @@
     "Shipped": "Shipped",
     "Delivered": "Delivered",
     "Cancelled": "Cancelled",
-    "Refunded": "Refunded",
     "Active": "Active",
     "Hidden": "Hidden",
     "Low": "Low",
@@ -197,22 +198,21 @@
     "editNote": "Categories can be added but not renamed yet (no backend endpoint)."
   },
   "pos": {
-    "searchPlaceholder": "Search by name or scan barcode...",
-    "searchFailed": "Search failed.",
-    "noResults": "No products match your search.",
-    "startTyping": "Start typing or scan a barcode",
+    "searchPlaceholder": "Scan barcode or search product...",
+    "startTyping": "Scan or type to find products",
+    "noResults": "No products found.",
+    "searchFailed": "Product search failed.",
+    "inStock": "{{n}} in stock",
     "outOfStock": "Out of stock",
-    "inStock": "{{n}} left",
     "cart": "Cart",
-    "itemCount": "{{n}} item(s)",
-    "emptyCart": "Cart is empty",
+    "emptyCart": "Cart is empty — add products to start.",
+    "itemCount": "{{n}} items",
     "total": "Total",
     "completeSale": "Complete Sale",
-    "pendingNote": "Pending sale — server may be starting",
-    "saleSuccess": "Sale Complete!",
-    "saleSuccessDesc": "The sale has been recorded successfully.",
-    "saleFailed": "Sale Failed",
-    "saleFailedDesc": "Unable to record the sale on the server. The transaction was held locally.",
+    "pendingNote": "Sales are held locally — backend sale recording is pending.",
+    "receiptTitle": "Sale Complete",
+    "recorded": "Recorded to backend.",
+    "heldLocally": "Held locally — not yet sent to backend.",
     "newSale": "New Sale"
   },
   "orders": {
@@ -221,7 +221,6 @@
     "none": "No orders found.",
     "advance": "Advance Status",
     "cancel": "Cancel",
-    "refund": "Refund",
     "orderTitle": "Order {{id}}",
     "deliveryAddress": "Delivery Address",
     "itemsOrdered": "Items Ordered",
@@ -230,9 +229,6 @@
     "cancelTitle": "Cancel Order",
     "cancelMsg": "Cancel order {{id}}? This cannot be undone.",
     "cancelOrder": "Cancel Order",
-    "refundTitle": "Issue Refund",
-    "refundMsg": "Issue a refund for order {{id}} ({{amount}})?",
-    "issueRefund": "Issue Refund",
     "noData": "No orders — no backend endpoint yet"
   },
   "customers": {
@@ -304,24 +300,6 @@
     "readyForFree": "Ready for Free",
     "freeGivenToday": "Free Given Today"
   },
-  "pos": {
-    "searchPlaceholder": "Scan barcode or search product...",
-    "startTyping": "Scan or type to find products",
-    "noResults": "No products found.",
-    "searchFailed": "Product search failed.",
-    "inStock": "{{n}} in stock",
-    "outOfStock": "Out of stock",
-    "cart": "Cart",
-    "emptyCart": "Cart is empty — add products to start.",
-    "itemCount": "{{n}} items",
-    "total": "Total",
-    "completeSale": "Complete Sale",
-    "pendingNote": "Sales are held locally — backend sale recording is pending.",
-    "receiptTitle": "Sale Complete",
-    "recorded": "Recorded to backend.",
-    "heldLocally": "Held locally — not yet sent to backend.",
-    "newSale": "New Sale"
-  },
   "posDash": {
     "heading": "In-store sales",
     "summaryNote": "Sales, revenue, transactions and items are live from the API. Remaining sections are empty — no backend endpoint yet.",
@@ -345,7 +323,6 @@
     "txns": "Transactions",
     "basket": "Avg basket",
     "items": "Items sold",
-    "returns": "Returns",
     "trendTitle": "Sales & profit — last 7 days",
     "revenue": "Revenue",
     "hoursTitle": "Busiest hours",
@@ -385,5 +362,21 @@
     "chOnline": "Online",
     "compareTrend": "In-store vs online — last 7 days",
     "shareToday": "Revenue share today"
+  },
+  "assistant": {
+    "emptyTitle": "Ask about your shop",
+    "emptyBody": "Answers are read from live sales and stock data, not guessed.",
+    "placeholder": "Ask about sales, stock or products...",
+    "thinking": "Thinking...",
+    "checking": "Reading {{tool}}",
+    "s1": "How did we sell this month?",
+    "s2": "What is running low on stock?",
+    "s3": "In-store vs online this week?",
+    "tool": {
+      "sales_summary": "sales data",
+      "low_stock": "stock levels",
+      "search_products": "product catalogue",
+      "list_categories": "categories"
+    }
   }
 }
