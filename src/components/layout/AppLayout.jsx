@@ -16,7 +16,6 @@ const TITLE_KEYS = {
   '/orders':    'orders',
   '/playground': 'playground',
   '/customers': 'customers',
-  '/reports':   'reports',
   '/staff':     'staff',
   '/settings':  'settings',
   '/assistant': 'assistant',

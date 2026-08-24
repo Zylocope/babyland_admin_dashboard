@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom';
 import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
-  IconUsers, IconChartBar, IconUserCog, IconLogout, IconBabyCarriage,
+  IconUsers, IconUserCog, IconLogout, IconBabyCarriage,
   IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
   IconSparkles,
 } from '@tabler/icons-react';
@@ -19,7 +19,6 @@ const NAV_ITEMS = [
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
   { to: '/playground', icon: IconGift, key: 'playground', roles: ['TicketStaff'] },
   { to: '/customers', icon: IconUsers, key: 'customers', roles: ['SaleStaff', 'TicketStaff'] },
-  { to: '/reports', icon: IconChartBar, key: 'reports', roles: [] },
   { to: '/staff', icon: IconUserCog, key: 'staff', roles: [] },
   { to: '/assistant', icon: IconSparkles, key: 'assistant', roles: [] },
 ];
@@ -47,7 +46,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </div>
 
       {/* Nav */}
-      {/* Rows are compact so all 11 items fit a ~690px window without scrolling. */}
+      {/* Rows are compact so all nav items fit a ~690px window without scrolling. */}
       <nav className="flex-1 py-2 px-2 overflow-y-auto">
         {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink

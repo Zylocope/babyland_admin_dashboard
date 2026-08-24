@@ -31,6 +31,14 @@ assert.deepEqual(out.by_day.map(d => d.date), ['2026-08-01', '2026-08-02']);
 assert.equal(out.by_day[0].revenue_mmk, 150000);
 assert.equal(out.by_day[0].transactions, 5);
 
+// Per-day channel split feeds the combined chart; must partition the day total.
+assert.equal(out.by_day[0].in_store_mmk, 100000);
+assert.equal(out.by_day[0].online_mmk, 50000);
+assert.equal(out.by_day[0].in_store_mmk + out.by_day[0].online_mmk, out.by_day[0].revenue_mmk);
+// A day with no online sales reports 0, not undefined.
+assert.equal(out.by_day[1].online_mmk, 0);
+assert.equal(out.by_day[1].in_store_mmk, 50000);
+
 // No divide-by-zero when a range has no sales.
 const empty = summarizeSales([]);
 assert.equal(empty.totals.margin_pct, 0);

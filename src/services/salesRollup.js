@@ -34,7 +34,14 @@ export const summarizeSales = (rows) => {
   for (const r of rows) {
     add(grand, r);
     add(r.is_online_sale ? online : inStore, r);
-    byDay.set(r.sale_date, add(byDay.get(r.sale_date) ?? blank(), r));
+
+    let day = byDay.get(r.sale_date);
+    if (!day) {
+      day = { all: blank(), in_store: blank(), online: blank() };
+      byDay.set(r.sale_date, day);
+    }
+    add(day.all, r);
+    add(r.is_online_sale ? day.online : day.in_store, r);
   }
 
   return {
@@ -43,6 +50,11 @@ export const summarizeSales = (rows) => {
     by_day: [...byDay.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
       .slice(-31)
-      .map(([date, d]) => ({ date, ...close(d) })),
+      .map(([date, d]) => ({
+        date,
+        ...close(d.all),
+        in_store_mmk: close(d.in_store).revenue_mmk,
+        online_mmk: close(d.online).revenue_mmk,
+      })),
   };
 };
