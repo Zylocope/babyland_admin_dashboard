@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { IconPencil, IconTrash, IconEye, IconShoppingCart, IconStar, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
-import { useAuth } from '../context/auth-helpers';
+import { useAuth } from '../context/AuthContext';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
@@ -22,7 +22,7 @@ export default function Customers() {
     c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search) || c.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const customerOrders = () => {
+  const customerOrders = (cId) => {
     return [];
   };
 

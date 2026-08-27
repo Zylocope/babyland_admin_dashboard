@@ -5,7 +5,6 @@ const variants = {
   Shipped:    'text-emerald-600 border-emerald-500',
   Delivered:  'text-green-600  border-green-500',
   Cancelled:  'text-red-600    border-red-500',
-  Refunded:   'text-orange-600 border-orange-500',
   Confirmed:  'text-green-600  border-green-500',
   Used:       'text-gray-500   border-gray-400',
   Manager:     'text-orange-600 border-orange-500',

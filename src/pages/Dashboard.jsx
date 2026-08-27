@@ -1,6 +1,7 @@
 import { IconCash, IconClock, IconCircleCheck, IconAlertTriangle, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import StatCard from '../components/common/StatCard';
+import { formatMMKShort } from '../utils/currency';
 
 export default function Dashboard() {
   const { t } = useTranslation();
@@ -8,10 +9,10 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon={IconCash}        tone="store"     label={t('dashboard.storeSales')}      value={t('dashboard.noData')} />
-        <StatCard icon={IconClock}       tone="pending"   label={t('dashboard.pendingOrders')}   value={t('dashboard.noData')} />
+        <StatCard icon={IconCash} tone="store" label={t('dashboard.storeSales')} value={t('dashboard.noData')} />
+        <StatCard icon={IconClock} tone="pending" label={t('dashboard.pendingOrders')} value={t('dashboard.noData')} />
         <StatCard icon={IconCircleCheck} tone="completed" label={t('dashboard.completedOrders')} value={t('dashboard.noData')} />
-        <StatCard icon={IconAlertTriangle} tone="low"     label={t('dashboard.lowStockItems')}   value={t('dashboard.noData')} />
+        <StatCard icon={IconAlertTriangle} tone="low" label={t('dashboard.lowStockItems')} value={t('dashboard.noData')} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">

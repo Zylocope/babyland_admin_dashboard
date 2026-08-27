@@ -1,5 +1,5 @@
 export const formatMMK = (amount) =>
-  new Intl.NumberFormat('en-US').format(amount || 0) + ' MMK';
+  new Intl.NumberFormat('en-US').format(Math.round(amount || 0)) + ' MMK';
 
 export const formatMMKShort = (amount) => {
   const value = amount || 0;

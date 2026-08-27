@@ -20,6 +20,9 @@ dist-ssr
 # Claude Code workspace — not part of the app
 .claude/
 
+# Local-only handoff brief for fresh Claude chats (not part of the app)
+PROJECT_CONTEXT.md
+
 # Deployment / hosting artifacts
 .vercel
 .netlify

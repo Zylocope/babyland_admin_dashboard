@@ -13,9 +13,9 @@ import POS from './pages/POS';
 import SalesDashboard from './pages/SalesDashboard';
 import Playground from './pages/Playground';
 import Customers from './pages/Customers';
-import Reports from './pages/Reports';
 import Staff from './pages/Staff';
 import Settings from './pages/Settings';
+import Assistant from './pages/Assistant';
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -48,8 +48,8 @@ function AppRoutes() {
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
         <Route path="customers" element={<RoleRoute roles={['SaleStaff', 'TicketStaff']}><Customers /></RoleRoute>} />
-        <Route path="reports" element={<RoleRoute roles={[]}><Reports /></RoleRoute>} />
         <Route path="staff" element={<RoleRoute roles={[]}><Staff /></RoleRoute>} />
+        <Route path="assistant" element={<RoleRoute roles={[]}><Assistant /></RoleRoute>} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

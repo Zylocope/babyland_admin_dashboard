@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { IconEye, IconChevronRight, IconCircleX, IconRefresh, IconDatabase } from '@tabler/icons-react';
+import { IconEye, IconChevronRight, IconCircleX, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import { useAuth } from '../context/auth-helpers';
@@ -18,7 +18,6 @@ export default function Orders() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [viewOrder, setViewOrder] = useState(null);
   const [confirmCancel, setConfirmCancel] = useState(null);
-  const [confirmRefund, setConfirmRefund] = useState(null);
 
   const filtered = orders.filter(o => {
     const matchSearch = o.id.includes(search) || o.customerName.toLowerCase().includes(search.toLowerCase()) || o.phone.includes(search);
@@ -36,7 +35,6 @@ export default function Orders() {
   };
 
   const cancelOrder = (id) => setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Cancelled' } : o));
-  const refundOrder = (id) => setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Refunded' } : o));
 
   const canAdvance = (status) => STATUS_FLOW.includes(status) && status !== 'Delivered';
 
@@ -49,7 +47,7 @@ export default function Orders() {
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
           className="px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
           <option value="All">{t('common.allStatuses')}</option>
-          {[...STATUS_FLOW, 'Cancelled', 'Refunded'].map(s => <option key={s} value={s}>{t(`badge.${s}`)}</option>)}
+          {[...STATUS_FLOW, 'Cancelled'].map(s => <option key={s} value={s}>{t(`badge.${s}`)}</option>)}
         </select>
         <span className="text-sm text-sub">{t('orders.count', { count: filtered.length })}</span>
       </div>
@@ -87,17 +85,10 @@ export default function Orders() {
                           <IconChevronRight stroke={1.5} size={15} />
                         </button>
                       )}
-                      {isManager && o.status !== 'Cancelled' && o.status !== 'Refunded' && (
-                        <>
-                          <button onClick={() => setConfirmCancel(o)} className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors" title={t('orders.cancel')}>
-                            <IconCircleX stroke={1.5} size={15} />
-                          </button>
-                          {o.status === 'Delivered' && (
-                            <button onClick={() => setConfirmRefund(o)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors" title={t('orders.refund')}>
-                              <IconRefresh stroke={1.5} size={15} />
-                            </button>
-                          )}
-                        </>
+                      {isManager && o.status !== 'Cancelled' && (
+                        <button onClick={() => setConfirmCancel(o)} className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors" title={t('orders.cancel')}>
+                          <IconCircleX stroke={1.5} size={15} />
+                        </button>
                       )}
                     </div>
                   </td>
@@ -186,11 +177,6 @@ export default function Orders() {
         onConfirm={() => cancelOrder(confirmCancel.id)}
         title={t('orders.cancelTitle')} message={t('orders.cancelMsg', { id: confirmCancel?.id })}
         confirmLabel={t('orders.cancelOrder')} danger />
-
-      <ConfirmDialog open={!!confirmRefund} onClose={() => setConfirmRefund(null)}
-        onConfirm={() => refundOrder(confirmRefund.id)}
-        title={t('orders.refundTitle')} message={t('orders.refundMsg', { id: confirmRefund?.id, amount: confirmRefund ? formatMMK(confirmRefund.total) : '' })}
-        confirmLabel={t('orders.issueRefund')} />
     </div>
   );
 }
