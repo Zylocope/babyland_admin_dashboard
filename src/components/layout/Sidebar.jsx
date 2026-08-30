@@ -64,15 +64,15 @@ export default function Sidebar({ collapsed, onToggle }) {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `surface-nav-item relative flex items-center gap-3 px-4 py-1.5 mb-0.5 text-[15px] active:scale-[0.98] ${isActive
+              `surface-nav-item relative flex items-center h-9 mb-0.5 text-[15px] active:scale-[0.98] ${isActive
                 ? 'is-active font-semibold'
                 : 'text-ink/75 hover:text-brand font-normal'
-              } ${collapsed ? 'justify-center' : ''}`
+              } ${collapsed ? 'justify-center px-0' : 'gap-3 px-3.5'}`
             }
           >
             {({ isActive }) => (
               <>
-                {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-7 w-1 rounded-r" style={{ background: '#F97316' }} />}
+                {isActive && !collapsed && <span className="absolute left-0 top-1/2 -translate-y-1/2 h-5 w-1 rounded-r-full" style={{ background: '#F97316' }} />}
                 <Icon size={20} stroke={1.5} className={isActive ? 'text-brand' : 'text-mute'} />
                 {!collapsed && <span>{t(`nav.${key}`)}</span>}
               </>
@@ -103,27 +103,27 @@ export default function Sidebar({ collapsed, onToggle }) {
         <div className={`flex items-center gap-1 mb-0.5 rounded-lg border border-app p-0.5 ${collapsed ? 'flex-col' : ''}`}>
           <button
             onClick={() => i18n.changeLanguage('en')}
-            className={`flex-1 px-2 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${!isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
+            className={`flex-1 w-full px-2 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${!isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
           >
             EN
           </button>
           <button
             onClick={() => i18n.changeLanguage('my')}
-            className={`flex-1 px-2 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
+            className={`flex-1 w-full px-2 py-1 rounded-md text-xs font-semibold transition-colors cursor-pointer ${isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
           >
-            မြန်မာ
+            {collapsed ? 'MY' : 'မြန်မာ'}
           </button>
         </div>
 
         {collapsed && (
           <button onClick={toggleDark} title={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
-            className="flex items-center justify-center w-full px-3 py-2 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors mb-1 cursor-pointer">
+            className="flex items-center justify-center w-full h-8 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors mb-0.5 cursor-pointer">
             {darkMode ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
           </button>
         )}
         <button
           onClick={logout}
-          className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center' : ''}`}
+          className={`flex items-center w-full h-8 rounded-lg text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'}`}
         >
           <IconLogout size={16} stroke={1.5} />
           {!collapsed && <span>{t('sidebar.logout')}</span>}
