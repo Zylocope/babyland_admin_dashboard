@@ -122,7 +122,8 @@
     "qty": "Qty",
     "product": "Product",
     "threshold": "Threshold",
-    "total": "Total"
+    "total": "Total",
+    "expiry": "Perishable"
   },
   "common": {
     "edit": "Edit",
@@ -347,5 +348,12 @@
     "noReceipts": "No sales recorded in this period",
     "showing": "Showing {{count}} of {{total}}",
     "marginCol": "Margin %"
+  },
+  "productViews": {
+    "all": "All products",
+    "low": "Low stock",
+    "out": "Out of stock",
+    "hidden": "Hidden products",
+    "perishable": "Perishable"
   }
 }
