@@ -3,6 +3,8 @@ import { IconSend, IconSparkles, IconDatabase, IconLoader2, IconBolt } from '@ta
 import { useTranslation } from 'react-i18next';
 import { toolDeclarations, runTool, systemPrompt } from '../services/aiTools';
 import { QUICK_ACTIONS, runQuickAction } from '../services/quickActions';
+import { chartFromTool } from '../services/aiCharts';
+import AssistantChart from '../components/common/AssistantChart';
 
 const MAX_TOOL_ROUNDS = 5;
 
@@ -29,6 +31,7 @@ export default function Assistant() {
   const [input, setInput] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const [charts, setCharts] = useState({});
   const endRef = useRef(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [contents, busy]);
@@ -41,6 +44,7 @@ export default function Assistant() {
 
     let next = [...contents, { role: 'user', parts: [{ text: text.trim() }] }];
     setContents(next);
+    let pendingChart = null;
 
     try {
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
@@ -49,15 +53,30 @@ export default function Assistant() {
         setContents(next);
 
         const calls = (reply.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall);
-        if (!calls.length) break;
+        if (!calls.length) {
+          // The final text message is the one the chart belongs under.
+          if (pendingChart) setCharts(c => ({ ...c, [next.length - 1]: pendingChart }));
+          break;
+        }
 
-        const parts = await Promise.all(calls.map(async fc => ({
+        const results = await Promise.all(calls.map(async fc => ({
+          fc,
+          response: await runTool(fc.name, fc.args ?? {}),
+        })));
+
+        // Derive the visual from the same result the answer will be written from.
+        for (const { fc, response } of results) {
+          const spec = chartFromTool(fc.name, response);
+          if (spec) pendingChart = spec;
+        }
+
+        const parts = results.map(({ fc, response }) => ({
           functionResponse: {
             ...(fc.id ? { id: fc.id } : {}),
             name: fc.name,
-            response: await runTool(fc.name, fc.args ?? {}),
+            response,
           },
-        })));
+        }));
         next = [...next, { role: 'user', parts }];
         setContents(next);
       }
@@ -72,12 +91,14 @@ export default function Assistant() {
     if (busy) return;
     setError('');
     setBusy(true);
-    const asked = { role: 'user', parts: [{ text: t(action.labelKey) }] };
-    setContents(c => [...c, asked]);
+    const asked = [...contents, { role: 'user', parts: [{ text: t(action.labelKey) }] }];
+    setContents(asked);
     try {
-      const text = await runQuickAction(action, t);
+      const { text, chart } = await runQuickAction(action, t);
       // Kept in the transcript so a typed follow-up still has the numbers in context.
-      setContents(c => [...c, { role: 'model', parts: [{ text }] }]);
+      const answered = [...asked, { role: 'model', parts: [{ text }] }];
+      setContents(answered);
+      if (chart) setCharts(m => ({ ...m, [answered.length - 1]: chart }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -116,7 +137,7 @@ export default function Assistant() {
 
           return (
             <div key={i} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`max-w-[80%] space-y-1.5 ${mine ? 'items-end' : ''}`}>
+              <div className={`${mine ? 'max-w-[80%] items-end' : 'max-w-[92%] w-full'} space-y-1.5`}>
                 {tools.map(name => (
                   <p key={name} className="flex items-center gap-1.5 text-[11px] text-mute">
                     <IconDatabase size={13} stroke={1.5} />
@@ -130,6 +151,7 @@ export default function Assistant() {
                     {text}
                   </div>
                 )}
+                {!mine && charts[i] && <AssistantChart spec={charts[i]} />}
               </div>
             </div>
           );

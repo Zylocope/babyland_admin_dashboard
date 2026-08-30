@@ -8,6 +8,7 @@
 // Burmese is exactly where a parser would fall over.
 import { format, subDays } from 'date-fns';
 import { runTool } from './aiTools';
+import { chartFromTool } from './aiCharts';
 
 const day = (offset = 0) => format(subDays(new Date(), offset), 'yyyy-MM-dd');
 const mmk = (n) => `${new Intl.NumberFormat('en-US').format(Math.round(n || 0))} MMK`;
@@ -90,5 +91,5 @@ export const QUICK_ACTIONS = [
 
 export const runQuickAction = async (action, t) => {
   const result = await runTool(action.tool, action.args());
-  return action.render(result, t);
+  return { text: action.render(result, t), chart: chartFromTool(action.tool, result) };
 };
