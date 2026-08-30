@@ -31,7 +31,8 @@
     "collapse": "Collapse",
     "lightMode": "Light mode",
     "darkMode": "Dark mode",
-    "language": "Language"
+    "language": "Language",
+    "expand": "Expand"
   },
   "roles": {
     "Manager": "Manager",
@@ -321,5 +322,30 @@
       "search_products": "product catalogue",
       "list_categories": "categories"
     }
+  },
+  "subbar": {
+    "view": "View",
+    "search": "Search",
+    "export": "Export CSV",
+    "noRows": "Nothing to export"
+  },
+  "salesViews": {
+    "channel": "In-store vs online",
+    "receipts": "Receipts",
+    "daily": "Daily revenue",
+    "bestworst": "Best & worst days"
+  },
+  "salesTable": {
+    "receipt": "Receipt",
+    "date": "Date",
+    "time": "Time",
+    "amount": "Amount",
+    "day": "Day",
+    "best": "Best days",
+    "worst": "Worst days",
+    "rank": "#",
+    "noReceipts": "No sales recorded in this period",
+    "showing": "Showing {{count}} of {{total}}",
+    "marginCol": "Margin %"
   }
 }

@@ -31,7 +31,8 @@
     "collapse": "ခေါက်ရန်",
     "lightMode": "အလင်းမုဒ်",
     "darkMode": "အမှောင်မုဒ်",
-    "language": "ဘာသာစကား"
+    "language": "ဘာသာစကား",
+    "expand": "ချဲ့ရန်"
   },
   "roles": {
     "Manager": "မန်နေဂျာ",
@@ -321,5 +322,30 @@
       "search_products": "ပစ္စည်း စာရင်း",
       "list_categories": "category များ"
     }
+  },
+  "subbar": {
+    "view": "ကြည့်ရန်",
+    "search": "ရှာရန်",
+    "export": "CSV ထုတ်ရန်",
+    "noRows": "ထုတ်စရာ မရှိပါ"
+  },
+  "salesViews": {
+    "channel": "ဆိုင်တွင်း vs Online",
+    "receipts": "ဘောင်ချာများ",
+    "daily": "နေ့စဉ် ဝင်ငွေ",
+    "bestworst": "အကောင်းဆုံး & အနည်းဆုံး ရက်"
+  },
+  "salesTable": {
+    "receipt": "ဘောင်ချာ",
+    "date": "ရက်စွဲ",
+    "time": "အချိန်",
+    "amount": "ပမာဏ",
+    "day": "ရက်",
+    "best": "အကောင်းဆုံး ရက်များ",
+    "worst": "အနည်းဆုံး ရက်များ",
+    "rank": "#",
+    "noReceipts": "ဤကာလအတွင်း အရောင်း မရှိပါ",
+    "showing": "{{total}} ခုအနက် {{count}} ခု ပြသနေသည်",
+    "marginCol": "Margin %"
   }
 }

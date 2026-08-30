@@ -31,7 +31,17 @@ export default function Sidebar({ collapsed, onToggle }) {
   const visibleItems = NAV_ITEMS.filter(i => can(...i.roles));
 
   return (
-    <aside className={`flex flex-col surface-panel border-r transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
+    <aside className={`relative flex flex-col surface-panel border-r transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
+      {/* Collapse handle — pinned to the middle of the right edge, chevron only. */}
+      <button
+        onClick={onToggle}
+        title={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
+        aria-label={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
+        className="absolute top-1/2 -right-3 -translate-y-1/2 z-40 w-6 h-6 rounded-full border border-app bg-card text-mute hover:text-brand hover:border-brand shadow-sm flex items-center justify-center cursor-pointer transition-colors"
+      >
+        <IconChevronLeft size={14} stroke={2} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+      </button>
+
       {/* Logo — 64px */}
       <div className={`flex items-center gap-3 px-5 h-16 border-b border-app ${collapsed ? 'justify-center px-0' : ''}`}>
         <div className="bg-brand text-white rounded-lg p-1.5 flex-shrink-0">
@@ -117,13 +127,6 @@ export default function Sidebar({ collapsed, onToggle }) {
         >
           <IconLogout size={16} stroke={1.5} />
           {!collapsed && <span>{t('sidebar.logout')}</span>}
-        </button>
-        <button
-          onClick={onToggle}
-          className={`flex items-center gap-2 w-full px-3 py-1.5 rounded-lg text-sm text-mute hover:bg-brand-light transition-colors mt-0.5 cursor-pointer ${collapsed ? 'justify-center' : ''}`}
-        >
-          <IconChevronLeft size={16} stroke={1.5} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
-          {!collapsed && <span>{t('sidebar.collapse')}</span>}
         </button>
       </div>
     </aside>

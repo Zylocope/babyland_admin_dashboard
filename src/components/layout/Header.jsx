@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { IconBell, IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
+import { IconSettings, IconLogout, IconChevronDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
-import { mockProducts, mockDashboard } from '../../data/mock';
+import { mockDashboard } from '../../data/mock';
 import { formatMMKShort } from '../../utils/currency';
 
 export default function Header({ titleKey }) {
@@ -13,7 +13,6 @@ export default function Header({ titleKey }) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef(null);
 
-  const lowStock = mockProducts.filter(p => p.stock <= p.lowStockThreshold).length;
   const todayRevenue = mockDashboard.todayStoreSales;
 
   useEffect(() => {
@@ -29,21 +28,12 @@ export default function Header({ titleKey }) {
         <h1 className="text-lg font-bold text-ink whitespace-nowrap leading-none">{t(`titles.${titleKey}`)}</h1>
       </div>
 
-      {/* Right: today revenue + bell + profile */}
+      {/* Right: today revenue + profile */}
       <div className="flex items-center gap-4 flex-shrink-0">
         <div className="hidden lg:flex flex-col items-end leading-tight pr-3 border-r border-app">
           <span className="text-[11px] text-mute uppercase tracking-wide">{t('header.todayRevenue')}</span>
           <span className="text-[15px] font-bold text-brand leading-none mt-0.5">{formatMMKShort(todayRevenue)}</span>
         </div>
-        {lowStock > 0 && (
-          <button className="relative p-1 cursor-pointer" title={t('header.lowStockAlert', { count: lowStock })}>
-            <IconBell size={20} stroke={1.5} className="text-sub" />
-            <span className="absolute top-0 right-0 bg-[#EF4444] text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center font-semibold">
-              {lowStock}
-            </span>
-          </button>
-        )}
-
         {/* Profile dropdown */}
         <div className="relative" ref={menuRef}>
           <button onClick={() => setOpen(o => !o)} className="flex items-center gap-2 cursor-pointer group">
