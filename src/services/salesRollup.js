@@ -16,12 +16,14 @@ const add = (acc, r) => {
 const close = (acc) => {
   const profit = acc.revenue - acc.cost;
   return {
-    revenue_mmk: round(acc.revenue),
-    profit_mmk: round(profit),
+    // Kyat has no subunit in circulation — whole numbers only, so neither the
+    // dashboard nor the AI ever reports "5,608.31 MMK".
+    revenue_mmk: Math.round(acc.revenue),
+    profit_mmk: Math.round(profit),
     margin_pct: acc.revenue ? round((profit / acc.revenue) * 100) : 0,
     transactions: acc.transactions,
     items_sold: acc.items_sold,
-    avg_basket_mmk: acc.transactions ? round(acc.revenue / acc.transactions) : 0,
+    avg_basket_mmk: acc.transactions ? Math.round(acc.revenue / acc.transactions) : 0,
   };
 };
 
