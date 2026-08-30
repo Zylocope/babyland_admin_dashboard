@@ -10,7 +10,7 @@ export function ThemeProvider({ children }) {
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('theme') === 'dark');
   const [styleTheme, setStyleTheme] = useState(() => {
     const saved = localStorage.getItem('al_style');
-    return ACTIVE_STYLES.includes(saved) ? saved : 'glass';
+    return ACTIVE_STYLES.includes(saved) ? saved : 'flat';
   });
 
   useEffect(() => {

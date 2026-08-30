@@ -289,6 +289,41 @@ html.dark[data-style="skeuomorphism"] {
   background-color: transparent;
   border-radius: 9999px;
 }
+
+/* Active row runs to the rail's edge as a tab, and the rail scoops into it with
+   a concave curve above and below — the shape from the reference sidebar.
+   Each scoop is a square of tab colour with the rail colour laid over it and one
+   corner rounded away, which leaves the concave sliver. Needs an opaque
+   --s-panel-bg; under glass it softens to a blur rather than a clean curve. */
+.surface-nav-item.is-tab {
+  border-radius: 9999px 0 0 9999px;
+}
+.nav-scoop {
+  position: absolute;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: var(--s-nav-active-bg);
+  pointer-events: none;
+}
+.nav-scoop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--s-panel-bg);
+}
+.nav-scoop-top {
+  bottom: 100%;
+}
+.nav-scoop-top::after {
+  border-bottom-right-radius: 10px;
+}
+.nav-scoop-bottom {
+  top: 100%;
+}
+.nav-scoop-bottom::after {
+  border-top-right-radius: 10px;
+}
 .surface-nav-item:hover:not(.is-active) {
   background: var(--s-nav-hover-bg);
 }

@@ -57,21 +57,29 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Nav */}
       {/* Rows are compact so all nav items fit a ~690px window without scrolling. */}
-      <nav className="flex-1 py-2 px-2 overflow-y-auto">
+      <nav className="flex-1 py-2 overflow-y-auto">
         {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `surface-nav-item flex items-center h-9 mb-0.5 text-[15px] active:scale-[0.98] ${isActive
+              `surface-nav-item relative flex items-center h-9 mb-0.5 ml-2 text-[15px] active:scale-[0.98] ${isActive
                 ? 'is-active font-semibold'
                 : 'text-ink/75 hover:text-brand font-normal'
-              } ${collapsed ? 'justify-center px-0' : 'gap-3 px-4'}`
+              } ${collapsed ? 'justify-center px-0 mr-2' : 'gap-3 px-4'} ${
+                isActive && !collapsed ? 'is-tab mr-0' : 'mr-2'
+              }`
             }
           >
             {({ isActive }) => (
               <>
+                {isActive && !collapsed && (
+                  <>
+                    <span className="nav-scoop nav-scoop-top" />
+                    <span className="nav-scoop nav-scoop-bottom" />
+                  </>
+                )}
                 <Icon size={20} stroke={isActive ? 1.9 : 1.5} className={isActive ? 'text-brand' : 'text-mute'} />
                 {!collapsed && <span>{t(`nav.${key}`)}</span>}
               </>
