@@ -378,5 +378,21 @@
     "errCost": "ကုန်ကျစရိတ် ၀ ထက် ကြီးရမည်",
     "errExpiry": "သက်တမ်းရှိ ပစ္စည်းအတွက် သက်တမ်းကုန်ဆုံးရက် လိုအပ်သည်",
     "addStock": "Stock ဖြည့်ရန်"
+  },
+  "quick": {
+    "title": "အမြန်",
+    "today": "ယနေ့ အရောင်း",
+    "week": "ဒီအပတ်",
+    "month": "ဒီလ",
+    "lowStock": "လက်ကျန် နည်း",
+    "categories": "Category များ",
+    "salesLine": "ဝင်ငွေ {{revenue}} · အမြတ် {{profit}} ({{margin}}%)",
+    "salesCounts": "အရောင်း {{txns}} ကြိမ် · ပစ္စည်း {{items}} ခု · ပျမ်းမျှ {{basket}}",
+    "salesChannels": "ဆိုင်တွင်း {{instore}} · Online {{online}}",
+    "noSales": "ဤကာလအတွင်း အရောင်း မရှိပါ။",
+    "lowStockLine": "ပစ္စည်း {{total}} ခုအနက် {{count}} ခု {{threshold}} အောက် ရှိနေသည်:",
+    "noLowStock": "{{threshold}} အောက် ပစ္စည်း မရှိပါ။",
+    "categoriesLine": "Category {{count}} ခု: {{list}}",
+    "failed": "ယခု ဖတ်၍ မရပါ။"
   }
 }

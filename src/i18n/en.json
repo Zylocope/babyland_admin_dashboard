@@ -378,5 +378,21 @@
     "errCost": "Unit cost must be greater than 0",
     "errExpiry": "Expiry date is required for perishable products",
     "addStock": "Add stock"
+  },
+  "quick": {
+    "title": "Instant",
+    "today": "Today's sales",
+    "week": "This week",
+    "month": "This month",
+    "lowStock": "Low stock",
+    "categories": "Categories",
+    "salesLine": "Revenue {{revenue}} · profit {{profit}} ({{margin}}% margin)",
+    "salesCounts": "Transactions {{txns}} · items {{items}} · average basket {{basket}}",
+    "salesChannels": "In-store {{instore}} · online {{online}}",
+    "noSales": "No sales recorded in this period.",
+    "lowStockLine": "{{count}} of {{total}} products at or below {{threshold}}:",
+    "noLowStock": "Nothing at or below {{threshold}}.",
+    "categoriesLine": "{{count}} categories: {{list}}",
+    "failed": "Could not read that just now."
   }
 }

@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconSend, IconSparkles, IconDatabase, IconLoader2 } from '@tabler/icons-react';
+import { IconSend, IconSparkles, IconDatabase, IconLoader2, IconBolt } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { toolDeclarations, runTool, systemPrompt } from '../services/aiTools';
+import { QUICK_ACTIONS, runQuickAction } from '../services/quickActions';
 
 const MAX_TOOL_ROUNDS = 5;
 
@@ -67,6 +68,23 @@ export default function Assistant() {
     }
   };
 
+  const quick = async (action) => {
+    if (busy) return;
+    setError('');
+    setBusy(true);
+    const asked = { role: 'user', parts: [{ text: t(action.labelKey) }] };
+    setContents(c => [...c, asked]);
+    try {
+      const text = await runQuickAction(action, t);
+      // Kept in the transcript so a typed follow-up still has the numbers in context.
+      setContents(c => [...c, { role: 'model', parts: [{ text }] }]);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const suggestions = [t('assistant.s1'), t('assistant.s2'), t('assistant.s3')];
 
   return (
@@ -124,6 +142,18 @@ export default function Assistant() {
         )}
         {error && <p className="text-sm text-[#EF4444]">{error}</p>}
         <div ref={endRef} />
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="inline-flex items-center gap-1 text-[11px] text-mute pr-1">
+          <IconBolt size={13} stroke={1.8} /> {t('quick.title')}
+        </span>
+        {QUICK_ACTIONS.map(a => (
+          <button key={a.key} onClick={() => quick(a)} disabled={busy}
+            className="px-2.5 py-1 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            {t(a.labelKey)}
+          </button>
+        ))}
       </div>
 
       <form onSubmit={e => { e.preventDefault(); send(input); }} className="flex gap-2">
