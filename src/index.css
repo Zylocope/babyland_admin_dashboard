@@ -208,7 +208,7 @@ html[data-style="flat"] {
   --s-card-shadow: none;
 
   --s-nav-hover-bg: var(--orange-light);
-  --s-nav-active-bg: var(--orange-light);
+  --s-nav-active-bg: rgba(249, 115, 22, 0.16);
   --s-nav-active-shadow: none;
   --s-nav-active-color: var(--orange-primary);
 }
