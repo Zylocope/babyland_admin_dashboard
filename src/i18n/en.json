@@ -167,7 +167,9 @@
     "add": "Add Product",
     "prev": "Prev",
     "next": "Next",
-    "pageOf": "Page {{page}} of {{total}}"
+    "pageOf": "Page {{page}} of {{total}}",
+    "perishable": "Perishable",
+    "perishableHelp": "Stock-in will require an expiry date"
   },
   "productForm": {
     "addHeading": "Add Product",
@@ -355,5 +357,26 @@
     "out": "Out of stock",
     "hidden": "Hidden products",
     "perishable": "Perishable"
+  },
+  "stockIn": {
+    "title": "Add stock — {{name}}",
+    "current": "Current stock",
+    "quantity": "Quantity received",
+    "unitCost": "Unit cost (MMK)",
+    "receivedAt": "Received on",
+    "expiry": "Expiry date",
+    "expiryHelp": "Required — this product is marked perishable",
+    "submit": "Add stock",
+    "adding": "Adding...",
+    "history": "Stock batches",
+    "received": "Received",
+    "remaining": "Remaining",
+    "cost": "Unit cost",
+    "noBatches": "No stock batches yet",
+    "added": "Stock added",
+    "errQty": "Quantity must be greater than 0",
+    "errCost": "Unit cost must be greater than 0",
+    "errExpiry": "Expiry date is required for perishable products",
+    "addStock": "Add stock"
   }
 }

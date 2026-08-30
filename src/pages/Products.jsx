@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight,
-  IconDownload, IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4,
+  IconDownload, IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
@@ -11,6 +11,7 @@ import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import SubBar from '../components/common/SubBar';
+import StockInModal from '../components/common/StockInModal';
 import { getAllProducts } from '../services/productService';
 import { getCategories } from '../services/categoryService';
 
@@ -53,28 +54,28 @@ export default function Products() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [stockFor, setStockFor] = useState(null);
 
   // Any change to what is being filtered sends you back to page 1.
   const pickView = (v) => { setView(v); setPage(1); };
   const pickSearch = (v) => { setSearch(v); setPage(1); };
   const pickCategory = (v) => { setCatFilter(v); setPage(1); };
 
-  useEffect(() => {
-    let active = true;
-    Promise.all([getAllProducts(), getCategories().catch(() => [])])
+  const reload = useCallback(() => {
+    return Promise.all([getAllProducts(), getCategories().catch(() => [])])
       .then(([products, cats]) => {
-        if (!active) return;
+        setError('');
         setAllProducts((Array.isArray(products) ? products : []).map(normalizeProduct));
         setCategories((Array.isArray(cats) ? cats : []).filter(Boolean));
       })
       .catch(err => {
-        if (!active) return;
         setError(err?.message || t('products.loadFailed'));
         setAllProducts([]);
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .finally(() => setLoading(false));
   }, [t]);
+
+  useEffect(() => { reload(); }, [reload]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -196,9 +197,14 @@ export default function Products() {
                   <td className="px-4 py-3.5"><Badge label={p.is_active ? 'Active' : 'Hidden'} /></td>
                   {isManager && (
                     <td className="px-4 py-3.5">
-                      <button onClick={() => navigate(`/products/${p.id}/edit`)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer" title={t('common.edit')}>
-                        <IconPencil stroke={1.5} size={15} />
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        <button onClick={() => setStockFor(p)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer" title={t('stockIn.addStock')}>
+                          <IconPackageImport stroke={1.5} size={15} />
+                        </button>
+                        <button onClick={() => navigate(`/products/${p.id}/edit`)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer" title={t('common.edit')}>
+                          <IconPencil stroke={1.5} size={15} />
+                        </button>
+                      </div>
                     </td>
                   )}
                 </tr>
@@ -210,6 +216,14 @@ export default function Products() {
           )}
         </div>
       </div>
+
+      <StockInModal
+        key={stockFor?.id ?? 'none'}
+        product={stockFor}
+        open={!!stockFor}
+        onClose={() => setStockFor(null)}
+        onAdded={reload}
+      />
 
       {totalPages > 1 && (
         <div className="flex items-center justify-center gap-4">

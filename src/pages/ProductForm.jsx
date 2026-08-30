@@ -5,7 +5,7 @@ import { IconLoader2, IconArrowLeft } from '@tabler/icons-react';
 import { getCategories } from '../services/categoryService';
 import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
 
-const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, description: '' };
+const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, is_perishable: false, description: '' };
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -45,6 +45,7 @@ export default function ProductForm() {
               category_id: found.category_id ?? '',
               sub_category_id: found.sub_category_id ?? '',
               is_active: found.is_active ?? true,
+              is_perishable: found.is_perishable ?? false,
               description: found.description ?? '',
             });
           } else {
@@ -77,15 +78,15 @@ export default function ProductForm() {
       sub_category_id: form.sub_category_id || null,
       selling_price: String(form.selling_price || 0),
       is_active: form.is_active,
+      is_perishable: form.is_perishable,
       description: form.description.trim() || null,
-      ...(hasInventory ? {
-        inventory: {
-          product_id: '',
-          quantity_received: Number(quantityReceived),
-          unit_cost: String(unitCost),
-        },
-      } : {}),
     };
+
+    // Only the create endpoint accepts a nested inventory batch; on update the
+    // stock goes through insertInventory instead.
+    const createBody = hasInventory
+      ? { ...body, inventory: { quantity_received: Number(quantityReceived), unit_cost: String(unitCost) } }
+      : body;
 
     setSaving(true);
     try {
@@ -98,7 +99,7 @@ export default function ProductForm() {
           });
         }
       } else {
-        await createProduct(body);
+        await createProduct(createBody);
       }
       navigate('/products');
     } catch (err) {
@@ -191,6 +192,15 @@ export default function ProductForm() {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <label className="text-sm font-medium text-ink">{t('products.perishable')}</label>
+            <button type="button" onClick={() => set('is_perishable', !form.is_perishable)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer ${form.is_perishable ? 'bg-brand' : 'bg-app'}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${form.is_perishable ? 'translate-x-6' : 'translate-x-1'}`} />
+            </button>
+            <span className="text-[11px] text-mute">{t('products.perishableHelp')}</span>
           </div>
 
           <div className="flex items-center gap-3">

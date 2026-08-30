@@ -167,7 +167,9 @@
     "add": "ပစ္စည်း ထည့်ရန်",
     "prev": "ရှေ့သို့",
     "next": "နောက်သို့",
-    "pageOf": "စာမျက်နှာ {{page}} / {{total}}"
+    "pageOf": "စာမျက်နှာ {{page}} / {{total}}",
+    "perishable": "သက်တမ်းရှိ",
+    "perishableHelp": "Stock ဖြည့်ရာတွင် သက်တမ်းကုန်ရက် လိုအပ်မည်"
   },
   "productForm": {
     "addHeading": "ပစ္စည်း ထည့်ရန်",
@@ -355,5 +357,26 @@
     "out": "ကုန်သွားပြီ",
     "hidden": "ဖျောက်ထားသည်",
     "perishable": "သက်တမ်းရှိ"
+  },
+  "stockIn": {
+    "title": "Stock ဖြည့်ရန် — {{name}}",
+    "current": "လက်ကျန်",
+    "quantity": "ဝင်လာသည့် အရေအတွက်",
+    "unitCost": "တစ်ခုချင်း ကုန်ကျစရိတ် (MMK)",
+    "receivedAt": "ရရှိသည့် ရက်",
+    "expiry": "သက်တမ်းကုန်ဆုံးရက်",
+    "expiryHelp": "မဖြစ်မနေ ထည့်ရန် — သက်တမ်းရှိ ပစ္စည်း ဖြစ်သည်",
+    "submit": "Stock ဖြည့်ရန်",
+    "adding": "ဖြည့်နေသည်...",
+    "history": "Stock batch များ",
+    "received": "ဝင်လာ",
+    "remaining": "ကျန်",
+    "cost": "ကုန်ကျစရိတ်",
+    "noBatches": "Stock batch မရှိသေးပါ",
+    "added": "Stock ဖြည့်ပြီးပါပြီ",
+    "errQty": "အရေအတွက် ၀ ထက် ကြီးရမည်",
+    "errCost": "ကုန်ကျစရိတ် ၀ ထက် ကြီးရမည်",
+    "errExpiry": "သက်တမ်းရှိ ပစ္စည်းအတွက် သက်တမ်းကုန်ဆုံးရက် လိုအပ်သည်",
+    "addStock": "Stock ဖြည့်ရန်"
   }
 }

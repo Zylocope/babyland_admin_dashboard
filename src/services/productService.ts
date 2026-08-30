@@ -4,7 +4,6 @@ import type {
   AdminProduct,
   CreateProductPayload,
   CreateSalePayload,
-  NewInventoryPayload,
   UpdateProductPayload,
   ProductSearchParamsAdmin,
   PaginatedResponseAdminProduct,
@@ -94,9 +93,35 @@ export const createSale = (body: CreateSalePayload): Promise<string> =>
     body: JSON.stringify(body),
   });
 
+// The generated types predate GET /admin/inventory/{id}; regenerate from the
+// backend spec when the openapi pass happens and drop this.
+export interface PaginatedInventory {
+  data: AdminInventory[];
+  total_items: number;
+  total_pages: number;
+  current_page: number;
+}
+
+export const getInventoryRecords = (
+  productId: string,
+  { page = 1, page_size = 20 }: { page?: number; page_size?: number } = {}
+): Promise<PaginatedInventory> =>
+  request(`/admin/inventory/${productId}?page=${page}&page_size=${page_size}`, {
+    method: "GET",
+  });
+
+// received_at / expiry_date exist on the backend but not yet in the generated
+// types. expiry_date is required for perishable products and rejected for the rest.
+export interface StockInPayload {
+  quantity_received: number;
+  unit_cost: string;
+  received_at?: string;
+  expiry_date?: string;
+}
+
 export const insertInventory = (
   productId: string,
-  body: Omit<NewInventoryPayload, "product_id">
+  body: StockInPayload
 ): Promise<AdminInventory> =>
   request(`/admin/inventory/${productId}`, {
     method: "POST",
