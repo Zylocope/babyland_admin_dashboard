@@ -39,6 +39,40 @@ export const chartFromTool = (toolName, result) => {
     return { kind: 'sales', data, hasOnline: data.some(d => d.online > 0) };
   }
 
+  if (toolName === 'compare_periods') {
+    const { current: c, previous: p } = result;
+    if (!c || !p) return null;
+    return {
+      kind: 'compare',
+      // Revenue and profit share a scale; transaction counts do not, so they
+      // stay in the text answer rather than squashing the bars.
+      data: [
+        { metric: 'revenue', previous: p.revenue_mmk, current: c.revenue_mmk },
+        { metric: 'profit', previous: p.profit_mmk, current: c.profit_mmk },
+      ],
+    };
+  }
+
+  if (toolName === 'sales_by_weekday') {
+    const rows = (result.by_weekday ?? []).filter(d => d.revenue_mmk > 0);
+    if (rows.length < 2) return null;
+    return {
+      kind: 'bars',
+      unit: 'mmk',
+      data: (result.by_weekday ?? []).map(d => ({ label: d.weekday.slice(0, 3), value: d.revenue_mmk })),
+    };
+  }
+
+  if (toolName === 'stock_by_category') {
+    const rows = result.categories ?? [];
+    if (rows.length < 2) return null;
+    return {
+      kind: 'bars',
+      unit: 'mmk',
+      data: rows.slice(0, 8).map(c => ({ label: c.category, value: c.retail_value_mmk })),
+    };
+  }
+
   if (toolName === 'low_stock') {
     const products = result.products ?? [];
     if (!products.length) return null;

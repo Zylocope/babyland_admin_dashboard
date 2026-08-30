@@ -323,7 +323,10 @@
       "sales_summary": "အရောင်း data",
       "low_stock": "stock အရေအတွက်",
       "search_products": "ပစ္စည်း စာရင်း",
-      "list_categories": "category များ"
+      "list_categories": "category များ",
+      "compare_periods": "ကာလ နှိုင်းယှဉ်ချက်",
+      "sales_by_weekday": "ရက်အလိုက် အရောင်း",
+      "stock_by_category": "Category အလိုက် Stock"
     }
   },
   "subbar": {
@@ -393,6 +396,16 @@
     "lowStockLine": "ပစ္စည်း {{total}} ခုအနက် {{count}} ခု {{threshold}} အောက် ရှိနေသည်:",
     "noLowStock": "{{threshold}} အောက် ပစ္စည်း မရှိပါ။",
     "categoriesLine": "Category {{count}} ခု: {{list}}",
-    "failed": "ယခု ဖတ်၍ မရပါ။"
+    "failed": "ယခု ဖတ်၍ မရပါ။",
+    "compare": "ပြီးခဲ့သည့်လနှင့်",
+    "stockValue": "Category အလိုက် Stock",
+    "compareRevenue": "ဝင်ငွေ {{current}} / ယခင် {{previous}} {{change}}",
+    "compareProfit": "အမြတ် {{current}} / ယခင် {{previous}} {{change}}",
+    "compareTxns": "အရောင်း {{current}} ကြိမ် / ယခင် {{previous}} ကြိမ် {{change}}",
+    "stockValueLine": "ပစ္စည်း {{products}} မျိုး၊ စျေးနှုန်းအရ {{total}}:"
+  },
+  "aiChart": {
+    "previous": "ယခင်",
+    "current": "ယခု"
   }
 }

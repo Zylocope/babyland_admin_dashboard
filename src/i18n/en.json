@@ -323,7 +323,10 @@
       "sales_summary": "sales data",
       "low_stock": "stock levels",
       "search_products": "product catalogue",
-      "list_categories": "categories"
+      "list_categories": "categories",
+      "compare_periods": "period comparison",
+      "sales_by_weekday": "day-of-week sales",
+      "stock_by_category": "stock by category"
     }
   },
   "subbar": {
@@ -393,6 +396,16 @@
     "lowStockLine": "{{count}} of {{total}} products at or below {{threshold}}:",
     "noLowStock": "Nothing at or below {{threshold}}.",
     "categoriesLine": "{{count}} categories: {{list}}",
-    "failed": "Could not read that just now."
+    "failed": "Could not read that just now.",
+    "compare": "vs last month",
+    "stockValue": "Stock by category",
+    "compareRevenue": "Revenue {{current}} vs {{previous}} {{change}}",
+    "compareProfit": "Profit {{current}} vs {{previous}} {{change}}",
+    "compareTxns": "Transactions {{current}} vs {{previous}} {{change}}",
+    "stockValueLine": "{{products}} products on hand, {{total}} at retail:"
+  },
+  "aiChart": {
+    "previous": "Previous",
+    "current": "Current"
   }
 }

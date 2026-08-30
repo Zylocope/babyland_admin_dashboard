@@ -1,7 +1,7 @@
 // The "data-driven" half of the assistant: every answer comes from these calls,
 // never from the model's memory. Tools run in the browser so they reuse the
 // existing admin session — the /api/chat proxy stays blind to shop data.
-import { format, subDays } from "date-fns";
+import { format, subDays, parseISO, getDay } from "date-fns";
 import { getSaleSummary } from "./salesService";
 import { getAllProducts, searchProductsSimple } from "./productService";
 import { getCategories } from "./categoryService";
@@ -52,7 +52,93 @@ const categoryList = async () => {
   return { count: cats.length, categories: cats.map((c) => c.name) };
 };
 
+// "Am I doing better than last time" — the question a dashboard cannot answer
+// with one number. Runs the same summary over two adjacent ranges.
+const comparePeriods = async ({ period = "month" }: { period?: "week" | "month" }) => {
+  const span = period === "week" ? 7 : 30;
+  const curStart = format(subDays(new Date(), span - 1), "yyyy-MM-dd");
+  const curEnd = today();
+  const prevStart = format(subDays(new Date(), span * 2 - 1), "yyyy-MM-dd");
+  const prevEnd = format(subDays(new Date(), span), "yyyy-MM-dd");
+
+  const [cur, prev] = await Promise.all([
+    getSaleSummary({ start_date: curStart, end_date: curEnd }),
+    getSaleSummary({ start_date: prevStart, end_date: prevEnd }),
+  ]);
+
+  const a = summarizeSales(cur).totals;
+  const b = summarizeSales(prev).totals;
+  const change = (now: number, before: number) =>
+    before ? Math.round(((now - before) / before) * 1000) / 10 : null;
+
+  return {
+    period,
+    current: { range: { start: curStart, end: curEnd }, ...a },
+    previous: { range: { start: prevStart, end: prevEnd }, ...b },
+    change_pct: {
+      revenue: change(a.revenue_mmk, b.revenue_mmk),
+      profit: change(a.profit_mmk, b.profit_mmk),
+      transactions: change(a.transactions, b.transactions),
+    },
+  };
+};
+
+const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
+// Which days actually earn — staffing and opening-hours decisions come from this.
+const salesByWeekday = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {
+  const start = start_date || format(subDays(new Date(), 89), "yyyy-MM-dd");
+  const end = end_date || today();
+  const rows = await getSaleSummary({ start_date: start, end_date: end });
+  if (!rows.length) return { range: { start, end }, note: "No sales recorded in this range." };
+
+  const buckets = WEEKDAYS.map((name) => ({ weekday: name, revenue_mmk: 0, transactions: 0, days: 0 }));
+  const seen = new Set<string>();
+  for (const r of rows) {
+    const idx = getDay(parseISO(r.sale_date));
+    const bucket = buckets[idx];
+    if (!bucket) continue;
+    bucket.revenue_mmk += num(r.total_sale);
+    bucket.transactions += r.transactions;
+    const key = `${idx}:${r.sale_date}`;
+    if (!seen.has(key)) { seen.add(key); bucket.days += 1; }
+  }
+
+  return {
+    range: { start, end },
+    by_weekday: buckets.map((b) => ({
+      ...b,
+      revenue_mmk: Math.round(b.revenue_mmk),
+      avg_per_day_mmk: b.days ? Math.round(b.revenue_mmk / b.days) : 0,
+    })),
+  };
+};
+
+// Where the money is sitting on the shelf, valued at retail (products carry a
+// selling price, not a cost — batch cost lives on inventory).
+const stockByCategory = async () => {
+  const products = await getAllProducts();
+  const groups = new Map<string, { category: string; products: number; units: number; retail_value_mmk: number }>();
+  for (const p of products) {
+    const key = p.category ?? "Uncategorised";
+    const g = groups.get(key) ?? { category: key, products: 0, units: 0, retail_value_mmk: 0 };
+    g.products += 1;
+    g.units += p.quantity_in_stock;
+    g.retail_value_mmk += p.quantity_in_stock * num(p.selling_price);
+    groups.set(key, g);
+  }
+  return {
+    total_products: products.length,
+    categories: [...groups.values()]
+      .map((g) => ({ ...g, retail_value_mmk: Math.round(g.retail_value_mmk) }))
+      .sort((a, b) => b.retail_value_mmk - a.retail_value_mmk),
+  };
+};
+
 const TOOLS = {
+  compare_periods: comparePeriods,
+  sales_by_weekday: salesByWeekday,
+  stock_by_category: stockByCategory,
   sales_summary: salesSummary,
   low_stock: lowStock,
   search_products: productSearch,
@@ -90,6 +176,35 @@ export const toolDeclarations = [
       properties: { query: { type: "string", description: "Product name or barcode." } },
       required: ["query"],
     },
+  },
+  {
+    name: "compare_periods",
+    description:
+      "Compares this week against last week, or this month against last month: revenue, profit, transactions and the percentage change. Use for any 'better or worse than before' question.",
+    parameters: {
+      type: "object",
+      properties: {
+        period: { type: "string", enum: ["week", "month"], description: "Comparison window. Default month." },
+      },
+    },
+  },
+  {
+    name: "sales_by_weekday",
+    description:
+      "Revenue and transactions grouped by day of the week, plus the average per occurrence of that day. Use for questions about which days are busiest or quietest. Defaults to the last 90 days.",
+    parameters: {
+      type: "object",
+      properties: {
+        start_date: { type: "string", description: "Inclusive start date, YYYY-MM-DD." },
+        end_date: { type: "string", description: "Inclusive end date, YYYY-MM-DD." },
+      },
+    },
+  },
+  {
+    name: "stock_by_category",
+    description:
+      "Current stock grouped by category: product count, units on hand, and retail value. Use for questions about where stock or money is concentrated.",
+    parameters: { type: "object", properties: {} },
   },
   {
     name: "list_categories",

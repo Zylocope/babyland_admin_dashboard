@@ -51,6 +51,42 @@ export default function AssistantChart({ spec }) {
     );
   }
 
+  if (spec.kind === 'compare') {
+    const rows = spec.data.map(d => ({ ...d, metric: t(`posDash.${d.metric}`) }));
+    return (
+      <div className="mt-2 border border-app rounded-xl p-3">
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={rows} margin={{ top: 5, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="metric" tick={axis} axisLine={false} tickLine={false} />
+            <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={short} width={40} />
+            <Tooltip formatter={v => formatMMK(v)} contentStyle={tip} />
+            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Bar dataKey="previous" name={t('aiChart.previous')} fill="#94A3B8" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="current" name={t('aiChart.current')} fill="#F97316" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (spec.kind === 'bars') {
+    const money = spec.unit === 'mmk';
+    return (
+      <div className="mt-2 border border-app rounded-xl p-3">
+        <ResponsiveContainer width="100%" height={180}>
+          <BarChart data={spec.data} margin={{ top: 5, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <XAxis dataKey="label" tick={axis} axisLine={false} tickLine={false} interval={0} />
+            <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={money ? short : undefined} width={40} allowDecimals={false} />
+            <Tooltip formatter={v => (money ? formatMMK(v) : v)} contentStyle={tip} />
+            <Bar dataKey="value" name={money ? t('posDash.revenue') : t('table.stock')} fill="#F97316" radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
   if (spec.kind === 'stock') {
     return (
       <div className="mt-2 border border-app rounded-xl p-3">

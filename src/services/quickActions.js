@@ -48,6 +48,24 @@ const lowStockLine = (res, t) => {
   }), ...rows].join('\n');
 };
 
+const compareLine = (res, t) => {
+  if (!res || res.error || !res.current) return t('quick.failed');
+  const { current: c, previous: p, change_pct: d } = res;
+  const arrow = (v) => (v === null ? '' : v > 0 ? `▲ ${v}%` : v < 0 ? `▼ ${Math.abs(v)}%` : '= 0%');
+  return [
+    t('quick.compareRevenue', { current: mmk(c.revenue_mmk), previous: mmk(p.revenue_mmk), change: arrow(d.revenue) }),
+    t('quick.compareProfit', { current: mmk(c.profit_mmk), previous: mmk(p.profit_mmk), change: arrow(d.profit) }),
+    t('quick.compareTxns', { current: c.transactions, previous: p.transactions, change: arrow(d.transactions) }),
+  ].join('\n');
+};
+
+const stockValueLine = (res, t) => {
+  if (!res || res.error || !res.categories?.length) return t('quick.failed');
+  const total = res.categories.reduce((sum, c) => sum + c.retail_value_mmk, 0);
+  const rows = res.categories.slice(0, 8).map(c => `- ${c.category} — ${mmk(c.retail_value_mmk)} (${c.units})`);
+  return [t('quick.stockValueLine', { total: mmk(total), products: res.total_products }), ...rows].join('\n');
+};
+
 const categoriesLine = (res, t) =>
   res?.error ? t('quick.failed') : t('quick.categoriesLine', { count: res.count, list: res.categories.join(', ') });
 
@@ -79,6 +97,20 @@ export const QUICK_ACTIONS = [
     tool: 'low_stock',
     args: () => ({ threshold: 10 }),
     render: lowStockLine,
+  },
+  {
+    key: 'compare',
+    labelKey: 'quick.compare',
+    tool: 'compare_periods',
+    args: () => ({ period: 'month' }),
+    render: compareLine,
+  },
+  {
+    key: 'stockValue',
+    labelKey: 'quick.stockValue',
+    tool: 'stock_by_category',
+    args: () => ({}),
+    render: stockValueLine,
   },
   {
     key: 'categories',
