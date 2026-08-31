@@ -144,17 +144,17 @@ html:not([data-style]) body {
 
 /* --- Glassmorphism (default): translucent + blur + top sheen --- */
 :root {
-  /* Two things make glass read as glass, and neither is opacity:
-     (1) the pane is tinted by what is BEHIND it, never by pure white, and
-     (2) the backdrop has enough contrast that a low-alpha pane still separates.
-     The previous pass had it backwards — a pale backdrop forced the panes up to
-     58-72% white to stay visible, and white at 70% is just a white card. So the
-     blobs carry roughly twice the strength now and the panes sit near a third. */
+  /* Page is back to near-white on purpose. The blobs are faint now — just enough
+     that the wash is not dead flat. Glass does NOT come from a loud backdrop:
+     Apple's material is built from a highlight layer, a shadow layer and a light
+     frosted fill, and on a white page the EDGE is the only thing that can read as
+     glass, because any fill on white just reads as white. See the specular rim
+     further down — that is where the effect actually lives. */
   --page-bg:
-    radial-gradient(58% 48% at 12% 18%, rgba(249, 115, 22, 0.32) 0%, transparent 62%),
-    radial-gradient(52% 44% at 88% 22%, rgba(56, 189, 248, 0.28) 0%, transparent 62%),
-    radial-gradient(56% 50% at 72% 88%, rgba(16, 185, 129, 0.26) 0%, transparent 64%),
-    linear-gradient(135deg, #FFD8BB 0%, #FFECDD 45%, #D6F3E4 100%);
+    radial-gradient(58% 48% at 12% 18%, rgba(249, 115, 22, 0.10) 0%, transparent 62%),
+    radial-gradient(52% 44% at 88% 22%, rgba(56, 189, 248, 0.07) 0%, transparent 62%),
+    radial-gradient(56% 50% at 72% 88%, rgba(16, 185, 129, 0.07) 0%, transparent 64%),
+    linear-gradient(135deg, #FFF5EC 0%, #FFFDFB 45%, #F3FAF6 100%);
   --s-radius: 16px;
 
   /* Warm off-white, not #fff: the pane picks up the peach backdrop instead of
@@ -171,9 +171,15 @@ html:not([data-style]) body {
   --s-card-blur: blur(28px) saturate(180%);
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 24px -10px rgba(28, 25, 23, 0.3);
 
-  --s-nav-hover-bg: rgba(255, 255, 255, 0.28);
-  --s-nav-active-bg: rgba(255, 255, 255, 0.42);
-  --s-nav-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 6px 16px -6px rgba(249, 115, 22, 0.5);
+  --s-nav-hover-bg: rgba(255, 255, 255, 0.3);
+  /* Crystal, not white: the fill is almost nothing. The pill is legible because
+     of the rim above it and the shadow below it, not because it is filled in. */
+  --s-nav-active-bg: rgba(255, 255, 255, 0.14);
+  --s-nav-active-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -2px 3px -1px rgba(28, 25, 23, 0.07),
+    0 1px 2px rgba(28, 25, 23, 0.1),
+    0 8px 18px -8px rgba(28, 25, 23, 0.3);
   --s-nav-active-color: var(--orange-primary);
 }
 .dark {
@@ -195,8 +201,12 @@ html:not([data-style]) body {
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -16px rgba(0, 0, 0, 0.6);
 
   --s-nav-hover-bg: rgba(255, 255, 255, 0.06);
-  --s-nav-active-bg: rgba(255, 255, 255, 0.1);
-  --s-nav-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 16px -6px rgba(249, 115, 22, 0.55);
+  --s-nav-active-bg: rgba(255, 255, 255, 0.08);
+  --s-nav-active-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.28),
+    inset 0 -2px 3px -1px rgba(0, 0, 0, 0.3),
+    0 1px 2px rgba(0, 0, 0, 0.35),
+    0 8px 18px -8px rgba(0, 0, 0, 0.6);
 }
 
 /* Fields inside glass. bg-card is solid #ffffff / #1a1a24 everywhere else, and
@@ -387,6 +397,54 @@ html.dark[data-style="skeuomorphism"] {
   background: var(--s-nav-active-bg);
   box-shadow: var(--s-nav-active-shadow);
   color: var(--s-nav-active-color);
+}
+
+/* ---- Specular rim (glass theme only) ----
+   Apple's Liquid Glass reads as glass because of its edge, not its fill: a
+   stroke that is near-white where the light hits, fades to almost nothing on
+   the shaded side, then picks up a weaker bounce on the far edge. That is the
+   chrome ring on a real glass button.
+
+   A `border` cannot vary around a curve, so the stroke is a linear-gradient
+   painted across the whole element and then masked down to a 1.25px ring:
+   two identical mask layers, one clipped to the content box, XORed so only the
+   padding band survives. 145deg puts the bright end at the top-left.
+
+   Nav items are pills inside a backdrop-filter ancestor, so their own
+   backdrop-filter would be a no-op (a child can only blur its ancestor's paint,
+   not the page) — which is exactly why the edge has to carry the effect. */
+html[data-style="glass"] .surface-nav-item.is-active { position: relative; }
+html[data-style="glass"] .surface-nav-item.is-active::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.85) 22%,
+    rgba(255, 255, 255, 0.15) 46%,
+    rgba(120, 95, 75, 0.22) 62%,
+    rgba(120, 95, 75, 0.3) 82%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  pointer-events: none;
+}
+html.dark[data-style="glass"] .surface-nav-item.is-active::after {
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.35) 22%,
+    rgba(255, 255, 255, 0.05) 46%,
+    rgba(0, 0, 0, 0.45) 62%,
+    rgba(0, 0, 0, 0.5) 82%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
 }
 
 /* Prominent primary action button — elevated + brand glow so page CTAs read
