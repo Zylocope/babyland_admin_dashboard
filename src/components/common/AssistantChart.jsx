@@ -10,7 +10,7 @@ import { useTheme } from '../../context/ThemeContext';
 const tip = {
   borderRadius: 12,
   border: '1px solid var(--border)',
-  background: 'var(--bg-card)',
+  background: 'var(--s-menu-bg, var(--bg-card))',
   fontSize: 12,
   color: 'var(--text-primary)',
 };

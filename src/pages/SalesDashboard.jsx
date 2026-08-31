@@ -20,7 +20,7 @@ import { format, subDays, startOfDay, parseISO } from 'date-fns';
 const PERIODS = ['today', 'week', 'month'];
 const PERIOD_DAYS = { today: 1, week: 7, month: 30 };
 const RECEIPT_PAGE = 100;
-const tip = { borderRadius: 12, border: '1px solid var(--border)', background: 'var(--bg-card)', fontSize: 12, color: 'var(--text-primary)' };
+const tip = { borderRadius: 12, border: '1px solid var(--border)', background: 'var(--s-menu-bg, var(--bg-card))', fontSize: 12, color: 'var(--text-primary)' };
 
 function periodToDates(period) {
   const today = startOfDay(new Date());
