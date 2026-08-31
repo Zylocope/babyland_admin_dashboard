@@ -65,7 +65,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `surface-nav-item flex items-center h-9 mb-0.5 ml-2 text-[15px] active:scale-[0.98] ${isActive
+              `surface-nav-item press-spring flex items-center h-9 mb-0.5 ml-2 text-[15px] ${isActive
                 ? 'is-active font-semibold'
                 : 'text-ink/75 hover:text-brand font-normal'
               } ${collapsed ? 'justify-center px-0' : 'gap-3 px-4'} mr-2`
@@ -113,7 +113,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             onClick={() => navigate('/settings')}
             title={t('nav.settings')}
             aria-label={t('nav.settings')}
-            className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer"
+            className="press-spring flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer"
           >
             <IconSettings size={18} stroke={1.5} />
           </button>
@@ -121,14 +121,14 @@ export default function Sidebar({ collapsed, onToggle }) {
             onClick={toggleDark}
             title={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
             aria-label={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
-            className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer"
+            className="press-spring flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer"
           >
             {darkMode ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
           </button>
         </div>
         <button
           onClick={logout}
-          className={`flex items-center w-full h-8 rounded-full text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'}`}
+          className={`press-spring flex items-center w-full h-8 rounded-full text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'}`}
         >
           <IconLogout size={16} stroke={1.5} />
           {!collapsed && <span>{t('sidebar.logout')}</span>}

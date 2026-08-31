@@ -307,6 +307,27 @@ html.dark[data-style="skeuomorphism"] {
               box-shadow 350ms ease, border-color 350ms ease;
 }
 
+/* Press feel. transform was missing from the transition above, so the press
+   scale snapped with no easing in either direction — that is what made the tap
+   read as flat. Two different curves, which is what makes it feel physical:
+   the press is quick and linear-ish, like the finger is doing it, and the
+   release overshoots slightly past 1 before settling, like a spring. */
+.press-spring {
+  transform: scale(1);
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.press-spring:active {
+  transform: scale(0.955);
+  transition: transform 90ms cubic-bezier(0.4, 0, 0.6, 1);
+}
+@media (prefers-reduced-motion: reduce) {
+  .press-spring,
+  .press-spring:active {
+    transform: none;
+    transition: none;
+  }
+}
+
 .surface-panel {
   background: var(--s-panel-bg);
   border-color: var(--s-panel-border);
