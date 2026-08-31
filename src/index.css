@@ -126,7 +126,6 @@ body {
 
 /* --- Glassmorphism (default): translucent + blur + top sheen --- */
 :root {
-  --nav-scoop-r: 14px;
   --page-bg: linear-gradient(135deg, #FFE4CF 0%, #FFF4ED 38%, #FDF0E4 60%, #D7FBE6 100%);
   --s-radius: 16px;
 
@@ -142,7 +141,6 @@ body {
 
   --s-nav-hover-bg: rgba(255, 255, 255, 0.4);
   --s-nav-active-bg: rgba(255, 255, 255, 0.58);
-  --s-nav-scoop: rgba(255, 255, 255, 0.58);
   --s-nav-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.65), 0 6px 16px -6px rgba(249, 115, 22, 0.5);
   --s-nav-active-color: var(--orange-primary);
 }
@@ -159,7 +157,6 @@ body {
 
   --s-nav-hover-bg: rgba(255, 255, 255, 0.06);
   --s-nav-active-bg: rgba(255, 255, 255, 0.1);
-  --s-nav-scoop: rgba(255, 255, 255, 0.1);
   --s-nav-active-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12), 0 6px 16px -6px rgba(249, 115, 22, 0.55);
 }
 
@@ -180,7 +177,6 @@ html[data-style="neumorphism"] {
 
   --s-nav-hover-bg: transparent;
   --s-nav-active-bg: #ece7e1;
-  --s-nav-scoop: #ece7e1;
   --s-nav-active-shadow: inset 4px 4px 8px #cec7bf, inset -4px -4px 8px #ffffff;
   --s-nav-active-color: var(--orange-primary);
 }
@@ -193,7 +189,6 @@ html.dark[data-style="neumorphism"] {
   --s-card-border: transparent;
   --s-card-shadow: 6px 6px 14px #17181d, -6px -6px 14px #2f323b;
   --s-nav-active-bg: #23252b;
-  --s-nav-scoop: #23252b;
   --s-nav-active-shadow: inset 4px 4px 8px #17181d, inset -4px -4px 8px #2f323b;
 }
 
@@ -214,7 +209,6 @@ html[data-style="flat"] {
 
   --s-nav-hover-bg: var(--orange-light);
   --s-nav-active-bg: rgba(249, 115, 22, 0.16);
-  --s-nav-scoop: rgba(249, 115, 22, 0.16);
   --s-nav-active-shadow: none;
   --s-nav-active-color: var(--orange-primary);
 }
@@ -226,7 +220,6 @@ html.dark[data-style="flat"] {
   --s-card-border: var(--border);
   --s-nav-hover-bg: rgba(249, 115, 22, 0.14);
   --s-nav-active-bg: rgba(249, 115, 22, 0.18);
-  --s-nav-scoop: rgba(249, 115, 22, 0.18);
 }
 
 /* --- Skeuomorphism: material gradient, inner+outer shadow, top bevel --- */
@@ -246,7 +239,6 @@ html[data-style="skeuomorphism"] {
 
   --s-nav-hover-bg: linear-gradient(180deg, #fbf4ea 0%, #f0e5d6 100%);
   --s-nav-active-bg: linear-gradient(180deg, #ecdcc8 0%, #e0cdb4 100%);
-  --s-nav-scoop: #e6d4be;
   --s-nav-active-shadow: inset 0 2px 4px rgba(90, 60, 30, 0.35), inset 0 -1px 0 rgba(255, 255, 255, 0.5);
   --s-nav-active-color: #7a4a12;
 }
@@ -263,7 +255,6 @@ html.dark[data-style="skeuomorphism"] {
 
   --s-nav-hover-bg: linear-gradient(180deg, #35302a 0%, #29241e 100%);
   --s-nav-active-bg: linear-gradient(180deg, #241f19 0%, #2c2720 100%);
-  --s-nav-scoop: #282320;
   --s-nav-active-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6), inset 0 -1px 0 rgba(255, 255, 255, 0.06);
   --s-nav-active-color: #e0b877;
 }
@@ -297,40 +288,6 @@ html.dark[data-style="skeuomorphism"] {
 .surface-nav-item {
   background-color: transparent;
   border-radius: 9999px;
-}
-
-/* Active row runs to the rail's edge as a tab, and the rail curves concavely
-   into it above and below — the shape from the reference sidebar.
-
-   Each fillet is painted as a radial-gradient that is transparent inside the
-   arc and solid outside it, so ONLY the curve itself gets colour. Nothing ever
-   paints the rail, which is what lets this work on glass (translucent) and
-   skeuomorphism (gradient) instead of only the opaque themes. */
-.surface-nav-item.is-tab {
-  border-radius: 9999px 0 0 9999px;
-}
-.nav-scoop {
-  position: absolute;
-  right: 0;
-  width: var(--nav-scoop-r);
-  height: var(--nav-scoop-r);
-  pointer-events: none;
-}
-.nav-scoop-top {
-  bottom: 100%;
-  background: radial-gradient(
-    circle at 0 0,
-    transparent calc(var(--nav-scoop-r) - 0.5px),
-    var(--s-nav-scoop) var(--nav-scoop-r)
-  );
-}
-.nav-scoop-bottom {
-  top: 100%;
-  background: radial-gradient(
-    circle at 0 100%,
-    transparent calc(var(--nav-scoop-r) - 0.5px),
-    var(--s-nav-scoop) var(--nav-scoop-r)
-  );
 }
 .surface-nav-item:hover:not(.is-active) {
   background: var(--s-nav-hover-bg);
