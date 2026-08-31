@@ -326,7 +326,8 @@
       "compare_periods": "period comparison",
       "sales_by_weekday": "day-of-week sales",
       "stock_by_category": "stock by category"
-    }
+    },
+    "quota": "Daily AI limit reached. The instant buttons below still work — they read your data directly without the AI."
   },
   "subbar": {
     "view": "View",

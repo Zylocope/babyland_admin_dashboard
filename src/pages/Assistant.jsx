@@ -7,6 +7,7 @@ import { chartFromTool } from '../services/aiCharts';
 import AssistantChart from '../components/common/AssistantChart';
 
 const MAX_TOOL_ROUNDS = 5;
+const QUOTA_ERROR = 'QUOTA';
 
 const askGemini = async (contents) => {
   const res = await fetch('/api/chat', {
@@ -19,7 +20,13 @@ const askGemini = async (contents) => {
     }),
   });
   const data = await res.json();
-  if (!res.ok) throw new Error(data?.error?.message || data?.error || `AI request failed (${res.status})`);
+  if (!res.ok) {
+    // The free tier is a daily request count, and a typed question spends two of
+    // them. Say that plainly instead of forwarding Google's billing wording.
+    const status = data?.error?.status;
+    if (status === 'RESOURCE_EXHAUSTED' || res.status === 429) throw new Error(QUOTA_ERROR);
+    throw new Error(data?.error?.message || data?.error || `AI request failed (${res.status})`);
+  }
   const content = data?.candidates?.[0]?.content;
   if (!content) throw new Error(data?.promptFeedback?.blockReason || 'Empty response from AI');
   return content;
@@ -81,7 +88,7 @@ export default function Assistant() {
         setContents(next);
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message === QUOTA_ERROR ? t('assistant.quota') : err.message);
     } finally {
       setBusy(false);
     }
