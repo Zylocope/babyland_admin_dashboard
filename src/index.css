@@ -106,6 +106,24 @@ body {
   background-attachment: fixed;
 }
 
+/* A slow drift so the glass backdrop is alive rather than a static wash. Only
+   the blob layers move; the base gradient is pinned. Transform-free, so it
+   composites without repainting the whole page. */
+@keyframes page-drift {
+  0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%; }
+  50%  { background-position: 14% 10%, 86% 12%, 40% 88%, 0% 0%; }
+  100% { background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%; }
+}
+html[data-style="glass"] body,
+html:not([data-style]) body {
+  background-size: 160% 160%, 160% 160%, 160% 160%, 100% 100%;
+  animation: page-drift 48s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  html[data-style="glass"] body,
+  html:not([data-style]) body { animation: none; }
+}
+
 #root { width: 100%; min-height: 100vh; text-align: left; }
 
 /* Keep identical geometry across languages: do NOT scale the root or change
@@ -126,15 +144,23 @@ body {
 
 /* --- Glassmorphism (default): translucent + blur + top sheen --- */
 :root {
-  --page-bg: linear-gradient(135deg, #FFE4CF 0%, #FFF4ED 38%, #FDF0E4 60%, #D7FBE6 100%);
+  /* Glass only reads when there is colour behind it to refract. Four pale
+     pastels blur to near-white, which is why panels used to vanish into the
+     page. These blobs give the backdrop real depth. */
+  --page-bg:
+    radial-gradient(58% 48% at 12% 18%, rgba(249, 115, 22, 0.16) 0%, transparent 62%),
+    radial-gradient(52% 44% at 88% 22%, rgba(56, 189, 248, 0.13) 0%, transparent 62%),
+    radial-gradient(56% 50% at 72% 88%, rgba(16, 185, 129, 0.13) 0%, transparent 64%),
+    linear-gradient(135deg, #FFE7D2 0%, #FFF4ED 45%, #E8FAF0 100%);
   --s-radius: 16px;
 
-  --s-panel-bg: rgba(255, 255, 255, 0.32);
+  --s-panel-bg: rgba(255, 255, 255, 0.58);
   --s-panel-border: rgba(255, 255, 255, 0.75);
   --s-panel-blur: blur(20px) saturate(165%);
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), 0 10px 30px -14px rgba(28, 25, 23, 0.22);
 
-  --s-card-bg: rgba(255, 255, 255, 0.46);
+  --s-card-bg: rgba(255, 255, 255, 0.72);
+  --s-menu-bg: rgba(255, 252, 250, 0.97);
   --s-card-border: rgba(255, 255, 255, 0.72);
   --s-card-blur: blur(20px) saturate(160%);
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6), 0 10px 30px -16px rgba(28, 25, 23, 0.18);
@@ -145,13 +171,20 @@ body {
   --s-nav-active-color: var(--orange-primary);
 }
 .dark {
-  --page-bg: linear-gradient(135deg, #25140A 0%, #0F0F14 45%, #0B1410 70%, #07241A 100%);
+  /* Near-black gave the blur nothing to pick up either. Lifted off pure black
+     and tinted, so glass panels read as glass rather than as grey boxes. */
+  --page-bg:
+    radial-gradient(58% 48% at 12% 18%, rgba(249, 115, 22, 0.34) 0%, transparent 62%),
+    radial-gradient(52% 44% at 88% 22%, rgba(99, 102, 241, 0.32) 0%, transparent 62%),
+    radial-gradient(56% 50% at 72% 88%, rgba(16, 185, 129, 0.26) 0%, transparent 64%),
+    linear-gradient(135deg, #1d1524 0%, #141425 48%, #0e1c1b 100%);
 
   --s-panel-bg: rgba(42, 38, 50, 0.38);
   --s-panel-border: rgba(255, 255, 255, 0.12);
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px -14px rgba(0, 0, 0, 0.65);
 
   --s-card-bg: rgba(42, 38, 50, 0.44);
+  --s-menu-bg: rgba(30, 27, 38, 0.98);
   --s-card-border: rgba(255, 255, 255, 0.1);
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -16px rgba(0, 0, 0, 0.6);
 
@@ -171,6 +204,7 @@ html[data-style="neumorphism"] {
   --s-panel-shadow: 6px 6px 14px #cec7bf, -6px -6px 14px #ffffff;
 
   --s-card-bg: #ece7e1;
+  --s-menu-bg: #f3efea;
   --s-card-border: transparent;
   --s-card-blur: none;
   --s-card-shadow: 6px 6px 14px #cec7bf, -6px -6px 14px #ffffff;
@@ -186,6 +220,7 @@ html.dark[data-style="neumorphism"] {
   --s-panel-border: transparent;
   --s-panel-shadow: 6px 6px 14px #17181d, -6px -6px 14px #2f323b;
   --s-card-bg: #23252b;
+  --s-menu-bg: #2b2d34;
   --s-card-border: transparent;
   --s-card-shadow: 6px 6px 14px #17181d, -6px -6px 14px #2f323b;
   --s-nav-active-bg: #23252b;
@@ -203,6 +238,7 @@ html[data-style="flat"] {
   --s-panel-shadow: none;
 
   --s-card-bg: #ffffff;
+  --s-menu-bg: #ffffff;
   --s-card-border: var(--border);
   --s-card-blur: none;
   --s-card-shadow: none;
@@ -217,6 +253,7 @@ html.dark[data-style="flat"] {
   --s-panel-bg: #1a1a24;
   --s-panel-border: var(--border);
   --s-card-bg: #1a1a24;
+  --s-menu-bg: #1f1f2b;
   --s-card-border: var(--border);
   --s-nav-hover-bg: rgba(249, 115, 22, 0.14);
   --s-nav-active-bg: rgba(249, 115, 22, 0.18);
@@ -233,6 +270,7 @@ html[data-style="skeuomorphism"] {
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 2px 4px rgba(60, 40, 20, 0.25);
 
   --s-card-bg: linear-gradient(180deg, #ffffff 0%, #f1e8dc 100%);
+  --s-menu-bg: #fbf5ec;
   --s-card-border: rgba(120, 90, 60, 0.3);
   --s-card-blur: none;
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.95), inset 0 -2px 4px rgba(120, 90, 60, 0.12), 0 3px 6px rgba(60, 40, 20, 0.22);
@@ -250,6 +288,7 @@ html.dark[data-style="skeuomorphism"] {
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 2px 4px rgba(0, 0, 0, 0.55);
 
   --s-card-bg: linear-gradient(180deg, #302b24 0%, #211d17 100%);
+  --s-menu-bg: #2b261f;
   --s-card-border: rgba(0, 0, 0, 0.5);
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -2px 4px rgba(0, 0, 0, 0.3), 0 3px 6px rgba(0, 0, 0, 0.5);
 
@@ -274,6 +313,16 @@ html.dark[data-style="skeuomorphism"] {
   box-shadow: var(--s-panel-shadow);
   backdrop-filter: var(--s-panel-blur);
   -webkit-backdrop-filter: var(--s-panel-blur);
+}
+
+/* Popovers and dropdowns. Same frame as a card but a solid background, because
+   a menu overlapping page content has to be readable and blur cannot be relied
+   on inside a blurred ancestor. */
+.surface-menu {
+  background: var(--s-menu-bg, var(--s-card-bg));
+  border: 1px solid var(--s-card-border);
+  border-radius: var(--s-radius);
+  box-shadow: var(--s-card-shadow), 0 12px 32px -12px rgba(0, 0, 0, 0.35);
 }
 
 .surface-card {

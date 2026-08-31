@@ -45,7 +45,7 @@ export default function Header({ titleKey }) {
           </button>
 
           {open && (
-            <div className="absolute right-0 mt-2 w-52 surface-card py-1.5 z-40">
+            <div className="absolute right-0 mt-2 w-52 surface-menu py-1.5 z-40">
               <div className="px-3.5 py-2 border-b border-app mb-1">
                 <p className="text-sm font-semibold text-ink truncate">{user?.name}</p>
                 <p className="text-[11px] text-brand">{t(`roles.${user?.role}`)}</p>
