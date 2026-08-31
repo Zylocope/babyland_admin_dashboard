@@ -314,11 +314,17 @@ html.dark[data-style="skeuomorphism"] {
    release overshoots slightly past 1 before settling, like a spring. */
 .press-spring {
   transform: scale(1);
-  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Release: long enough to see, and 1.7 on the third control point overshoots
+     past 1 before settling — that rebound is the part that reads as a spring. */
+  transition: transform 340ms cubic-bezier(0.34, 1.7, 0.64, 1);
 }
 .press-spring:active {
-  transform: scale(0.955);
-  transition: transform 90ms cubic-bezier(0.4, 0, 0.6, 1);
+  transform: scale(0.94);
+  /* Press: near-instant on purpose. A real click only holds the button for
+     ~80ms, so an easing longer than that never reaches the pressed scale and
+     the whole gesture reads as flat — which is exactly what went wrong first
+     time round at 90ms. */
+  transition: transform 30ms linear;
 }
 @media (prefers-reduced-motion: reduce) {
   .press-spring,
@@ -392,8 +398,15 @@ html.dark[data-style="skeuomorphism"] {
 .btn-primary:active { transform: translateY(0); box-shadow: 0 4px 12px -4px rgba(249, 115, 22, 0.5); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
 
-/* Orange focus rings (override browser blue) */
-:focus-visible { outline: 2px solid var(--orange-primary); outline-offset: 2px; }
+/* Orange focus rings (override browser blue).
+   In @layer base on purpose: unlayered CSS outranks every Tailwind utility, so
+   an unlayered rule here silently beat `focus:outline-none` on every input in
+   the app and stacked a second orange ring outside the component's own one.
+   Inside base, a component that draws its own focus ring wins, and everything
+   else still gets this fallback. */
+@layer base {
+  :focus-visible { outline: 2px solid var(--orange-primary); outline-offset: 2px; }
+}
 
 /* Slim warm scrollbars */
 ::-webkit-scrollbar { width: 7px; height: 7px; }
