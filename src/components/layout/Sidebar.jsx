@@ -1,9 +1,9 @@
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
   IconUsers, IconUserCog, IconLogout, IconBabyCarriage,
   IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
-  IconSparkles,
+  IconSparkles, IconSettings,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -27,6 +27,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { user, logout, can } = useAuth();
   const { darkMode, toggleDark } = useTheme();
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
   const isMy = i18n.resolvedLanguage === 'my';
   const visibleItems = NAV_ITEMS.filter(i => can(...i.roles));
 
@@ -83,43 +84,48 @@ export default function Sidebar({ collapsed, onToggle }) {
       {/* Bottom: user + language + dark toggle + logout */}
       <div className="border-t border-app p-2">
         {!collapsed && (
-          <div className="px-2 py-1.5 mb-0.5 flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
-              <span className="inline-block mt-0.5 text-[11px] text-brand font-medium">{t(`roles.${user?.role}`)}</span>
-            </div>
-            <button
-              onClick={toggleDark}
-              title={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
-              className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer flex-shrink-0"
-            >
-              {darkMode ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
-            </button>
+          <div className="px-2 py-1.5 mb-0.5 min-w-0">
+            <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
+            <span className="inline-block mt-0.5 text-[11px] text-brand font-medium">{t(`roles.${user?.role}`)}</span>
           </div>
         )}
 
-        {/* Language toggle — EN / မြန်မာ */}
-        <div className={`flex items-center gap-1 mb-0.5 rounded-full border border-app p-0.5 ${collapsed ? 'flex-col' : ''}`}>
+        {/* Language · settings · theme — the three switches sit together, which is
+            why the header no longer needs a profile menu. */}
+        <div className={`flex items-center gap-1 mb-0.5 ${collapsed ? 'flex-col' : ''}`}>
+          <div className={`flex items-center gap-1 rounded-full border border-app p-0.5 ${collapsed ? 'flex-col w-full' : 'flex-grow'}`}>
+            <button
+              onClick={() => i18n.changeLanguage('en')}
+              title="English"
+              className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${!isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
+            >
+              EN
+            </button>
+            <button
+              onClick={() => i18n.changeLanguage('my')}
+              title="မြန်မာ"
+              className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
+            >
+              {collapsed ? 'MY' : 'မြန်မာ'}
+            </button>
+          </div>
           <button
-            onClick={() => i18n.changeLanguage('en')}
-            className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${!isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
+            onClick={() => navigate('/settings')}
+            title={t('nav.settings')}
+            aria-label={t('nav.settings')}
+            className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer"
           >
-            EN
+            <IconSettings size={18} stroke={1.5} />
           </button>
           <button
-            onClick={() => i18n.changeLanguage('my')}
-            className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
+            onClick={toggleDark}
+            title={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
+            aria-label={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
+            className="flex items-center justify-center w-8 h-8 flex-shrink-0 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer"
           >
-            {collapsed ? 'MY' : 'မြန်မာ'}
-          </button>
-        </div>
-
-        {collapsed && (
-          <button onClick={toggleDark} title={darkMode ? t('sidebar.lightMode') : t('sidebar.darkMode')}
-            className="flex items-center justify-center w-full h-8 rounded-full text-mute hover:text-brand hover:bg-brand-light transition-colors mb-0.5 cursor-pointer">
             {darkMode ? <IconSun size={18} stroke={1.5} /> : <IconMoon size={18} stroke={1.5} />}
           </button>
-        )}
+        </div>
         <button
           onClick={logout}
           className={`flex items-center w-full h-8 rounded-full text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'}`}
