@@ -57,7 +57,7 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Nav */}
       {/* Rows are compact so all nav items fit a ~690px window without scrolling. */}
-      <nav className="flex-1 py-2 overflow-y-auto">
+      <nav className="flex-1 py-4 overflow-y-auto">
         {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
