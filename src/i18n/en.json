@@ -63,8 +63,7 @@
     "lowStockAlert": "{{count}} low-stock items"
   },
   "banner": {
-    "welcome": "Welcome back, {{name}}",
-    "newOrder": "New Order"
+    "welcome": "Welcome back, {{name}}"
   },
   "login": {
     "brand": "Appleland Admin",

@@ -63,8 +63,7 @@
     "lowStockAlert": "လက်ကျန်နည်းပစ္စည်း {{count}} ခု"
   },
   "banner": {
-    "welcome": "ကြိုဆိုပါတယ် မောင်/မ {{name}}",
-    "newOrder": "အော်ဒါအသစ်"
+    "welcome": "ကြိုဆိုပါတယ် မောင်/မ {{name}}"
   },
   "login": {
     "brand": "Appleland Admin",

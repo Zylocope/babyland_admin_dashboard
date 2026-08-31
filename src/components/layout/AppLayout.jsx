@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { IconPlus } from '@tabler/icons-react';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
 import Sidebar from './Sidebar';
@@ -24,7 +23,6 @@ const TITLE_KEYS = {
 export default function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
   const { pathname } = useLocation();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useTranslation();
   // Match on the first path segment so nested routes (/products/new,
@@ -38,18 +36,10 @@ export default function AppLayout() {
         <Header titleKey={titleKey} />
 
         {/* Welcome banner */}
-        <div className="flex items-center justify-between gap-4 px-6 py-4 flex-shrink-0 flex-wrap">
+        <div className="px-6 py-4 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-ink">{t('banner.welcome', { name: user?.name?.split(' ')[0] ?? 'Admin' })}</h2>
             <p className="text-[13px] text-sub mt-0.5">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
-          </div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => navigate('/orders')}
-              className="btn-primary"
-            >
-              <IconPlus size={16} stroke={2} /> {t('banner.newOrder')}
-            </button>
           </div>
         </div>
 
