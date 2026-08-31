@@ -4,6 +4,8 @@ import {
 } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../../utils/currency';
+import { colorAt, seriesColor, referenceColor, STATUS } from '../../utils/chartPalette';
+import { useTheme } from '../../context/ThemeContext';
 
 const tip = {
   borderRadius: 12,
@@ -17,6 +19,8 @@ const short = v => `${(v / 1000).toFixed(0)}K`;
 
 export default function AssistantChart({ spec }) {
   const { t } = useTranslation();
+  const { darkMode } = useTheme();
+  const brand = seriesColor(darkMode);
   if (!spec) return null;
 
   if (spec.kind === 'sales') {
@@ -28,8 +32,8 @@ export default function AssistantChart({ spec }) {
           <AreaChart data={spec.data} margin={{ top: 5, right: 8, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id="aiRev" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#F97316" stopOpacity={0.3} />
-                <stop offset="95%" stopColor="#F97316" stopOpacity={0} />
+                <stop offset="5%" stopColor={brand} stopOpacity={0.3} />
+                <stop offset="95%" stopColor={brand} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
@@ -39,11 +43,11 @@ export default function AssistantChart({ spec }) {
             {spec.hasOnline && <Legend wrapperStyle={{ fontSize: 11 }} />}
             {spec.hasOnline ? (
               <>
-                <Area type="monotone" dataKey="inStore" name={inStore} stroke="#F97316" strokeWidth={2} fill="url(#aiRev)" />
-                <Area type="monotone" dataKey="online" name={online} stroke="#3B82F6" strokeWidth={2} fill="none" />
+                <Area type="monotone" dataKey="inStore" name={inStore} stroke={brand} strokeWidth={2} fill="url(#aiRev)" />
+                <Area type="monotone" dataKey="online" name={online} stroke={colorAt(1, darkMode)} strokeWidth={2} fill="none" />
               </>
             ) : (
-              <Area type="monotone" dataKey="revenue" name={t('posDash.revenue')} stroke="#F97316" strokeWidth={2.5} fill="url(#aiRev)" />
+              <Area type="monotone" dataKey="revenue" name={t('posDash.revenue')} stroke={brand} strokeWidth={2.5} fill="url(#aiRev)" />
             )}
           </AreaChart>
         </ResponsiveContainer>
@@ -62,8 +66,8 @@ export default function AssistantChart({ spec }) {
             <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={short} width={40} />
             <Tooltip formatter={v => formatMMK(v)} contentStyle={tip} />
             <Legend wrapperStyle={{ fontSize: 11 }} />
-            <Bar dataKey="previous" name={t('aiChart.previous')} fill="#94A3B8" radius={[3, 3, 0, 0]} />
-            <Bar dataKey="current" name={t('aiChart.current')} fill="#F97316" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="previous" name={t('aiChart.previous')} fill={referenceColor(darkMode)} isAnimationActive={false} />
+            <Bar dataKey="current" name={t('aiChart.current')} fill={brand} isAnimationActive={false} />
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -80,7 +84,11 @@ export default function AssistantChart({ spec }) {
             <XAxis dataKey="label" tick={axis} axisLine={false} tickLine={false} interval={0} />
             <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={money ? short : undefined} width={40} allowDecimals={false} />
             <Tooltip formatter={v => (money ? formatMMK(v) : v)} contentStyle={tip} />
-            <Bar dataKey="value" name={money ? t('posDash.revenue') : t('table.stock')} fill="#F97316" radius={[3, 3, 0, 0]} />
+            <Bar dataKey="value" name={money ? t('posDash.revenue') : t('table.stock')} isAnimationActive={false}>
+              {spec.data.map((row, i) => (
+                <Cell key={row.label} fill={spec.categorical ? colorAt(i, darkMode) : brand} />
+              ))}
+            </Bar>
           </BarChart>
         </ResponsiveContainer>
       </div>
@@ -96,10 +104,10 @@ export default function AssistantChart({ spec }) {
             <XAxis type="number" tick={axis} axisLine={false} tickLine={false} allowDecimals={false} />
             <YAxis type="category" dataKey="name" tick={axis} axisLine={false} tickLine={false} width={130} />
             <Tooltip contentStyle={tip} />
-            <Bar dataKey="stock" name={t('table.stock')} radius={[0, 3, 3, 0]} barSize={14}>
+            <Bar dataKey="stock" name={t('table.stock')} barSize={14} isAnimationActive={false}>
               {spec.data.map((row, i) => (
                 // Red once it is genuinely nearly gone, amber for merely low.
-                <Cell key={i} fill={row.stock <= 5 ? '#EF4444' : '#F59E0B'} />
+                <Cell key={i} fill={row.stock <= 5 ? STATUS.critical : STATUS.warning} />
               ))}
             </Bar>
           </BarChart>

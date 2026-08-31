@@ -59,6 +59,7 @@ export const chartFromTool = (toolName, result) => {
     return {
       kind: 'bars',
       unit: 'mmk',
+      categorical: false,
       data: (result.by_weekday ?? []).map(d => ({ label: d.weekday.slice(0, 3), value: d.revenue_mmk })),
     };
   }
@@ -69,6 +70,7 @@ export const chartFromTool = (toolName, result) => {
     return {
       kind: 'bars',
       unit: 'mmk',
+      categorical: true,
       data: rows.slice(0, 8).map(c => ({ label: c.category, value: c.retail_value_mmk })),
     };
   }

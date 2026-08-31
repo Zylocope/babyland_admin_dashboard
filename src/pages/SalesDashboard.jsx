@@ -9,6 +9,8 @@ import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
 import { formatMMK, formatMMKShort } from '../utils/currency';
 import { downloadCsv } from '../utils/csv';
+import { colorAt, seriesColor } from '../utils/chartPalette';
+import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
@@ -76,6 +78,7 @@ function DataTable({ columns, rows, empty }) {
 export default function SalesDashboard() {
   const { t } = useTranslation();
   const { isManager } = useAuth();
+  const { darkMode } = useTheme();
   const [view, setView] = useState('channel');
   const [period, setPeriod] = useState('week');
   const [records, setRecords] = useState([]);
@@ -233,8 +236,8 @@ export default function SalesDashboard() {
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
                 <Tooltip formatter={v => formatMMK(v)} contentStyle={tip} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey={inStoreLabel} stackId="rev" fill="#F97316" />
-                <Bar dataKey={onlineLabel} stackId="rev" fill="#3B82F6" radius={[3, 3, 0, 0]} />
+                <Bar dataKey={inStoreLabel} stackId="rev" fill={seriesColor(darkMode)} />
+                <Bar dataKey={onlineLabel} stackId="rev" fill={colorAt(1, darkMode)} radius={[3, 3, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </Panel>
@@ -246,8 +249,8 @@ export default function SalesDashboard() {
           <Panel title={t('posDash.shareToday')}>
             {totals.transactions > 0 ? (
               <div className="flex h-7 rounded-lg overflow-hidden border border-app text-[11px] text-white">
-                <div className="flex items-center justify-center whitespace-nowrap" style={{ width: `${posPct}%`, background: '#F97316' }}>{posPct >= 15 && `${inStoreLabel} ${posPct}%`}</div>
-                <div className="flex items-center justify-center whitespace-nowrap" style={{ width: `${100 - posPct}%`, background: '#3B82F6' }}>{100 - posPct >= 15 && `${onlineLabel} ${100 - posPct}%`}</div>
+                <div className="flex items-center justify-center whitespace-nowrap" style={{ width: `${posPct}%`, background: seriesColor(darkMode) }}>{posPct >= 15 && `${inStoreLabel} ${posPct}%`}</div>
+                <div className="flex items-center justify-center whitespace-nowrap" style={{ width: `${100 - posPct}%`, background: colorAt(1, darkMode) }}>{100 - posPct >= 15 && `${onlineLabel} ${100 - posPct}%`}</div>
               </div>
             ) : <Empty label={t('posDash.noData')} />}
           </Panel>
