@@ -156,6 +156,14 @@ html:not([data-style]) body {
     linear-gradient(135deg, #F9E9F1 0%, #F4ECFA 45%, #EAF0FC 100%);
   /* Liquid glass is soft-bodied — tight corners read as plastic. */
   --s-radius: 20px;
+  
+  /* User provided glass tokens */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+  --glass-reflex-dark: 1;
+  --glass-reflex-light: 1;
+  --saturation: 150%;
 
   /* The fill is almost nothing on purpose. Saturation is what does the work:
      220% pushes the pinks and lilacs behind the pane hard enough that the glass
@@ -171,15 +179,18 @@ html:not([data-style]) body {
   --s-card-bg: rgba(255, 255, 255, 0.12);
   --s-menu-bg: rgba(252, 248, 255, 0.97);
   --s-card-border: rgba(255, 255, 255, 0.3);
-  --s-card-blur: blur(30px) saturate(220%);
-  /* Chromatic edge: white where the light lands, violet where it leaves, plus a
-     coloured glow underneath instead of a grey drop shadow. A neutral shadow
-     under an iridescent pane is what makes it look like plastic. */
+  --s-card-blur: blur(8px) saturate(var(--saturation));
   --s-card-shadow:
-    inset 2px 2px 0 -2px rgba(255, 255, 255, 0.85),
-    inset 0 0 3px 1px rgba(255, 255, 255, 0.7),
-    inset -1px -1px 0 rgba(176, 142, 214, 0.35),
-    0 12px 30px -12px rgba(126, 96, 170, 0.34);
+    inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+    inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent), 
+    inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent), 
+    inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent), 
+    inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent), 
+    inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
+    inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
+    inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
+    0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
+    0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
 
   /* The rim runs through the spectrum rather than white-to-grey — that split of
      colour at the edge is the single most recognisable part of the material. */
@@ -210,6 +221,14 @@ html:not([data-style]) body {
     radial-gradient(52% 44% at 88% 22%, rgba(99, 102, 241, 0.32) 0%, transparent 62%),
     radial-gradient(56% 50% at 72% 88%, rgba(16, 185, 129, 0.26) 0%, transparent 64%),
     linear-gradient(135deg, #1d1524 0%, #141425 48%, #0e1c1b 100%);
+    
+  /* User provided glass tokens */
+  --c-glass: #bbbbbc;
+  --c-light: #fff;
+  --c-dark: #000;
+  --glass-reflex-dark: 2;
+  --glass-reflex-light: 0.3;
+  --saturation: 150%;
 
   --s-panel-bg: rgba(42, 38, 50, 0.26);
   --s-panel-border: rgba(255, 255, 255, 0.12);
@@ -218,10 +237,18 @@ html:not([data-style]) body {
   --s-card-bg: rgba(42, 38, 50, 0.32);
   --s-menu-bg: rgba(30, 27, 38, 0.98);
   --s-card-border: rgba(255, 255, 255, 0.1);
+  --s-card-blur: blur(8px) saturate(var(--saturation));
   --s-card-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
-    inset -1px -1px 0 rgba(0, 0, 0, 0.5),
-    0 10px 30px -16px rgba(0, 0, 0, 0.6);
+    inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+    inset 1.8px 3px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent), 
+    inset -2px -2px 0px -2px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent), 
+    inset -3px -8px 1px -6px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent), 
+    inset -0.3px -1px 4px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 12%), transparent), 
+    inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
+    inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
+    inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
+    0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
+    0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
 
   --s-rim: linear-gradient(
     145deg,
@@ -239,6 +266,12 @@ html:not([data-style]) body {
     inset 0 1px 1px rgba(255, 255, 255, 0.24),
     inset 0 -1px 2px -1px rgba(0, 0, 0, 0.25),
     0 1px 2px -1px rgba(0, 0, 0, 0.4);
+}
+
+@keyframes scaleToggleY {
+  0% { transform: scaleY(1); }
+  50% { transform: scaleY(1.3); }
+  100% { transform: scaleY(1); }
 }
 
 /* Fields inside glass. bg-card is solid #ffffff / #1a1a24 everywhere else, and
@@ -430,6 +463,10 @@ html.dark[data-style="skeuomorphism"] {
   background: var(--s-nav-active-bg);
   box-shadow: var(--s-nav-active-shadow);
   color: var(--s-nav-active-color);
+}
+.surface-nav-item.is-active-glass {
+  color: var(--s-nav-active-color);
+  /* Background and shadow are handled by the absolute positioned sliding pill */
 }
 
 /* ---- Specular rim (glass theme only) ----

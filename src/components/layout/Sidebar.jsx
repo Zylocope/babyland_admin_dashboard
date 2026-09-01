@@ -1,4 +1,5 @@
-import { NavLink, useNavigate } from 'react-router-dom';
+import { useState, useEffect, useRef } from 'react';
+import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
   IconUsers, IconUserCog, IconLogout, IconBabyCarriage,
@@ -28,8 +29,27 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { darkMode, toggleDark } = useTheme();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const isMy = i18n.resolvedLanguage === 'my';
   const visibleItems = NAV_ITEMS.filter(i => can(...i.roles));
+
+  const activeIndex = visibleItems.findIndex(item => 
+    item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)
+  );
+
+  const [animating, setAnimating] = useState(false);
+  const prevIndex = useRef(activeIndex);
+
+  useEffect(() => {
+    if (prevIndex.current !== activeIndex && activeIndex >= 0) {
+      setAnimating(true);
+      const timer = setTimeout(() => setAnimating(false), 440);
+      prevIndex.current = activeIndex;
+      return () => clearTimeout(timer);
+    }
+  }, [activeIndex]);
+
+  const { styleTheme } = useTheme();
 
   return (
     <aside className={`relative flex flex-col surface-panel border-r transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
@@ -58,15 +78,36 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Nav */}
       {/* Rows are compact so all nav items fit a ~690px window without scrolling. */}
-      <nav className="flex-1 py-2 overflow-y-auto">
+      <nav className="flex-1 py-2 overflow-y-auto relative">
+        {styleTheme === 'glass' && activeIndex >= 0 && (
+          <div 
+            className="absolute left-2 right-2 h-9 rounded-full pointer-events-none"
+            style={{
+              top: '8px', // matches py-2
+              backgroundColor: 'color-mix(in srgb, var(--c-glass) 36%, transparent)',
+              boxShadow: `
+                inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
+                inset 2px 1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent), 
+                inset -1.5px -1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent), 
+                inset -2px -6px 1px -5px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent), 
+                inset -1px 2px 3px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
+                inset 0px -4px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
+                0px 3px 6px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent)`,
+              transform: `translateY(${activeIndex * 38}px)`,
+              transition: 'transform 400ms cubic-bezier(1, 0, 0.4, 1)',
+              animation: animating ? 'scaleToggleY 440ms ease' : 'none',
+              zIndex: 0
+            }}
+          />
+        )}
         {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
             to={to}
             end={to === '/'}
             className={({ isActive }) =>
-              `surface-nav-item press-spring flex items-center h-9 mb-0.5 ml-2 text-[15px] ${isActive
-                ? 'is-active font-semibold'
+              `surface-nav-item press-spring flex items-center h-9 mb-0.5 ml-2 text-[15px] relative z-10 ${isActive
+                ? (styleTheme === 'glass' ? 'is-active-glass font-semibold text-brand' : 'is-active font-semibold')
                 : 'text-ink/75 hover:text-brand font-normal'
               } ${collapsed ? 'justify-center px-0' : 'gap-3 px-4'} mr-2`
             }
