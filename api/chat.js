@@ -1,6 +1,6 @@
 // Gemini proxy. Only job: hold the API key. It never touches shop data —
 // the browser runs the tools with its own admin session and posts results back.
-const MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash-lite';
+const MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
 const DAILY_CAP = Number(process.env.GEMINI_DAILY_CAP || 200);
 
 // ponytail: in-memory per-IP cap, resets on cold start. It bounds quota burn, it is
