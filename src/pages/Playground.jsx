@@ -217,6 +217,35 @@ export default function Playground() {
           )}
         </div>
       </div>
+
+      {/* Showcase the new article styles */}
+      <div className="surface-card p-0 overflow-hidden mt-6">
+        <article className="article w-full">
+          <h1>Welcome to the Glassmorphism Theme</h1>
+          <p>
+            This section showcases the new article styles. The glassmorphism theme 
+            adds a sleek, modern touch with dynamic backgrounds and polished components.
+          </p>
+          <div className="box">
+            <h2>Dynamic Box</h2>
+            <p>
+              This box features a highlighted top border and a background that subtly changes
+              based on the active theme, adding depth to the content.
+            </p>
+          </div>
+          <blockquote>
+            "Design is intelligence made visible." — Alina Wheeler
+          </blockquote>
+          <figure>
+            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop" alt="Abstract liquid glass" />
+            <figcaption>A beautiful abstract representation of liquid glass effects.</figcaption>
+          </figure>
+          <p>
+            You can read more about design trends on <a href="#">our design blog</a>.
+          </p>
+        </article>
+      </div>
+
     </div>
   );
 }
