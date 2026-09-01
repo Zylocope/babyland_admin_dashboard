@@ -167,9 +167,12 @@ html:not([data-style]) body {
 
   --s-card-bg: rgba(255, 248, 242, 0.32);
   --s-menu-bg: rgba(255, 252, 250, 0.97);
-  --s-card-border: rgba(255, 255, 255, 0.48);
+  --s-card-border: rgba(255, 255, 255, 0.22);
   --s-card-blur: blur(28px) saturate(180%);
-  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 26px -10px rgba(28, 25, 23, 0.38);
+  --s-card-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.95),
+    inset -1px -1px 0 rgba(120, 95, 75, 0.26),
+    0 10px 26px -10px rgba(28, 25, 23, 0.34);
 
   /* The specular edge, defined once and reused by every glass surface. Bi-tonal:
      near-white where the light lands (top-left), falling through nothing into a
@@ -210,7 +213,10 @@ html:not([data-style]) body {
   --s-card-bg: rgba(42, 38, 50, 0.32);
   --s-menu-bg: rgba(30, 27, 38, 0.98);
   --s-card-border: rgba(255, 255, 255, 0.1);
-  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -16px rgba(0, 0, 0, 0.6);
+  --s-card-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.16),
+    inset -1px -1px 0 rgba(0, 0, 0, 0.5),
+    0 10px 30px -16px rgba(0, 0, 0, 0.6);
 
   --s-rim: linear-gradient(
     145deg,
@@ -449,17 +455,6 @@ html[data-style="glass"] .surface-nav-item.is-active::after {
   pointer-events: none;
 }
 
-/* Same edge on every card, modal and the chat panel — but painted as two
-   background layers rather than the pill's ::after ring: the fill goes to the
-   padding box and the rim gradient to the border box, over a transparent
-   border. No pseudo-element and no position:relative, so cards that already
-   carry absolutely-positioned decorations or overflow-hidden are untouched. */
-html[data-style="glass"] .surface-card {
-  border: 1.5px solid transparent;
-  background:
-    linear-gradient(var(--s-card-bg), var(--s-card-bg)) padding-box,
-    var(--s-rim) border-box;
-}
 
 /* Prominent primary action button — elevated + brand glow so page CTAs read
    as strongly as the chart/data cards. Brand orange is constant across themes. */
