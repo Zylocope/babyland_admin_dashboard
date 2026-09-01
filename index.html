@@ -9,6 +9,18 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
   </head>
   <body>
+    <!-- Liquid Glass lensing. feDisplacementMap needs a filter that lives in the
+         DOM, so it sits here once rather than in a component: index.css points
+         .surface-card at it by id. Turbulence generates the warp field, the blur
+         smooths it so edges bend instead of shattering, and the displacement map
+         pushes the backdrop through it. -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <filter id="glass-warp" x="-12%" y="-12%" width="124%" height="124%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.006 0.006" numOctaves="2" seed="92" result="noise" />
+        <feGaussianBlur in="noise" stdDeviation="3" result="blurred" />
+        <feDisplacementMap in="SourceGraphic" in2="blurred" scale="18" xChannelSelector="R" yChannelSelector="G" />
+      </filter>
+    </svg>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

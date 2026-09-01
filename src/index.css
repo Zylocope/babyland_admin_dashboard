@@ -176,9 +176,9 @@ html:not([data-style]) body {
      coloured glow underneath instead of a grey drop shadow. A neutral shadow
      under an iridescent pane is what makes it look like plastic. */
   --s-card-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 1),
-    inset -1px -1px 0 rgba(176, 142, 214, 0.42),
-    0 0 0 1px rgba(255, 255, 255, 0.28),
+    inset 2px 2px 0 -2px rgba(255, 255, 255, 0.85),
+    inset 0 0 3px 1px rgba(255, 255, 255, 0.7),
+    inset -1px -1px 0 rgba(176, 142, 214, 0.35),
     0 12px 30px -12px rgba(126, 96, 170, 0.34);
 
   /* The rim runs through the spectrum rather than white-to-grey — that split of
@@ -446,6 +446,31 @@ html.dark[data-style="skeuomorphism"] {
    Nav items are pills inside a backdrop-filter ancestor, so their own
    backdrop-filter would be a no-op (a child can only blur its ancestor's paint,
    not the page) — which is exactly why the edge has to carry the effect. */
+/* ---- Lensing (glass theme only) ----
+   The edge above is only half the material. This is the other half: a layer
+   behind the card that takes the page's own pixels and pushes them through a
+   turbulence field, so content near the rim bends the way it does through a
+   real pane. backdrop-filter samples the backdrop, filter: url() warps that
+   sample, and z-index -1 puts the result behind the card's own fill.
+
+   The card must NOT create a stacking context for this — no isolation, no
+   z-index — or the -1 layer is trapped inside and disappears.
+
+   Excluded from scrolling cards on purpose: an absolutely-positioned layer
+   inside an overflow-y-auto box scrolls away with the content instead of
+   staying on the frame. Those keep the edge and lose only the warp. */
+html[data-style="glass"] .surface-card:not(.overflow-y-auto) { position: relative; }
+html[data-style="glass"] .surface-card:not(.overflow-y-auto)::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  filter: url(#glass-warp);
+  pointer-events: none;
+}
 html[data-style="glass"] .surface-nav-item.is-active { position: relative; }
 html[data-style="glass"] .surface-nav-item.is-active::after {
   content: '';
