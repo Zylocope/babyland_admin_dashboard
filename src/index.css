@@ -160,12 +160,12 @@ html:not([data-style]) body {
   /* Warm off-white, not #fff: the pane picks up the peach backdrop instead of
      bleaching it. Blur is up because a thinner pane needs a stronger refraction
      to look like material rather than like reduced opacity. */
-  --s-panel-bg: rgba(255, 248, 242, 0.34);
+  --s-panel-bg: rgba(255, 248, 242, 0.16);
   --s-panel-border: rgba(255, 255, 255, 0.5);
   --s-panel-blur: blur(28px) saturate(185%);
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 26px -10px rgba(28, 25, 23, 0.3);
 
-  --s-card-bg: rgba(255, 248, 242, 0.32);
+  --s-card-bg: rgba(255, 248, 242, 0.14);
   --s-menu-bg: rgba(255, 252, 250, 0.97);
   --s-card-border: rgba(255, 255, 255, 0.22);
   --s-card-blur: blur(28px) saturate(180%);
