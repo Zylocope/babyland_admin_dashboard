@@ -150,10 +150,10 @@ html:not([data-style]) body {
      it. Every earlier attempt failed for the same reason: a white or grey page
      gives a transparent pane nothing to transmit, so it reads as a flat card. */
   --page-bg:
-    radial-gradient(52% 46% at 18% 16%, rgba(214, 226, 255, 0.9) 0%, transparent 64%),
-    radial-gradient(50% 46% at 84% 20%, rgba(255, 206, 233, 0.9) 0%, transparent 64%),
-    radial-gradient(56% 52% at 72% 88%, rgba(228, 205, 255, 0.85) 0%, transparent 66%),
-    linear-gradient(135deg, #F9E9F1 0%, #F4ECFA 45%, #EAF0FC 100%);
+    radial-gradient(52% 46% at 18% 16%, rgba(255, 214, 168, 0.95) 0%, transparent 64%),
+    radial-gradient(50% 46% at 84% 20%, rgba(255, 178, 120, 0.85) 0%, transparent 64%),
+    radial-gradient(56% 52% at 72% 88%, rgba(255, 226, 190, 0.9) 0%, transparent 66%),
+    linear-gradient(135deg, #FFEFDF 0%, #FFF4E8 45%, #FFE7D2 100%);
   /* Liquid glass is soft-bodied — tight corners read as plastic. */
   --s-radius: 20px;
   
@@ -189,19 +189,19 @@ html:not([data-style]) body {
     inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
     inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
     inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
-    0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
-    0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
+    0px 1px 3px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 4%), transparent), 
+    0px 4px 10px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 3%), transparent);
 
   /* The rim runs through the spectrum rather than white-to-grey — that split of
      colour at the edge is the single most recognisable part of the material. */
   --s-rim: linear-gradient(
     145deg,
     rgba(255, 255, 255, 1) 0%,
-    rgba(186, 224, 255, 0.9) 18%,
-    rgba(226, 198, 255, 0.55) 38%,
+    rgba(255, 226, 186, 0.9) 18%,
+    rgba(255, 205, 150, 0.55) 38%,
     rgba(255, 255, 255, 0.2) 52%,
-    rgba(255, 190, 224, 0.75) 70%,
-    rgba(176, 142, 214, 0.6) 86%,
+    rgba(255, 190, 130, 0.7) 70%,
+    rgba(196, 142, 90, 0.55) 86%,
     rgba(255, 255, 255, 0.9) 100%
   );
 
@@ -247,8 +247,8 @@ html:not([data-style]) body {
     inset -1.5px 2.5px 0px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
     inset 0px 3px 4px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
     inset 2px -6.5px 1px -4px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
-    0px 1px 5px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
-    0px 6px 16px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent);
+    0px 1px 3px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 4%), transparent), 
+    0px 4px 10px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 3%), transparent);
 
   --s-rim: linear-gradient(
     145deg,
@@ -525,6 +525,18 @@ html[data-style="glass"] .surface-nav-item.is-active::after {
   pointer-events: none;
 }
 
+
+/* Scrollbars, glass theme only. Nothing else on screen is opaque, so a system
+   scrollbar reads as a white slab bolted onto the pane. Hidden, not disabled:
+   the wheel, trackpad, keyboard and touch all still scroll. */
+html[data-style="glass"] * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html[data-style="glass"] *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
 
 /* Prominent primary action button — elevated + brand glow so page CTAs read
    as strongly as the chart/data cards. Brand orange is constant across themes. */

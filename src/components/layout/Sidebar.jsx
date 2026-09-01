@@ -43,7 +43,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   useEffect(() => {
     if (prevIndex.current !== activeIndex && activeIndex >= 0) {
       setAnimating(true);
-      const timer = setTimeout(() => setAnimating(false), 440);
+      const timer = setTimeout(() => setAnimating(false), 240);
       prevIndex.current = activeIndex;
       return () => clearTimeout(timer);
     }
@@ -103,8 +103,8 @@ export default function Sidebar({ collapsed, onToggle }) {
               // Origin follows the direction of travel, so the pill stretches out
               // behind itself rather than from its middle.
               transformOrigin: activeIndex >= prevIndex.current ? 'top' : 'bottom',
-              transition: 'translate 400ms cubic-bezier(1, 0, 0.4, 1)',
-              animation: animating ? 'scaleToggleY 440ms ease' : 'none',
+              transition: 'translate 220ms cubic-bezier(0.3, 0, 0.2, 1)',
+              animation: animating ? 'scaleToggleY 240ms ease' : 'none',
               zIndex: 0
             }}
           />
