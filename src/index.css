@@ -144,28 +144,33 @@ html:not([data-style]) body {
 
 /* --- Glassmorphism (default): translucent + blur + top sheen --- */
 :root {
-  /* Page is back to near-white on purpose. The blobs are faint now — just enough
-     that the wash is not dead flat. Glass does NOT come from a loud backdrop:
-     Apple's material is built from a highlight layer, a shadow layer and a light
-     frosted fill, and on a white page the EDGE is the only thing that can read as
-     glass, because any fill on white just reads as white. See the specular rim
-     further down — that is where the effect actually lives. */
+  /* A warm neutral grey, not white — and the pools are LIGHT and SHADE, not hue.
+     Transparent-over-white is white at any alpha, which is why no amount of
+     lowering the card fill ever made the cards read as glass. Glass needs
+     something behind it to transmit, and value contrast does that without
+     tinting the whole app orange and green. This mirrors the reference: a lit
+     grey room, panels darker than it, light pooling top-left. */
   --page-bg:
-    radial-gradient(58% 48% at 12% 18%, rgba(249, 115, 22, 0.10) 0%, transparent 62%),
-    radial-gradient(52% 44% at 88% 22%, rgba(56, 189, 248, 0.07) 0%, transparent 62%),
-    radial-gradient(56% 50% at 72% 88%, rgba(16, 185, 129, 0.07) 0%, transparent 64%),
-    linear-gradient(135deg, #FFF5EC 0%, #FFFDFB 45%, #F3FAF6 100%);
+    radial-gradient(58% 48% at 12% 18%, rgba(255, 255, 255, 0.85) 0%, transparent 62%),
+    radial-gradient(52% 44% at 88% 22%, rgba(255, 255, 255, 0.5) 0%, transparent 62%),
+    radial-gradient(56% 50% at 72% 88%, rgba(58, 50, 44, 0.14) 0%, transparent 64%),
+    linear-gradient(135deg, #DED9D3 0%, #EAE7E2 45%, #D7D4CF 100%);
   --s-radius: 16px;
 
   /* Warm off-white, not #fff: the pane picks up the peach backdrop instead of
      bleaching it. Blur is up because a thinner pane needs a stronger refraction
      to look like material rather than like reduced opacity. */
-  --s-panel-bg: rgba(255, 248, 242, 0.16);
+  /* Smoked, not milky. The reference's cards are DARKER than the room behind
+     them — that is why they read as panes of glass. Adding white to a white
+     page can only ever produce a white card, at any alpha. A faint warm grey
+     darkens what is behind it instead of covering it, which is what "see
+     through" actually looks like on a light background. */
+  --s-panel-bg: rgba(92, 78, 70, 0.05);
   --s-panel-border: rgba(255, 255, 255, 0.5);
   --s-panel-blur: blur(28px) saturate(185%);
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 26px -10px rgba(28, 25, 23, 0.3);
 
-  --s-card-bg: rgba(255, 248, 242, 0.14);
+  --s-card-bg: rgba(92, 78, 70, 0.07);
   --s-menu-bg: rgba(255, 252, 250, 0.97);
   --s-card-border: rgba(255, 255, 255, 0.22);
   --s-card-blur: blur(28px) saturate(180%);
@@ -242,7 +247,8 @@ html:not([data-style]) body {
    three themes keep their solid fields. Popovers deliberately do NOT use this
    (see --s-menu-bg): an element inside a backdrop-filter ancestor cannot blur
    the page behind it, so a see-through menu is just unreadable. */
-html[data-style="glass"] { --bg-card: rgba(255, 255, 255, 0.42); }
+html[data-style="glass"] { --bg-card: rgba(92, 78, 70, 0.06); }
+html[data-style="glass"]:not(.dark) { --text-muted: #7c8290; }
 html.dark[data-style="glass"] { --bg-card: rgba(18, 16, 26, 0.38); }
 
 /* --- Neumorphism: bg = page bg, dual soft shadows, no border --- */
