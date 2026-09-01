@@ -11,8 +11,8 @@
 
 :root {
   /* Brand */
-  --orange-primary: #f97316;
-  --orange-hover:   #ea6c0a;
+  --orange-primary: #FF6B1A;
+  --orange-hover:   #E85C0C;
   --orange-light:   #fff4ed;
   --orange-muted:   #fdba74;
 
@@ -150,10 +150,10 @@ html:not([data-style]) body {
      it. Every earlier attempt failed for the same reason: a white or grey page
      gives a transparent pane nothing to transmit, so it reads as a flat card. */
   --page-bg:
-    radial-gradient(54% 48% at 16% 16%, rgba(168, 206, 250, 0.9) 0%, transparent 66%),
-    radial-gradient(50% 46% at 84% 20%, rgba(255, 178, 120, 0.72) 0%, transparent 64%),
-    radial-gradient(56% 52% at 72% 88%, rgba(255, 222, 186, 0.78) 0%, transparent 66%),
-    linear-gradient(135deg, #E9F2FD 0%, #FDF3EA 45%, #FFE9D8 100%);
+    radial-gradient(54% 48% at 16% 16%, rgba(200, 224, 252, 0.5) 0%, transparent 66%),
+    radial-gradient(50% 46% at 84% 20%, rgba(226, 232, 240, 0.45) 0%, transparent 64%),
+    radial-gradient(56% 52% at 72% 88%, rgba(255, 231, 214, 0.42) 0%, transparent 66%),
+    linear-gradient(135deg, #EAF3FF 0%, #F5F7FA 45%, #FFF1E8 100%);
   /* Liquid glass is soft-bodied — tight corners read as plastic. */
   --s-radius: 20px;
   
@@ -197,11 +197,11 @@ html:not([data-style]) body {
   --s-rim: linear-gradient(
     145deg,
     rgba(255, 255, 255, 1) 0%,
-    rgba(255, 226, 186, 0.9) 18%,
-    rgba(255, 205, 150, 0.55) 38%,
+    rgba(226, 240, 255, 0.85) 18%,
+    rgba(214, 224, 238, 0.5) 38%,
     rgba(255, 255, 255, 0.2) 52%,
-    rgba(255, 190, 130, 0.7) 70%,
-    rgba(196, 142, 90, 0.55) 86%,
+    rgba(255, 226, 206, 0.5) 70%,
+    rgba(148, 163, 184, 0.42) 86%,
     rgba(255, 255, 255, 0.9) 100%
   );
 
