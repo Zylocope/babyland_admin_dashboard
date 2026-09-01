@@ -93,8 +93,17 @@ export default function Sidebar({ collapsed, onToggle }) {
                 inset -1px 2px 3px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
                 inset 0px -4px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
                 0px 3px 6px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent)`,
-              transform: `translateY(${activeIndex * 38}px)`,
-              transition: 'transform 400ms cubic-bezier(1, 0, 0.4, 1)',
+              // `translate`, not `transform`. The squash keyframes animate `scale`,
+              // and a keyframe's `transform` REPLACES an inline one — so with
+              // translateY here the pill lost its offset for the whole 440ms and
+              // snapped to the first row and back. translate and scale are
+              // independent properties, so they compose. This is exactly what the
+              // original switcher does (`translate: 76px 0` + `scale: 1.2 1`).
+              translate: `0 ${activeIndex * 38}px`,
+              // Origin follows the direction of travel, so the pill stretches out
+              // behind itself rather than from its middle.
+              transformOrigin: activeIndex >= prevIndex.current ? 'top' : 'bottom',
+              transition: 'translate 400ms cubic-bezier(1, 0, 0.4, 1)',
               animation: animating ? 'scaleToggleY 440ms ease' : 'none',
               zIndex: 0
             }}
