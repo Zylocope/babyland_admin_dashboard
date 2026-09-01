@@ -150,10 +150,10 @@ html:not([data-style]) body {
      it. Every earlier attempt failed for the same reason: a white or grey page
      gives a transparent pane nothing to transmit, so it reads as a flat card. */
   --page-bg:
-    radial-gradient(52% 46% at 18% 16%, rgba(255, 214, 168, 0.95) 0%, transparent 64%),
-    radial-gradient(50% 46% at 84% 20%, rgba(255, 178, 120, 0.85) 0%, transparent 64%),
-    radial-gradient(56% 52% at 72% 88%, rgba(255, 226, 190, 0.9) 0%, transparent 66%),
-    linear-gradient(135deg, #FFEFDF 0%, #FFF4E8 45%, #FFE7D2 100%);
+    radial-gradient(54% 48% at 16% 16%, rgba(168, 206, 250, 0.9) 0%, transparent 66%),
+    radial-gradient(50% 46% at 84% 20%, rgba(255, 178, 120, 0.72) 0%, transparent 64%),
+    radial-gradient(56% 52% at 72% 88%, rgba(255, 222, 186, 0.78) 0%, transparent 66%),
+    linear-gradient(135deg, #E9F2FD 0%, #FDF3EA 45%, #FFE9D8 100%);
   /* Liquid glass is soft-bodied — tight corners read as plastic. */
   --s-radius: 20px;
   
@@ -506,13 +506,22 @@ html[data-style="glass"] .surface-card:not(.overflow-y-auto) { position: relativ
 html[data-style="glass"] .surface-card:not(.overflow-y-auto)::after {
   content: '';
   position: absolute;
-  inset: 0;
+  /* Held 7px inside the card so the displaced edge can never reach the border.
+     The outer ring keeps the card's own backdrop-filter, so it still reads as
+     glass — it just is not lensed. */
+  inset: 7px;
   z-index: -1;
-  border-radius: inherit;
+  border-radius: calc(var(--s-radius) - 7px);
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
   filter: url(#glass-warp);
   pointer-events: none;
+}
+/* Lensing off on small screens. An SVG displacement filter per card is the
+   heaviest paint on the page, and the cards are too small there for the effect
+   to be legible anyway. The edge and blur carry the glass on their own. */
+@media (max-width: 900px) {
+  html[data-style="glass"] .surface-card::after { filter: none; backdrop-filter: none; }
 }
 html[data-style="glass"] .surface-nav-item.is-active { position: relative; }
 html[data-style="glass"] .surface-nav-item.is-active::after {
