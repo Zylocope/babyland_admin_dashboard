@@ -270,9 +270,13 @@ html:not([data-style]) body {
 
 /* `scale`, never `transform` — the pill is positioned with `translate`, and a
    transform keyframe would wipe that out for the length of the animation. */
+/* --stretch is set per move by Sidebar.jsx, so the squash is proportional to
+   how far the pill travelled. Peak sits at 40%, not 50% — the stretch belongs
+   in the fast part of the move, and it should be back to rest before the pill
+   finishes settling, or the landing looks rubbery. */
 @keyframes scaleToggleY {
   0%   { scale: 1 1; }
-  50%  { scale: 1 1.22; }
+  40%  { scale: 1 var(--stretch, 1.15); }
   100% { scale: 1 1; }
 }
 

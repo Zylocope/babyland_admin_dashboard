@@ -37,16 +37,36 @@ export default function Sidebar({ collapsed, onToggle }) {
     item.to === '/' ? location.pathname === '/' : location.pathname.startsWith(item.to)
   );
 
-  const [animating, setAnimating] = useState(false);
   const prevIndex = useRef(activeIndex);
+  // Holds the move that is currently in flight. It has to be state, not a ref:
+  // prevIndex is updated inside the effect, so any later render would recompute
+  // the distance as zero and swap the long duration out from under a transition
+  // that is still running.
+  const [move, setMove] = useState(null);
+
+  // A fixed duration is what made long jumps feel wrong. Dashboard -> Categories
+  // covers four times the distance of Staff -> Customers, so at one duration it
+  // travels four times faster. Apple's motion holds roughly constant *perceived*
+  // speed: further takes longer, but sub-linearly, so a nine-row jump is not nine
+  // times slower. sqrt gives that shape, clamped so nothing crawls or snaps.
+  const rows = move ? move.rows : (Math.abs(activeIndex - prevIndex.current) || 1);
+  const duration = Math.round(Math.min(520, 190 + Math.sqrt(rows) * 105));
+  // Squash scales with distance too. A one-row hop barely deforms; a long throw
+  // stretches, and that is what reads as weight instead of teleporting.
+  const stretch = (1 + Math.min(rows * 0.05, 0.28)).toFixed(3);
+  const origin = move ? move.origin : (activeIndex >= prevIndex.current ? 'top' : 'bottom');
 
   useEffect(() => {
-    if (prevIndex.current !== activeIndex && activeIndex >= 0) {
-      setAnimating(true);
-      const timer = setTimeout(() => setAnimating(false), 240);
-      prevIndex.current = activeIndex;
-      return () => clearTimeout(timer);
-    }
+    if (prevIndex.current === activeIndex || activeIndex < 0) return;
+    const travelled = Math.abs(activeIndex - prevIndex.current) || 1;
+    const ms = Math.round(Math.min(520, 190 + Math.sqrt(travelled) * 105));
+    setMove({
+      rows: travelled,
+      origin: activeIndex > prevIndex.current ? 'top' : 'bottom',
+    });
+    prevIndex.current = activeIndex;
+    const timer = setTimeout(() => setMove(null), ms);
+    return () => clearTimeout(timer);
   }, [activeIndex]);
 
   const { styleTheme } = useTheme();
@@ -102,9 +122,13 @@ export default function Sidebar({ collapsed, onToggle }) {
               translate: `0 ${activeIndex * 38}px`,
               // Origin follows the direction of travel, so the pill stretches out
               // behind itself rather than from its middle.
-              transformOrigin: activeIndex >= prevIndex.current ? 'top' : 'bottom',
-              transition: 'translate 220ms cubic-bezier(0.3, 0, 0.2, 1)',
-              animation: animating ? 'scaleToggleY 240ms ease' : 'none',
+              transformOrigin: origin,
+              // cubic-bezier(0.32, 0.72, 0, 1): leaves fast, lands slow and long.
+              // That asymmetric settle is what reads as Apple rather than as a
+              // slide — an even ease in/out looks mechanical over long distances.
+              ['--stretch']: stretch,
+              transition: `translate ${duration}ms cubic-bezier(0.32, 0.72, 0, 1)`,
+              animation: move ? `scaleToggleY ${duration}ms cubic-bezier(0.32, 0.72, 0, 1)` : 'none',
               zIndex: 0
             }}
           />
