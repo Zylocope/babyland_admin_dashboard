@@ -165,11 +165,24 @@ html:not([data-style]) body {
   --s-panel-blur: blur(28px) saturate(185%);
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 26px -10px rgba(28, 25, 23, 0.3);
 
-  --s-card-bg: rgba(255, 248, 242, 0.42);
+  --s-card-bg: rgba(255, 248, 242, 0.32);
   --s-menu-bg: rgba(255, 252, 250, 0.97);
   --s-card-border: rgba(255, 255, 255, 0.48);
   --s-card-blur: blur(28px) saturate(180%);
-  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 24px -10px rgba(28, 25, 23, 0.3);
+  --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 10px 26px -10px rgba(28, 25, 23, 0.38);
+
+  /* The specular edge, defined once and reused by every glass surface. Bi-tonal:
+     near-white where the light lands (top-left), falling through nothing into a
+     warm shadow on the far side. White alone is invisible on a near-white page. */
+  --s-rim: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 1) 0%,
+    rgba(255, 255, 255, 0.85) 22%,
+    rgba(255, 255, 255, 0.15) 46%,
+    rgba(120, 95, 75, 0.32) 62%,
+    rgba(120, 95, 75, 0.42) 82%,
+    rgba(255, 255, 255, 0.6) 100%
+  );
 
   --s-nav-hover-bg: rgba(255, 255, 255, 0.3);
   /* Crystal, not white: the fill is almost nothing. The pill is legible because
@@ -198,6 +211,16 @@ html:not([data-style]) body {
   --s-menu-bg: rgba(30, 27, 38, 0.98);
   --s-card-border: rgba(255, 255, 255, 0.1);
   --s-card-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 10px 30px -16px rgba(0, 0, 0, 0.6);
+
+  --s-rim: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.35) 22%,
+    rgba(255, 255, 255, 0.05) 46%,
+    rgba(0, 0, 0, 0.45) 62%,
+    rgba(0, 0, 0, 0.5) 82%,
+    rgba(255, 255, 255, 0.22) 100%
+  );
 
   --s-nav-hover-bg: rgba(255, 255, 255, 0.06);
   --s-nav-active-bg: rgba(255, 255, 255, 0.08);
@@ -418,31 +441,24 @@ html[data-style="glass"] .surface-nav-item.is-active::after {
   inset: 0;
   border-radius: inherit;
   padding: 1.5px;
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 0.85) 22%,
-    rgba(255, 255, 255, 0.15) 46%,
-    rgba(120, 95, 75, 0.22) 62%,
-    rgba(120, 95, 75, 0.3) 82%,
-    rgba(255, 255, 255, 0.6) 100%
-  );
+  background: var(--s-rim);
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
           mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
   pointer-events: none;
 }
-html.dark[data-style="glass"] .surface-nav-item.is-active::after {
-  background: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.75) 0%,
-    rgba(255, 255, 255, 0.35) 22%,
-    rgba(255, 255, 255, 0.05) 46%,
-    rgba(0, 0, 0, 0.45) 62%,
-    rgba(0, 0, 0, 0.5) 82%,
-    rgba(255, 255, 255, 0.22) 100%
-  );
+
+/* Same edge on every card, modal and the chat panel — but painted as two
+   background layers rather than the pill's ::after ring: the fill goes to the
+   padding box and the rim gradient to the border box, over a transparent
+   border. No pseudo-element and no position:relative, so cards that already
+   carry absolutely-positioned decorations or overflow-hidden are untouched. */
+html[data-style="glass"] .surface-card {
+  border: 1.5px solid transparent;
+  background:
+    linear-gradient(var(--s-card-bg), var(--s-card-bg)) padding-box,
+    var(--s-rim) border-box;
 }
 
 /* Prominent primary action button — elevated + brand glow so page CTAs read
