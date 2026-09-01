@@ -142,64 +142,64 @@ html:not([data-style]) body {
    Values sourced from the ui-ux-pro-max style references.
    ============================================================ */
 
-/* --- Glassmorphism (default): translucent + blur + top sheen --- */
+/* --- Liquid Glass (light): iridescent, colour-bending --- */
 :root {
-  /* A warm neutral grey, not white — and the pools are LIGHT and SHADE, not hue.
-     Transparent-over-white is white at any alpha, which is why no amount of
-     lowering the card fill ever made the cards read as glass. Glass needs
-     something behind it to transmit, and value contrast does that without
-     tinting the whole app orange and green. This mirrors the reference: a lit
-     grey room, panels darker than it, light pooling top-left. */
+  /* Not white, and not grey. Liquid Glass does not just pass light through, it
+     bends COLOUR — so the page has to carry hue for the panes to have anything
+     to bend. Pink and lilac pools over a rose base, the way the reference does
+     it. Every earlier attempt failed for the same reason: a white or grey page
+     gives a transparent pane nothing to transmit, so it reads as a flat card. */
   --page-bg:
-    radial-gradient(58% 48% at 12% 18%, rgba(255, 255, 255, 0.85) 0%, transparent 62%),
-    radial-gradient(52% 44% at 88% 22%, rgba(255, 255, 255, 0.5) 0%, transparent 62%),
-    radial-gradient(56% 50% at 72% 88%, rgba(58, 50, 44, 0.14) 0%, transparent 64%),
-    linear-gradient(135deg, #DED9D3 0%, #EAE7E2 45%, #D7D4CF 100%);
-  --s-radius: 16px;
+    radial-gradient(52% 46% at 18% 16%, rgba(214, 226, 255, 0.9) 0%, transparent 64%),
+    radial-gradient(50% 46% at 84% 20%, rgba(255, 206, 233, 0.9) 0%, transparent 64%),
+    radial-gradient(56% 52% at 72% 88%, rgba(228, 205, 255, 0.85) 0%, transparent 66%),
+    linear-gradient(135deg, #F9E9F1 0%, #F4ECFA 45%, #EAF0FC 100%);
+  /* Liquid glass is soft-bodied — tight corners read as plastic. */
+  --s-radius: 20px;
 
-  /* Warm off-white, not #fff: the pane picks up the peach backdrop instead of
-     bleaching it. Blur is up because a thinner pane needs a stronger refraction
-     to look like material rather than like reduced opacity. */
-  /* Smoked, not milky. The reference's cards are DARKER than the room behind
-     them — that is why they read as panes of glass. Adding white to a white
-     page can only ever produce a white card, at any alpha. A faint warm grey
-     darkens what is behind it instead of covering it, which is what "see
-     through" actually looks like on a light background. */
-  --s-panel-bg: rgba(92, 78, 70, 0.05);
-  --s-panel-border: rgba(255, 255, 255, 0.5);
-  --s-panel-blur: blur(28px) saturate(185%);
-  --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7), 0 8px 26px -10px rgba(28, 25, 23, 0.3);
+  /* The fill is almost nothing on purpose. Saturation is what does the work:
+     220% pushes the pinks and lilacs behind the pane hard enough that the glass
+     looks like it is bending them rather than dimming them. */
+  --s-panel-bg: rgba(255, 255, 255, 0.1);
+  --s-panel-border: rgba(255, 255, 255, 0.45);
+  --s-panel-blur: blur(30px) saturate(210%);
+  --s-panel-shadow:
+    inset 1px 1px 0 rgba(255, 255, 255, 0.9),
+    inset -1px -1px 0 rgba(170, 140, 210, 0.28),
+    0 10px 30px -14px rgba(120, 95, 165, 0.3);
 
-  --s-card-bg: rgba(92, 78, 70, 0.07);
-  --s-menu-bg: rgba(255, 252, 250, 0.97);
-  --s-card-border: rgba(255, 255, 255, 0.22);
-  --s-card-blur: blur(28px) saturate(180%);
+  --s-card-bg: rgba(255, 255, 255, 0.12);
+  --s-menu-bg: rgba(252, 248, 255, 0.97);
+  --s-card-border: rgba(255, 255, 255, 0.3);
+  --s-card-blur: blur(30px) saturate(220%);
+  /* Chromatic edge: white where the light lands, violet where it leaves, plus a
+     coloured glow underneath instead of a grey drop shadow. A neutral shadow
+     under an iridescent pane is what makes it look like plastic. */
   --s-card-shadow:
-    inset 1px 1px 0 rgba(255, 255, 255, 0.95),
-    inset -1px -1px 0 rgba(120, 95, 75, 0.26),
-    0 10px 26px -10px rgba(28, 25, 23, 0.34);
+    inset 1px 1px 0 rgba(255, 255, 255, 1),
+    inset -1px -1px 0 rgba(176, 142, 214, 0.42),
+    0 0 0 1px rgba(255, 255, 255, 0.28),
+    0 12px 30px -12px rgba(126, 96, 170, 0.34);
 
-  /* The specular edge, defined once and reused by every glass surface. Bi-tonal:
-     near-white where the light lands (top-left), falling through nothing into a
-     warm shadow on the far side. White alone is invisible on a near-white page. */
+  /* The rim runs through the spectrum rather than white-to-grey — that split of
+     colour at the edge is the single most recognisable part of the material. */
   --s-rim: linear-gradient(
     145deg,
     rgba(255, 255, 255, 1) 0%,
-    rgba(255, 255, 255, 0.85) 22%,
-    rgba(255, 255, 255, 0.15) 46%,
-    rgba(120, 95, 75, 0.32) 62%,
-    rgba(120, 95, 75, 0.42) 82%,
-    rgba(255, 255, 255, 0.6) 100%
+    rgba(186, 224, 255, 0.9) 18%,
+    rgba(226, 198, 255, 0.55) 38%,
+    rgba(255, 255, 255, 0.2) 52%,
+    rgba(255, 190, 224, 0.75) 70%,
+    rgba(176, 142, 214, 0.6) 86%,
+    rgba(255, 255, 255, 0.9) 100%
   );
 
-  --s-nav-hover-bg: rgba(255, 255, 255, 0.3);
-  /* Crystal, not white: the fill is almost nothing. The pill is legible because
-     of the rim above it and the shadow below it, not because it is filled in. */
+  --s-nav-hover-bg: rgba(255, 255, 255, 0.28);
   --s-nav-active-bg: rgba(255, 255, 255, 0.14);
   --s-nav-active-shadow:
-    inset 0 1px 1px rgba(255, 255, 255, 0.9),
-    inset 0 -1px 2px -1px rgba(28, 25, 23, 0.05),
-    0 1px 2px -1px rgba(28, 25, 23, 0.12);
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1px 2px -1px rgba(140, 110, 180, 0.16),
+    0 1px 3px -1px rgba(120, 95, 165, 0.22);
   --s-nav-active-color: var(--orange-primary);
 }
 .dark {
@@ -247,8 +247,8 @@ html:not([data-style]) body {
    three themes keep their solid fields. Popovers deliberately do NOT use this
    (see --s-menu-bg): an element inside a backdrop-filter ancestor cannot blur
    the page behind it, so a see-through menu is just unreadable. */
-html[data-style="glass"] { --bg-card: rgba(92, 78, 70, 0.06); }
-html[data-style="glass"]:not(.dark) { --text-muted: #7c8290; }
+html[data-style="glass"] { --bg-card: rgba(255, 255, 255, 0.22); }
+html[data-style="glass"]:not(.dark) { --text-muted: #6f6885; }
 html.dark[data-style="glass"] { --bg-card: rgba(18, 16, 26, 0.38); }
 
 /* --- Neumorphism: bg = page bg, dual soft shadows, no border --- */
