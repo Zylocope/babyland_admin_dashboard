@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { mockDashboard } from '../../data/mock';
 import { formatMMKShort } from '../../utils/currency';
-import ThemeSwitcher from '../ThemeSwitcher';
 
 export default function Header({ titleKey }) {
   const { user } = useAuth();
@@ -24,9 +23,6 @@ export default function Header({ titleKey }) {
           <span className="text-[11px] text-mute uppercase tracking-wide">{t('header.todayRevenue')}</span>
           <span className="text-[15px] font-bold text-brand leading-none mt-0.5">{formatMMKShort(todayRevenue)}</span>
         </div>
-        
-        <ThemeSwitcher />
-
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-brand flex items-center justify-center text-white text-sm font-semibold">
             {user?.name?.[0] ?? 'A'}
