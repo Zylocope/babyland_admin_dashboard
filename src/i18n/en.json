@@ -210,11 +210,17 @@
     "itemCount": "{{n}} items",
     "total": "Total",
     "completeSale": "Complete Sale",
-    "pendingNote": "Sales are held locally — backend sale recording is pending.",
     "receiptTitle": "Sale Complete",
     "recorded": "Recorded to backend.",
     "heldLocally": "Held locally — not yet sent to backend.",
-    "newSale": "New Sale"
+    "newSale": "New Sale",
+    "saleSuccess": "Sale complete",
+    "saleSuccessDesc": "Recorded to the backend.",
+    "saleFailed": "Sale not recorded",
+    "saleFailedDesc": "Nothing was saved. Your cart is still here — try again.",
+    "shortStock": "{{name}} — only {{available}} left, you asked for {{requested}}.",
+    "thisItem": "One item",
+    "backToCart": "Back to cart"
   },
   "orders": {
     "search": "Search by order ID, customer, phone...",

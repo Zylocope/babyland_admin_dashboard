@@ -7,6 +7,18 @@ import { searchProductsSimple, createSale } from '../services/productService';
 
 const num = (v) => Number(v ?? 0);
 
+// A concurrent sale is reported by the backend as
+//   "insufficient inventory for product <uuid>: requested 5, available 3"
+// A uuid is useless at the till, so it is swapped for the cart line's name.
+const SHORTAGE = /insufficient inventory for product ([0-9a-f-]{36}): requested (\d+), available (-?\d+)/i;
+
+const explainSaleError = (err, cart, t) => {
+  const m = SHORTAGE.exec(err?.message ?? '');
+  if (!m) return err?.message ?? '';
+  const name = cart.find(l => l.id === m[1])?.name ?? t('pos.thisItem');
+  return t('pos.shortStock', { name, requested: m[2], available: m[3] });
+};
+
 export default function POS() {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
@@ -15,7 +27,7 @@ export default function POS() {
   const [searchError, setSearchError] = useState('');
   const [cart, setCart] = useState([]);          // [{ id, name, barcode, price, stock, qty }]
   const [submitting, setSubmitting] = useState(false);
-  const [receipt, setReceipt] = useState(null);   // { lines, total, recorded }
+  const [receipt, setReceipt] = useState(null);   // { lines, total, recorded, reason }
   const inputRef = useRef(null);
 
   const addToCart = useCallback((p) => {
@@ -79,19 +91,17 @@ export default function POS() {
     const items = cart.map(l => ({ product_id: l.id, quantity: l.qty }));
     const lines = cart.map(l => ({ name: l.name, qty: l.qty, price: l.price, lineTotal: l.qty * l.price }));
 
-    let recorded = false;
     try {
-      // Forward-wired: succeeds the moment POST /admin/sales exists; until then we
-      // still complete the sale locally so the till is usable for the migration demo.
       await createSale({ sale_products: items });
-      recorded = true;
-    } catch {
-      recorded = false;
-    } finally {
-      setReceipt({ lines, total, recorded });
+      setReceipt({ lines, total, recorded: true });
       setCart([]);
       setQuery('');
       setResults([]);
+    } catch (e) {
+      // The cart is kept on purpose. The sale did not happen, and clearing it
+      // made the cashier retype the whole basket just to retry.
+      setReceipt({ lines, total, recorded: false, reason: explainSaleError(e, cart, t) });
+    } finally {
       setSubmitting(false);
     }
   };
@@ -193,10 +203,6 @@ export default function POS() {
             {submitting ? <IconLoader2 size={18} className="animate-spin" /> : <IconCircleCheck size={18} stroke={1.8} />}
             {t('pos.completeSale')}
           </button>
-          <p className="flex items-start gap-1.5 text-[11px] text-mute">
-            <IconAlertTriangle size={13} stroke={1.6} className="mt-0.5 flex-shrink-0 text-amber-500" />
-            {t('pos.pendingNote')}
-          </p>
         </div>
       </div>
 
@@ -221,7 +227,7 @@ export default function POS() {
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-red-800">{t('pos.saleFailed')}</p>
-                  <p className="text-sm text-mute mt-1">{t('pos.saleFailedDesc')}</p>
+                  <p className="text-sm text-mute mt-1">{receipt.reason || t('pos.saleFailedDesc')}</p>
                 </div>
               </>
             )}
@@ -238,7 +244,7 @@ export default function POS() {
               <span className="tabular-nums">{formatMMK(receipt.total)}</span>
             </div>
             <button onClick={() => setReceipt(null)} className="w-full py-2.5 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover cursor-pointer">
-              {t('pos.newSale')}
+              {receipt.recorded ? t('pos.newSale') : t('pos.backToCart')}
             </button>
           </div>
         )}
