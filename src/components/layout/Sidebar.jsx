@@ -101,11 +101,12 @@ export default function Sidebar({ collapsed, onToggle }) {
         aria-label={collapsed ? t('sidebar.expand') : t('sidebar.collapse')}
         className="absolute top-1/2 -right-3 -translate-y-1/2 z-40 w-6 h-6 rounded-full border border-app bg-card text-mute hover:text-brand hover:border-brand shadow-sm flex items-center justify-center cursor-pointer transition-colors"
       >
-        <IconChevronLeft size={14} stroke={2} className={`transition-transform ${collapsed ? 'rotate-180' : ''}`} />
+        <IconChevronLeft size={14} stroke={2}
+          style={{ transform: collapsed ? 'rotate(180deg)' : 'none', transition: `transform ${COLLAPSE_MS}ms ${COLLAPSE_EASE}` }} />
       </button>
 
       {/* Logo — 64px */}
-      <div className={`flex items-center gap-3 px-5 h-16 border-b border-app ${collapsed ? 'justify-center px-0' : ''}`}>
+      <div className={`flex items-center h-16 border-b border-app ${collapsed ? 'justify-center px-0' : 'gap-3 px-5'}`}>
         <div className="bg-brand text-white rounded-lg p-1.5 flex-shrink-0">
           <IconBabyCarriage size={20} stroke={1.5} />
         </div>
