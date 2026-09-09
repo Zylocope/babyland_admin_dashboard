@@ -293,6 +293,11 @@ html:not([data-style]) body {
    the page behind it, so a see-through menu is just unreadable. */
 html[data-style="glass"] { --bg-card: rgba(255, 255, 255, 0.22); }
 html[data-style="glass"]:not(.dark) { --text-muted: #6f6885; }
+/* Icon-only controls (the collapse handle, the settings and theme toggles) are
+   drawn in text-mute, and #6b7280 on a dark glass backdrop reads as switched
+   off rather than quiet. Lifted for dark glass only, which also helps input
+   placeholders there. */
+html.dark[data-style="glass"] { --text-muted: #99a1b3; }
 html.dark[data-style="glass"] { --bg-card: rgba(18, 16, 26, 0.38); }
 
 /* --- Neumorphism: bg = page bg, dual soft shadows, no border --- */
