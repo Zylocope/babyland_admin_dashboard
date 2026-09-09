@@ -54,7 +54,7 @@ export default function PlaygroundApp() {
           </button>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-5 pb-28 space-y-4">
+        <main className="flex-1 overflow-y-auto px-5 pt-1 pb-28 space-y-4">
           {tab === 'checkin' && (
             <>
               <div className="surface-card p-5">

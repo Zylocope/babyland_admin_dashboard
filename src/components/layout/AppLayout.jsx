@@ -43,7 +43,7 @@ export default function AppLayout() {
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto px-6 pb-6">
+        <main className="flex-1 overflow-y-auto px-6 pt-1 pb-6">
           <Outlet />
         </main>
       </div>
