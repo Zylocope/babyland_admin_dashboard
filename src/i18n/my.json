@@ -296,7 +296,17 @@
     "totalVisitors": "စုစုပေါင်း ဖောက်သည်",
     "checkInsToday": "ယနေ့ ဝင်ရောက်မှု",
     "readyForFree": "အခမဲ့ ရမည့်သူ",
-    "freeGivenToday": "ယနေ့ အခမဲ့ ပေးပြီး"
+    "freeGivenToday": "ယနေ့ အခမဲ့ ပေးပြီး",
+    "totalVisits": "စုစုပေါင်း လာရောက်မှု",
+    "visitorCount": "ဖောက်သည် {{n}} ဦး",
+    "todayBreakdown": "ယနေ့ တိုးတက်မှု",
+    "pointVisits": "အမှတ်ရ လာရောက်မှု",
+    "period": {
+      "today": "ယနေ့",
+      "d7": "၇ ရက်",
+      "d30": "၃၀ ရက်",
+      "all": "အားလုံး"
+    }
   },
   "posDash": {
     "noData": "ဤကာလအတွင်း အရောင်း မရှိပါ",

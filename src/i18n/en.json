@@ -296,7 +296,17 @@
     "totalVisitors": "Total Visitors",
     "checkInsToday": "Check-ins Today",
     "readyForFree": "Ready for Free",
-    "freeGivenToday": "Free Given Today"
+    "freeGivenToday": "Free Given Today",
+    "totalVisits": "Total Visits",
+    "visitorCount": "{{n}} visitors",
+    "todayBreakdown": "Today's Increase",
+    "pointVisits": "Point Visits",
+    "period": {
+      "today": "Today",
+      "d7": "7 days",
+      "d30": "30 days",
+      "all": "All"
+    }
   },
   "posDash": {
     "noData": "No sales in this period",
