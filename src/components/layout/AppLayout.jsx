@@ -30,20 +30,20 @@ export default function AppLayout() {
   const titleKey = TITLE_KEYS['/' + (pathname.split('/')[1] || '')] ?? 'dashboard';
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-screen overflow-hidden gap-4 p-4">
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
-      <div className="flex flex-col flex-1 min-w-0">
+      <div className="flex flex-col flex-1 min-w-0 gap-4">
         <Header titleKey={titleKey} />
 
         {/* Welcome banner */}
-        <div className="px-6 py-4 flex-shrink-0">
+        <div className="px-1 flex-shrink-0">
           <div>
             <h2 className="text-xl font-bold text-ink">{t('banner.welcome', { name: user?.name?.split(' ')[0] ?? 'Admin' })}</h2>
             <p className="text-[13px] text-sub mt-0.5">{format(new Date(), 'EEEE, MMMM d, yyyy')}</p>
           </div>
         </div>
 
-        <main className="flex-1 overflow-y-auto px-6 pt-1 pb-6">
+        <main className="flex-1 overflow-y-auto px-1 pt-1 pb-1">
           <Outlet />
         </main>
       </div>

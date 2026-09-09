@@ -6,9 +6,6 @@ import SearchInput from '../components/common/SearchInput';
 import Gauge from '../components/common/Gauge';
 import { usePlaygroundVisitors, PLAYGROUND_FREE_AT, today } from '../hooks/usePlaygroundVisitors';
 
-// The reference pairs brand orange with a deep navy as its second series.
-// One constant beats a token nothing else needs.
-const NAVY = '#1B2A4A';
 
 const PERIODS = [
   { key: 'today', days: 0 },
@@ -91,7 +88,7 @@ export default function Playground() {
             <MiniStat label={t('playground.totalVisitors')} value={visitors.length}
               pct={visitors.length ? 100 : 0} color="var(--orange-primary)" />
             <MiniStat label={t('playground.readyForFree')} value={readyForFree}
-              pct={pct(readyForFree, visitors.length)} color={NAVY} />
+              pct={pct(readyForFree, visitors.length)} color="var(--series-2-ink)" />
             <MiniStat label={t('playground.freeGivenToday')} value={freeToday}
               pct={pct(freeToday, log.length)} color="var(--status-delivered)" />
           </div>
@@ -104,7 +101,7 @@ export default function Playground() {
             <div className="relative flex-shrink-0">
               <Gauge segments={[
                 { value: log.length - freeToday, color: 'var(--orange-primary)' },
-                { value: freeToday, color: NAVY },
+                { value: freeToday, color: 'var(--series-2-ink)' },
               ]} />
               <div className="absolute inset-x-0 bottom-1 text-center">
                 <p className="text-[30px] font-extrabold text-ink tabular-nums leading-none">{log.length}</p>
@@ -113,7 +110,7 @@ export default function Playground() {
             </div>
             <div className="flex-1 min-w-0 space-y-3">
               <Legend label={t('playground.pointVisits')} value={log.length - freeToday} color="var(--orange-primary)" />
-              <Legend label={t('playground.free')} value={freeToday} color={NAVY} />
+              <Legend label={t('playground.free')} value={freeToday} color="var(--series-2-ink)" />
               <Legend label={t('playground.readyForFree')} value={readyForFree} />
             </div>
           </div>
@@ -199,7 +196,7 @@ export default function Playground() {
                 <div key={i} className="flex items-center justify-between gap-3 text-sm border-b border-app pb-2 last:border-0">
                   <div className="min-w-0 flex items-center gap-3">
                     <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                      style={{ background: l.free ? NAVY : 'var(--orange-primary)' }}>
+                      style={{ background: l.free ? 'var(--series-2)' : 'var(--orange-primary)' }}>
                       {l.free ? <IconGift size={16} stroke={1.8} /> : <IconCheck size={16} stroke={2} />}
                     </span>
                     <div className="min-w-0">
@@ -234,7 +231,7 @@ export default function Playground() {
                 className={`px-3.5 py-1.5 text-xs font-semibold rounded-full transition-colors cursor-pointer ${
                   period === p.key ? 'text-white' : 'text-sub hover:text-ink'
                 }`}
-                style={period === p.key ? { background: NAVY } : undefined}>
+                style={period === p.key ? { background: 'var(--series-2)' } : undefined}>
                 {t(`playground.period.${p.key}`)}
               </button>
             ))}
@@ -266,7 +263,7 @@ export default function Playground() {
                         <div className="h-full rounded-full transition-all"
                           style={{
                             width: `${Math.min(100, (v.points / PLAYGROUND_FREE_AT) * 100)}%`,
-                            background: v.points >= PLAYGROUND_FREE_AT ? NAVY : 'var(--orange-primary)',
+                            background: v.points >= PLAYGROUND_FREE_AT ? 'var(--series-2-ink)' : 'var(--orange-primary)',
                           }} />
                       </div>
                       <span className="text-xs tabular-nums text-sub">{v.points}/{PLAYGROUND_FREE_AT}</span>

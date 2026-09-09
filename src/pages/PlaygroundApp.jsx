@@ -8,7 +8,6 @@ import { useAuth } from '../context/AuthContext';
 import { usePlaygroundVisitors, PLAYGROUND_FREE_AT } from '../hooks/usePlaygroundVisitors';
 import Gauge from '../components/common/Gauge';
 
-const NAVY = '#1B2A4A';
 
 // Full-bleed phone layout: this route sits OUTSIDE AppLayout on purpose, so
 // there is no desktop sidebar or header. Staff hold a phone at the door.
@@ -144,7 +143,7 @@ export default function PlaygroundApp() {
                   <div key={v.id} className="surface-card p-4">
                     <div className="flex items-center gap-3">
                       <span className="w-11 h-11 rounded-2xl flex items-center justify-center text-white flex-shrink-0 font-bold"
-                        style={{ background: ready ? NAVY : 'var(--orange-primary)' }}>
+                        style={{ background: ready ? 'var(--series-2)' : 'var(--orange-primary)' }}>
                         {v.name.slice(0, 1).toUpperCase()}
                       </span>
                       <div className="min-w-0 flex-1">
@@ -162,7 +161,7 @@ export default function PlaygroundApp() {
                       <div className="h-full rounded-full transition-all"
                         style={{
                           width: `${Math.min(100, (v.points / PLAYGROUND_FREE_AT) * 100)}%`,
-                          background: ready ? NAVY : 'var(--orange-primary)',
+                          background: ready ? 'var(--series-2-ink)' : 'var(--orange-primary)',
                         }} />
                     </div>
                     {ready && (
@@ -184,7 +183,7 @@ export default function PlaygroundApp() {
                   <div className="relative flex-shrink-0">
                     <Gauge width={168} segments={[
                       { value: log.length - freeToday, color: 'var(--orange-primary)' },
-                      { value: freeToday, color: NAVY },
+                      { value: freeToday, color: 'var(--series-2-ink)' },
                     ]} />
                     <div className="absolute inset-x-0 bottom-0 text-center">
                       <p className="text-[28px] font-extrabold text-ink tabular-nums leading-none">{log.length}</p>
@@ -194,7 +193,7 @@ export default function PlaygroundApp() {
                   <div className="flex-1 min-w-0 space-y-3">
                     {[
                       { label: t('playground.pointVisits'), value: log.length - freeToday, color: 'var(--orange-primary)' },
-                      { label: t('playground.free'), value: freeToday, color: NAVY },
+                      { label: t('playground.free'), value: freeToday, color: 'var(--series-2-ink)' },
                       { label: t('playground.readyForFree'), value: readyForFree, color: null },
                     ].map(s => (
                       <div key={s.label} className="border-l-2 pl-2.5"
@@ -217,7 +216,7 @@ export default function PlaygroundApp() {
                   <button key={i} onClick={() => setTab(key)}
                     className="press-spring surface-card p-3 flex flex-col items-center gap-2 cursor-pointer">
                     <span className="w-9 h-9 rounded-full border-2 flex items-center justify-center"
-                      style={{ borderColor: NAVY, color: NAVY }}>
+                      style={{ borderColor: 'var(--series-2-ink)', color: 'var(--series-2-ink)' }}>
                       <Icon size={16} stroke={1.8} />
                     </span>
                     <span className="text-[11px] font-medium text-ink text-center leading-tight">{label}</span>
@@ -241,7 +240,7 @@ export default function PlaygroundApp() {
                     {log.map((l, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                          style={{ background: l.free ? NAVY : 'var(--orange-primary)' }}>
+                          style={{ background: l.free ? 'var(--series-2)' : 'var(--orange-primary)' }}>
                           {l.free ? <IconGift size={16} stroke={1.8} /> : <IconCheck size={16} stroke={2} />}
                         </span>
                         <div className="min-w-0 flex-1">

@@ -74,7 +74,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { styleTheme } = useTheme();
 
   return (
-    <aside className={`relative flex flex-col surface-panel border-r transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
+    <aside className={`relative flex flex-col surface-panel border rounded-2xl transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
       {/* Collapse handle — pinned to the middle of the right edge, chevron only. */}
       <button
         onClick={onToggle}

@@ -298,6 +298,20 @@ html[data-style="glass"]:not(.dark) { --text-muted: #6f6885; }
    off rather than quiet. Lifted for dark glass only, which also helps input
    placeholders there. */
 html.dark[data-style="glass"] { --text-muted: #99a1b3; }
+
+/* The second series (free visits / reward-ready) beside brand orange. Two
+   tokens because one colour cannot do both jobs: --series-2 is a FILL that
+   white content sits on, --series-2-ink is a FOREGROUND drawn on the page.
+   Navy works for both in light; on a dark card navy as a foreground is
+   invisible, which is what made the playground tile icons disappear. */
+:root {
+  --series-2: #1B2A4A;
+  --series-2-ink: #1B2A4A;
+}
+.dark {
+  --series-2: #34507F;
+  --series-2-ink: #9DB8E8;
+}
 html.dark[data-style="glass"] { --bg-card: rgba(18, 16, 26, 0.38); }
 
 /* --- Neumorphism: bg = page bg, dual soft shadows, no border --- */

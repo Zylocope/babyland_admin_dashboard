@@ -10,7 +10,7 @@ export default function Header({ titleKey }) {
   const todayRevenue = mockDashboard.todayStoreSales;
 
   return (
-    <header className="h-16 surface-panel border-b flex items-center justify-between px-6 flex-shrink-0 gap-4 z-30">
+    <header className="h-16 surface-panel border rounded-2xl flex items-center justify-between px-6 flex-shrink-0 gap-4 z-30">
       {/* Left: title */}
       <div className="flex items-center gap-4 min-w-0">
         <h1 className="text-lg font-bold text-ink whitespace-nowrap leading-none">{t(`titles.${titleKey}`)}</h1>
