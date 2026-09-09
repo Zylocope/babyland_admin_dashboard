@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { format } from 'date-fns';
@@ -20,8 +20,39 @@ const TITLE_KEYS = {
   '/assistant': 'assistant',
 };
 
+// Below lg the 240px rail leaves too little content column to work with -- at
+// 390px it takes 240 of them. Admin and sale staff are desktop-first but must
+// still be usable on a phone, so the sidebar collapses itself to the 64px rail
+// there. Playground staff have their own app and never see this shell.
+const NARROW = '(max-width: 1023px)';
+
 export default function AppLayout() {
-  const [collapsed, setCollapsed] = useState(false);
+  // Seeded from the query so a phone starts collapsed with no transition on
+  // mount -- the animation should only ever play in response to something.
+  const [collapsed, setCollapsed] = useState(() => window.matchMedia(NARROW).matches);
+
+  // The breakpoint sets the default rather than overriding the choice. Forcing
+  // it would leave the collapse button visibly doing nothing on a phone, which
+  // is exactly the dead-control problem the Dashboard link had.
+  useEffect(() => {
+    const mq = window.matchMedia(NARROW);
+    let was = mq.matches;
+    // Only on an actual crossing. Syncing on every resize event would undo a
+    // manual collapse the moment the window moved at all.
+    const sync = () => {
+      if (mq.matches === was) return;
+      was = mq.matches;
+      setCollapsed(mq.matches);
+    };
+    mq.addEventListener('change', sync);
+    // Belt to that braces: the change event is not delivered under some
+    // viewport emulation, and resize is, so neither alone is relied on.
+    window.addEventListener('resize', sync);
+    return () => {
+      mq.removeEventListener('change', sync);
+      window.removeEventListener('resize', sync);
+    };
+  }, []);
   const { pathname } = useLocation();
   const { user } = useAuth();
   const { t } = useTranslation();

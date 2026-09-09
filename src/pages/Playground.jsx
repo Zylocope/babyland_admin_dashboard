@@ -97,7 +97,7 @@ export default function Playground() {
         {/* Gauge — today's check-ins, split by kind */}
         <div className="xl:col-span-5 surface-card p-6">
           <p className="text-[13px] font-semibold text-ink">{t('playground.todayBreakdown')}</p>
-          <div className="flex items-center gap-4 mt-1">
+          <div className="flex flex-wrap items-center gap-4 mt-1">
             <div className="relative flex-shrink-0">
               <Gauge segments={[
                 { value: log.length - freeToday, color: 'var(--orange-primary)' },
@@ -108,7 +108,7 @@ export default function Playground() {
                 <p className="text-[11px] text-sub mt-1">{t('playground.checkInsToday')}</p>
               </div>
             </div>
-            <div className="flex-1 min-w-0 space-y-3">
+            <div className="flex-1 min-w-[9rem] space-y-3">
               <Legend label={t('playground.pointVisits')} value={log.length - freeToday} color="var(--orange-primary)" />
               <Legend label={t('playground.free')} value={freeToday} color="var(--series-2-ink)" />
               <Legend label={t('playground.readyForFree')} value={readyForFree} />
