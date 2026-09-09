@@ -1,21 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { readStore, writeStore, today } from '../utils/playgroundStore';
 
 export const PLAYGROUND_FREE_AT = 10;
-export const today = () => new Date().toISOString().slice(0, 10);
+export { today };
 
 // Shared by the admin info page and the staff app view. Extracted only because
 // there are two real consumers — the alternative was the same 45 lines twice.
 //
-// ponytail: state is per-consumer, so the two views do NOT see each other's
-// check-ins. That is fine while this is mock/local; when the playground
+// ponytail: state is per-consumer, so two views open at once do NOT see each
+// other's check-ins live -- they share the same starting data and the last one
+// to write wins. That is fine while this is local; when the playground
 // endpoints are wired the store moves to the server and both read the same rows.
 export function usePlaygroundVisitors() {
-  const [visitors, setVisitors] = useState([]);
+  const [visitors, setVisitors] = useState(() => readStore().visitors);
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
   const [result, setResult] = useState(null);
   const [conflict, setConflict] = useState(null);
-  const [log, setLog] = useState([]);
+  const [log, setLog] = useState(() => readStore().log);
+
+  // Persist on every change so a refresh, a locked phone or a dropped tab does
+  // not cost the day's check-ins.
+  useEffect(() => { writeStore(visitors, log); }, [visitors, log]);
 
   const reset = () => { setPhone(''); setName(''); setConflict(null); };
 
