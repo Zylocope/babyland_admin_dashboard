@@ -447,6 +447,12 @@ html.dark[data-style="skeuomorphism"] {
      time round at 90ms. */
   transition: transform 30ms linear;
 }
+/* Sidebar collapse labels. The transition is set inline so the per-row stagger
+   can live with it, so this needs !important to win. */
+@media (prefers-reduced-motion: reduce) {
+  .nav-label { transition: none !important; transition-delay: 0ms !important; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .press-spring,
   .press-spring:active {

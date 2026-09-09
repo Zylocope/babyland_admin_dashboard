@@ -11,6 +11,24 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 // `roles` = staff roles allowed (besides Manager, who sees everything).
+// Collapse motion. Labels are kept MOUNTED and collapsed to zero width instead
+// of being unmounted -- an unmounted label cannot animate, which is why they
+// used to pop. Same curve as the nav pill, so the sidebar has one motion
+// language rather than three.
+const COLLAPSE_MS = 260;
+const COLLAPSE_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
+
+// `i` staggers the cascade on expand only; collapsing all at once reads crisper
+// than watching labels leave one by one.
+const labelStyle = (collapsed, i = 0) => ({
+  opacity: collapsed ? 0 : 1,
+  maxWidth: collapsed ? 0 : '12rem',
+  transform: collapsed ? 'translateX(-4px)' : 'none',
+  transition: ['opacity', 'max-width', 'transform']
+    .map(prop => `${prop} ${COLLAPSE_MS}ms ${COLLAPSE_EASE}`).join(', '),
+  transitionDelay: collapsed ? '0ms' : `${i * 25}ms`,
+});
+
 const NAV_ITEMS = [
   // Manager-only from here (roles: []). Neither staff role lands on a dashboard:
   // TicketStaff go to the playground app, SaleStaff to the till.
@@ -74,7 +92,8 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { styleTheme } = useTheme();
 
   return (
-    <aside className={`relative flex flex-col surface-panel border rounded-2xl transition-all duration-200 ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}>
+    <aside className={`relative flex flex-col surface-panel border rounded-2xl ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}
+      style={{ transition: `width ${COLLAPSE_MS}ms ${COLLAPSE_EASE}` }}>
       {/* Collapse handle — pinned to the middle of the right edge, chevron only. */}
       <button
         onClick={onToggle}
@@ -90,12 +109,10 @@ export default function Sidebar({ collapsed, onToggle }) {
         <div className="bg-brand text-white rounded-lg p-1.5 flex-shrink-0">
           <IconBabyCarriage size={20} stroke={1.5} />
         </div>
-        {!collapsed && (
-          <div className="min-w-0">
-            <p className="font-bold text-brand text-md leading-tight">Appleland</p>
-            <p className="text-[11px] text-mute">{t('sidebar.subtitle')}</p>
-          </div>
-        )}
+        <div className="nav-label min-w-0 overflow-hidden" style={labelStyle(collapsed)}>
+          <p className="font-bold text-brand text-md leading-tight whitespace-nowrap">Appleland</p>
+          <p className="text-[11px] text-mute whitespace-nowrap">{t('sidebar.subtitle')}</p>
+        </div>
       </div>
 
       {/* Nav */}
@@ -135,7 +152,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             }}
           />
         )}
-        {visibleItems.map(({ to, icon: Icon, key }) => (
+        {visibleItems.map(({ to, icon: Icon, key }, i) => (
           <NavLink
             key={to}
             to={to}
@@ -150,7 +167,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             {({ isActive }) => (
               <>
                 <Icon size={20} stroke={isActive ? 1.9 : 1.5} className={isActive ? 'text-brand' : 'text-mute'} />
-                {!collapsed && <span>{t(`nav.${key}`)}</span>}
+                <span className="nav-label overflow-hidden" style={labelStyle(collapsed, i)}>{t(`nav.${key}`)}</span>
               </>
             )}
           </NavLink>
@@ -159,12 +176,10 @@ export default function Sidebar({ collapsed, onToggle }) {
 
       {/* Bottom: user + language + dark toggle + logout */}
       <div className="border-t border-app p-2">
-        {!collapsed && (
-          <div className="px-2 py-1.5 mb-0.5 min-w-0">
-            <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
-            <span className="inline-block mt-0.5 text-[11px] text-brand font-medium">{t(`roles.${user?.role}`)}</span>
-          </div>
-        )}
+        <div className="nav-label px-2 py-1.5 mb-0.5 min-w-0 overflow-hidden" style={labelStyle(collapsed)}>
+          <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
+          <span className="inline-block mt-0.5 text-[11px] text-brand font-medium whitespace-nowrap">{t(`roles.${user?.role}`)}</span>
+        </div>
 
         {/* Language · settings · theme — the three switches sit together, which is
             why the header no longer needs a profile menu. */}
@@ -207,7 +222,7 @@ export default function Sidebar({ collapsed, onToggle }) {
           className={`press-spring flex items-center w-full h-8 rounded-full text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'}`}
         >
           <IconLogout size={16} stroke={1.5} />
-          {!collapsed && <span>{t('sidebar.logout')}</span>}
+          <span className="nav-label overflow-hidden" style={labelStyle(collapsed)}>{t('sidebar.logout')}</span>
         </button>
       </div>
     </aside>
