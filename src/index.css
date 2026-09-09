@@ -501,9 +501,14 @@ html.dark[data-style="skeuomorphism"] {
 
    Excluded from scrolling cards on purpose: an absolutely-positioned layer
    inside an overflow-y-auto box scrolls away with the content instead of
-   staying on the frame. Those keep the edge and lose only the warp. */
-html[data-style="glass"] .surface-card:not(.overflow-y-auto) { position: relative; }
-html[data-style="glass"] .surface-card:not(.overflow-y-auto)::after {
+   staying on the frame. Those keep the edge and lose only the warp.
+
+   .no-lens opts a card out entirely. Modal uses it: a modal card sits inside a
+   fixed z-50 overlay, so its z-index -1 layer paints below the overlay and is
+   never visible — it was a backdrop-filter and an SVG filter rendering for
+   nothing on every dialog. */
+html[data-style="glass"] .surface-card:not(.overflow-y-auto):not(.no-lens) { position: relative; }
+html[data-style="glass"] .surface-card:not(.overflow-y-auto):not(.no-lens)::after {
   content: '';
   position: absolute;
   /* Held 7px inside the card so the displaced edge can never reach the border.
