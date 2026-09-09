@@ -12,7 +12,9 @@ import { useTheme } from '../../context/ThemeContext';
 
 // `roles` = staff roles allowed (besides Manager, who sees everything).
 const NAV_ITEMS = [
-  { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: ['SaleStaff', 'TicketStaff'] },
+  // Not TicketStaff: the index route bounces that role to the playground, so the
+  // link looked dead when they clicked it.
+  { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: ['SaleStaff'] },
   { to: '/pos', icon: IconCashRegister, key: 'pos', roles: ['SaleStaff'] },
   { to: '/sales', icon: IconChartHistogram, key: 'sales', roles: ['SaleStaff'] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },

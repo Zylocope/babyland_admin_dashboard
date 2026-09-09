@@ -44,8 +44,9 @@ function AppRoutes() {
         <ProtectedRoute><RoleRoute roles={['TicketStaff']}><PlaygroundApp /></RoleRoute></ProtectedRoute>
       } />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        {/* Playground staff get the playground dashboard, not the store one. */}
-        <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground" replace /> : <Dashboard />} />
+        {/* Playground staff land in the staff app, not the admin layout — that is
+            the screen they actually work from. /playground stays the info page. */}
+        <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground-app" replace /> : <Dashboard />} />
         <Route path="playground" element={<RoleRoute roles={['TicketStaff']}><Playground /></RoleRoute>} />
         <Route path="pos" element={<RoleRoute roles={['SaleStaff']}><POS /></RoleRoute>} />
         <Route path="sales" element={<RoleRoute roles={['SaleStaff']}><SalesDashboard /></RoleRoute>} />
