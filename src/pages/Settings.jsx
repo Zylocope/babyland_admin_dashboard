@@ -11,7 +11,7 @@ const STYLE_OPTIONS = [
 
 function Section({ title, desc, children }) {
   return (
-    <div className="surface-card p-6">
+    <div className="surface-card is-sheet p-6">
       <h3 className="font-semibold text-ink">{title}</h3>
       {desc && <p className="text-[13px] text-sub mt-0.5 mb-4">{desc}</p>}
       <div className={desc ? '' : 'mt-4'}>{children}</div>
@@ -22,7 +22,7 @@ function Section({ title, desc, children }) {
 function Toggle({ active, onClick, children }) {
   return (
     <button
-      onClick={onClick}
+      onClick={onClick} aria-pressed={active}
       className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors cursor-pointer ${
         active ? 'bg-brand text-white border-brand' : 'bg-card text-sub border-app hover:border-brand hover:text-brand'
       }`}
@@ -62,20 +62,21 @@ export default function Settings() {
 
       {/* Theme style */}
       <Section title={t('settings.theme')} desc={t('settings.themeDesc')}>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3">
           {STYLE_OPTIONS.map(opt => {
             const enabled = activeStyles.includes(opt.id);
             const selected = styleTheme === opt.id;
             return (
               <button
                 key={opt.id}
-                disabled={!enabled}
+                disabled={!enabled} aria-pressed={selected}
                 onClick={() => enabled && setStyle(opt.id)}
-                className={`relative rounded-xl border p-4 text-left transition-all ${
+                className={`relative rounded-xl border p-4 text-left transition-colors ${
                   selected ? 'border-brand ring-2 ring-brand/30' : 'border-app'
                 } ${enabled ? 'cursor-pointer hover:border-brand bg-card' : 'opacity-55 cursor-not-allowed bg-base'}`}
               >
-                <div className="flex items-center justify-between">
+                <div aria-hidden="true" className={`theme-preview preview-${opt.id} mb-4`}><i /><span><b /><b /><b /></span></div>
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-sm font-semibold text-ink">{t(opt.labelKey)}</span>
                   {selected && <IconCheck size={16} stroke={2} className="text-brand" />}
                   {!enabled && <IconLock size={14} stroke={1.5} className="text-mute" />}
@@ -91,3 +92,4 @@ export default function Settings() {
     </div>
   );
 }
+

@@ -1,4 +1,4 @@
-{
+{"navigation": {"menu": "မီနူးဖွင့်ရန်", "skip": "အကြောင်းအရာသို့ သွားရန်"},
   "nav": {
     "dashboard": "Dashboard",
     "products": "ပစ္စည်းများ",
@@ -60,11 +60,9 @@
   "header": {
     "search": "ရှာဖွေရန်...",
     "todayRevenue": "ယနေ့ဝင်ငွေ",
-    "lowStockAlert": "လက်ကျန်နည်းပစ္စည်း {{count}} ခု",
+    "lowStockAlert": "လက်ကျန်နည်းပစ္စည်း {{count}} ခု"
+,
     "revenueUnavailable": "မရနိုင်ပါ"
-  },
-  "banner": {
-    "welcome": "ကြိုဆိုပါတယ် မောင်/မ {{name}}"
   },
   "login": {
     "brand": "Appleland Admin",
@@ -131,10 +129,12 @@
     "view": "အသေးစိတ်ကြည့်ရန်",
     "cancel": "မလုပ်တော့ပါ",
     "close": "ပိတ်ရန်",
+    "loading": "ဖတ်နေသည်...",
     "saveChanges": "သိမ်းဆည်းရန်",
     "allCategories": "အမျိုးအစားအားလုံး",
     "allStatuses": "အခြေအနေအားလုံး",
-    "export": "Export",
+    "export": "Export"
+,
     "notConnected": "ဤစာမျက်နှာသည် backend နှင့် မချိတ်ဆက်ရသေးပါ — ပြထားသည်များမှာ တကယ့်ဒေတာ မဟုတ်ပါ။"
   },
   "badge": {
@@ -204,7 +204,7 @@
     "deleteTitle": "အမျိုးအစား ဖျက်ရန်",
     "deleteMsg": "\"{{name}}\" ကို ဖျက်မလား။ ၎င်းထဲရှိ ပစ္စည်းများ၏ category id မှာ ရှိနေဆဲဖြစ်သည်။"
   },
-  "pos": {
+  "pos": {"decrease": "{{name}} အရေအတွက် လျှော့ရန်", "increase": "{{name}} အရေအတွက် တိုးရန်", "remove": "{{name}} ကို ခြင်းတောင်းမှ ဖယ်ရန်",
     "searchPlaceholder": "Barcode စကင်ဖတ်ပါ သို့မဟုတ် ပစ္စည်းရှာပါ...",
     "startTyping": "ပစ္စည်းရှာရန် စကင်ဖတ်ပါ သို့မဟုတ် ရိုက်ထည့်ပါ",
     "noResults": "ပစ္စည်း မတွေ့ပါ။",
@@ -273,7 +273,8 @@
     "createAccount": "အကောင့် ဖန်တီးရန်",
     "deleteTitle": "အကောင့် ဖျက်ရန်",
     "deleteMsg": "{{name}} ၏ အကောင့်ကို ဖျက်မှာလား။ ဝင်ရောက်ခွင့် အားလုံး ဆုံးရှုံးပါမည်။",
-    "noData": "ဝန်ထမ်း မရှိပါ — backend endpoint မရှိသေးပါ",
+    "noData": "ဝန်ထမ်း မရှိပါ — backend endpoint မရှိသေးပါ"
+,
     "actionsDisabled": "ဝန်ထမ်းအကောင့်များ backend နှင့် မချိတ်ဆက်ရသေးပါ။ သိမ်းပြီးဟု ထင်ရမည်စိုး၍ ဖန်တီး၊ ပြင်၊ ဖျက်ခြင်းများကို ပိတ်ထားသည်။"
   },
   "playground": {
@@ -441,3 +442,4 @@
     "current": "ယခု"
   }
 }
+

@@ -144,7 +144,7 @@ export default function Products() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      <div className="surface-card overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>

@@ -122,13 +122,13 @@ export default function ProductForm() {
         <IconArrowLeft size={16} stroke={1.8} /> {t('productForm.back')}
       </button>
 
-      <div className="surface-card p-6">
+      <div className="surface-card is-sheet p-6">
         <h2 className="text-lg font-semibold text-ink mb-5">
           {isEdit ? t('productForm.editHeading') : t('productForm.addHeading')}
         </h2>
 
         <form onSubmit={submit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-ink mb-1">{t('table.barcode')}</label>
               <input value={form.barcode} onChange={e => set('barcode', e.target.value)} required
@@ -179,7 +179,7 @@ export default function ProductForm() {
               </button>
             </div>
             {addInventory && (
-              <div className="grid grid-cols-2 gap-4 pt-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <div>
                   <label className="block text-xs font-medium text-ink mb-1">{t('productForm.quantityReceived')}</label>
                   <input type="number" min="1" step="1" value={quantityReceived} onChange={e => setQuantityReceived(e.target.value)} required={addInventory}
@@ -227,3 +227,4 @@ export default function ProductForm() {
     </div>
   );
 }
+

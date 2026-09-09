@@ -12,7 +12,7 @@ const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone
 function StaffForm({ t, form, setForm, onSave, onCancel, isCreate }) {
 return (
   <div className="space-y-4">
-    <div className="grid grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
       {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text']].map(([lk, k, type]) => (
         <div key={k}>
           <label className="block text-xs font-medium text-ink mb-1">{t(lk)}</label>
@@ -90,7 +90,7 @@ export default function Staff() {
         </button>
       </div>
 
-      <div className="surface-card overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>
@@ -158,3 +158,4 @@ export default function Staff() {
     </div>
   );
 }
+

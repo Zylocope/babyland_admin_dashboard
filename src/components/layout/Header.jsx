@@ -55,10 +55,13 @@ export default function Header({ titleKey }) {
   const { t } = useTranslation();
 
   return (
-    <header className="h-16 surface-panel border rounded-2xl flex items-center justify-between px-6 flex-shrink-0 gap-4 z-30">
+    <header className="h-16 surface-panel border rounded-2xl flex items-center justify-between px-3 sm:px-5 flex-shrink-0 gap-3 z-30">
       {/* Left: title */}
-      <div className="flex items-center gap-4 min-w-0">
-        <h1 className="text-lg font-bold text-ink whitespace-nowrap leading-none">{t(`titles.${titleKey}`)}</h1>
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold tracking-widest uppercase text-mute">Appleland</p>
+          <h1 className="text-lg font-semibold text-ink truncate leading-snug">{t(`titles.${titleKey}`)}</h1>
+        </div>
       </div>
 
       {/* Right: today revenue + who is signed in. Settings, language, theme and

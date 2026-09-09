@@ -107,13 +107,13 @@ export default function POS() {
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 h-[calc(100vh-190px)]">
+    <div className="pos-workspace grid grid-cols-1 lg:grid-cols-12 gap-4">
       {/* Left: search + product results */}
-      <div className="lg:col-span-7 flex flex-col min-h-0">
+      <div className="pos-search lg:col-span-7 flex flex-col min-h-0">
         <div className="relative mb-4">
           <IconSearch size={18} stroke={1.5} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-mute" />
           <input
-            ref={inputRef}
+            ref={inputRef} aria-label={t('pos.searchPlaceholder')}
             autoFocus
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -129,9 +129,9 @@ export default function POS() {
 
         <div className="flex-1 overflow-y-auto pr-1">
           {results.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-mute text-sm gap-2">
+            <div className="pos-empty h-full flex flex-col items-center justify-center text-mute text-sm gap-2">
               <IconBarcode size={40} stroke={1.2} />
-              {query.trim() ? t('pos.noResults') : t('pos.startTyping')}
+              {searching ? t('common.loading') : query.trim() ? t('pos.noResults') : t('pos.startTyping')}
             </div>
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
@@ -143,7 +143,7 @@ export default function POS() {
                     key={p.id}
                     onClick={() => addToCart(p)}
                     disabled={out || submitting}
-                    className="surface-card p-3 text-left hover:-translate-y-0.5 transition-transform disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    className="pos-product surface-card is-sheet p-4 text-left disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <p className="font-medium text-ink text-sm leading-snug line-clamp-2">{p.name}</p>
                     <p className="text-[11px] text-mute font-mono mt-0.5">{p.barcode}</p>
@@ -162,34 +162,34 @@ export default function POS() {
       </div>
 
       {/* Right: cart */}
-      <div className="lg:col-span-5 surface-card flex flex-col min-h-0">
+      <div className="pos-cart lg:col-span-5 surface-card is-sheet flex flex-col min-h-0">
         <div className="flex items-center gap-2 px-5 py-4 border-b border-app">
           <IconShoppingCart size={18} stroke={1.6} className="text-brand" />
           <h3 className="font-semibold text-ink flex-1">{t('pos.cart')}</h3>
           <span className="text-sm text-sub">{t('pos.itemCount', { n: count })}</span>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-3 py-2 min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
           {cart.length === 0 ? (
-            <div className="h-full flex items-center justify-center text-mute text-sm">{t('pos.emptyCart')}</div>
+            <div className="pos-empty h-full flex items-center justify-center text-mute text-sm">{t('pos.emptyCart')}</div>
           ) : cart.map(l => (
-            <div key={l.id} className="flex items-center gap-2 py-2.5 border-b border-app last:border-0">
+            <div key={l.id} className="pos-cart-line py-3 border-b border-app last:border-0">
               <div className="min-w-0 flex-1">
                 <p className="text-sm font-medium text-ink truncate">{l.name}</p>
                 <p className="text-xs text-mute">{formatMMK(l.price)} × {l.qty}</p>
               </div>
-              <div className="flex items-center gap-1.5">
-                <button onClick={() => setQty(l.id, l.qty - 1)} disabled={submitting} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconMinus size={13} /></button>
+              <div className="pos-quantity row-start-2">
+                <button aria-label={t('pos.decrease', { name: l.name })} onClick={() => setQty(l.id, l.qty - 1)} disabled={submitting} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconMinus size={13} /></button>
                 <span className="w-7 text-center text-sm tabular-nums">{l.qty}</span>
-                <button onClick={() => setQty(l.id, l.qty + 1)} disabled={l.qty >= l.stock || submitting} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconPlus size={13} /></button>
+                <button aria-label={t('pos.increase', { name: l.name })} onClick={() => setQty(l.id, l.qty + 1)} disabled={l.qty >= l.stock || submitting} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconPlus size={13} /></button>
               </div>
-              <span className="w-20 text-right text-sm font-medium text-ink tabular-nums">{formatMMK(l.qty * l.price)}</span>
-              <button onClick={() => removeLine(l.id)} disabled={submitting} className="p-1 text-mute hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconTrash size={14} /></button>
+              <span key={l.qty} className="pos-line-value col-start-2 row-start-1 text-right text-sm font-semibold text-ink tabular-nums self-center rounded">{formatMMK(l.qty * l.price)}</span>
+              <button aria-label={t('pos.remove', { name: l.name })} onClick={() => removeLine(l.id)} disabled={submitting} className="pos-remove justify-self-end col-start-2 row-start-2 text-mute hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconTrash size={14} /></button>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-app p-5 space-y-3">
+        <div className="pos-checkout border-t border-app p-4 sm:p-5 space-y-3">
           {/* ponytail: payment method + discount go here once the sales schema gains them. */}
           <div className="flex items-center justify-between text-lg font-bold text-ink">
             <span>{t('pos.total')}</span>
@@ -216,7 +216,7 @@ export default function POS() {
                   <IconCircleCheck size={32} className="text-green-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-green-800">{t('pos.saleSuccess')}</p>
+                  <p className="text-lg font-semibold text-green-800 dark:text-green-300">{t('pos.saleSuccess')}</p>
                   <p className="text-sm text-mute mt-1">{t('pos.saleSuccessDesc')}</p>
                 </div>
               </>
@@ -226,7 +226,7 @@ export default function POS() {
                   <IconAlertTriangle size={32} className="text-red-600" />
                 </div>
                 <div>
-                  <p className="text-lg font-semibold text-red-800">{t('pos.saleFailed')}</p>
+                  <p className="text-lg font-semibold text-red-800 dark:text-red-300">{t('pos.saleFailed')}</p>
                   <p className="text-sm text-mute mt-1">{receipt.reason || t('pos.saleFailedDesc')}</p>
                 </div>
               </>
@@ -252,3 +252,4 @@ export default function POS() {
     </div>
   );
 }
+

@@ -106,24 +106,6 @@ body {
   background-attachment: fixed;
 }
 
-/* A slow drift so the glass backdrop is alive rather than a static wash. Only
-   the blob layers move; the base gradient is pinned. Transform-free, so it
-   composites without repainting the whole page. */
-@keyframes page-drift {
-  0%   { background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%; }
-  50%  { background-position: 14% 10%, 86% 12%, 40% 88%, 0% 0%; }
-  100% { background-position: 0% 0%, 100% 0%, 50% 100%, 0% 0%; }
-}
-html[data-style="glass"] body,
-html:not([data-style]) body {
-  background-size: 160% 160%, 160% 160%, 160% 160%, 100% 100%;
-  animation: page-drift 48s ease-in-out infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-  html[data-style="glass"] body,
-  html:not([data-style]) body { animation: none; }
-}
-
 #root { width: 100%; min-height: 100vh; text-align: left; }
 
 /* Keep identical geometry across languages: do NOT scale the root or change
@@ -196,19 +178,6 @@ html:not([data-style]) body {
     0px 1px 3px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 4%), transparent), 
     0px 4px 10px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 3%), transparent);
 
-  /* The rim runs through the spectrum rather than white-to-grey — that split of
-     colour at the edge is the single most recognisable part of the material. */
-  --s-rim: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 1) 0%,
-    rgba(226, 240, 255, 0.85) 18%,
-    rgba(214, 224, 238, 0.5) 38%,
-    rgba(255, 255, 255, 0.2) 52%,
-    rgba(255, 226, 206, 0.5) 70%,
-    rgba(148, 163, 184, 0.42) 86%,
-    rgba(255, 255, 255, 0.9) 100%
-  );
-
   --s-nav-hover-bg: rgba(255, 255, 255, 0.28);
   --s-nav-active-bg: rgba(255, 255, 255, 0.14);
   --s-nav-active-shadow:
@@ -255,34 +224,12 @@ html:not([data-style]) body {
     0px 1px 3px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 4%), transparent), 
     0px 4px 10px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 3%), transparent);
 
-  --s-rim: linear-gradient(
-    145deg,
-    rgba(255, 255, 255, 0.75) 0%,
-    rgba(255, 255, 255, 0.35) 22%,
-    rgba(255, 255, 255, 0.05) 46%,
-    rgba(0, 0, 0, 0.45) 62%,
-    rgba(0, 0, 0, 0.5) 82%,
-    rgba(255, 255, 255, 0.22) 100%
-  );
-
   --s-nav-hover-bg: rgba(255, 255, 255, 0.06);
   --s-nav-active-bg: rgba(255, 255, 255, 0.08);
   --s-nav-active-shadow:
     inset 0 1px 1px rgba(255, 255, 255, 0.24),
     inset 0 -1px 2px -1px rgba(0, 0, 0, 0.25),
     0 1px 2px -1px rgba(0, 0, 0, 0.4);
-}
-
-/* `scale`, never `transform` — the pill is positioned with `translate`, and a
-   transform keyframe would wipe that out for the length of the animation. */
-/* --stretch is set per move by Sidebar.jsx, so the squash is proportional to
-   how far the pill travelled. Peak sits at 40%, not 50% — the stretch belongs
-   in the fast part of the move, and it should be back to rest before the pill
-   finishes settling, or the landing looks rubbery. */
-@keyframes scaleToggleY {
-  0%   { scale: 1 1; }
-  40%  { scale: 1 var(--stretch, 1.15); }
-  100% { scale: 1 1; }
 }
 
 /* Fields inside glass. bg-card is solid #ffffff / #1a1a24 everywhere else, and
@@ -423,43 +370,11 @@ html.dark[data-style="skeuomorphism"] {
 .surface-panel,
 .surface-card,
 .surface-nav-item {
-  /* Cross-fade every surface property on theme switch (300–400ms). */
-  transition: background-color 350ms ease, backdrop-filter 350ms ease,
-              box-shadow 350ms ease, border-color 350ms ease;
+  transition: background-color 180ms ease, border-color 180ms ease;
 }
 
-/* Press feel. transform was missing from the transition above, so the press
-   scale snapped with no easing in either direction — that is what made the tap
-   read as flat. Two different curves, which is what makes it feel physical:
-   the press is quick and linear-ish, like the finger is doing it, and the
-   release overshoots slightly past 1 before settling, like a spring. */
-.press-spring {
-  transform: scale(1);
-  /* Release: long enough to see, and 1.7 on the third control point overshoots
-     past 1 before settling — that rebound is the part that reads as a spring. */
-  transition: transform 340ms cubic-bezier(0.34, 1.7, 0.64, 1);
-}
-.press-spring:active {
-  transform: scale(0.94);
-  /* Press: near-instant on purpose. A real click only holds the button for
-     ~80ms, so an easing longer than that never reaches the pressed scale and
-     the whole gesture reads as flat — which is exactly what went wrong first
-     time round at 90ms. */
-  transition: transform 30ms linear;
-}
-/* Sidebar collapse labels. The transition is set inline so the per-row stagger
-   can live with it, so this needs !important to win. */
-@media (prefers-reduced-motion: reduce) {
-  .nav-label { transition: none !important; transition-delay: 0ms !important; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .press-spring,
-  .press-spring:active {
-    transform: none;
-    transition: none;
-  }
-}
+.press-spring { transition: background-color 140ms ease, color 140ms ease, transform 140ms ease; }
+.press-spring:active:not(:disabled) { transform: scale(0.985); }
 
 .surface-panel {
   background: var(--s-panel-bg);
@@ -488,6 +403,36 @@ html.dark[data-style="skeuomorphism"] {
   -webkit-backdrop-filter: var(--s-card-blur);
 }
 
+/* Tables and forms are read and typed into, not looked through. Glass is for
+   chrome and overlays; a data sheet gets the same frame with a solid body.
+   Reuses --s-menu-bg, which every theme already defines as its opaque surface,
+   so this needs no new tokens and is a no-op outside glass. */
+html[data-style="glass"] .surface-card.is-sheet,
+html:not([data-style]) .surface-card.is-sheet {
+  background: var(--s-menu-bg);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+/* Navigation and dialogs arrive rather than appear. The global
+   prefers-reduced-motion rule at the bottom of this file already flattens
+   these, so they need no guard of their own. */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes overlay-enter {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes dialog-enter {
+  from { opacity: 0; transform: translateY(6px) scale(0.99); }
+  to   { opacity: 1; transform: none; }
+}
+.page-enter    { animation: page-enter 160ms cubic-bezier(0.22, 1, 0.36, 1); }
+.overlay-enter { animation: overlay-enter 180ms ease-out; }
+.dialog-enter  { animation: dialog-enter 220ms cubic-bezier(0.22, 1, 0.36, 1); }
+
 .surface-nav-item {
   background-color: transparent;
   border-radius: 9999px;
@@ -505,94 +450,6 @@ html.dark[data-style="skeuomorphism"] {
   /* Background and shadow are handled by the absolute positioned sliding pill */
 }
 
-/* ---- Specular rim (glass theme only) ----
-   Apple's Liquid Glass reads as glass because of its edge, not its fill: a
-   stroke that is near-white where the light hits, fades to almost nothing on
-   the shaded side, then picks up a weaker bounce on the far edge. That is the
-   chrome ring on a real glass button.
-
-   A `border` cannot vary around a curve, so the stroke is a linear-gradient
-   painted across the whole element and then masked down to a 1.25px ring:
-   two identical mask layers, one clipped to the content box, XORed so only the
-   padding band survives. 145deg puts the bright end at the top-left.
-
-   Nav items are pills inside a backdrop-filter ancestor, so their own
-   backdrop-filter would be a no-op (a child can only blur its ancestor's paint,
-   not the page) — which is exactly why the edge has to carry the effect. */
-/* ---- Lensing (glass theme only) ----
-   The edge above is only half the material. This is the other half: a layer
-   behind the card that takes the page's own pixels and pushes them through a
-   turbulence field, so content near the rim bends the way it does through a
-   real pane. backdrop-filter samples the backdrop, filter: url() warps that
-   sample, and z-index -1 puts the result behind the card's own fill.
-
-   The card must NOT create a stacking context for this — no isolation, no
-   z-index — or the -1 layer is trapped inside and disappears.
-
-   Excluded from scrolling cards on purpose: an absolutely-positioned layer
-   inside an overflow-y-auto box scrolls away with the content instead of
-   staying on the frame. Those keep the edge and lose only the warp.
-
-   .no-lens opts a card out entirely. Modal uses it: a modal card sits inside a
-   fixed z-50 overlay, so its z-index -1 layer paints below the overlay and is
-   never visible — it was a backdrop-filter and an SVG filter rendering for
-   nothing on every dialog. */
-html[data-style="glass"] .surface-card:not(.overflow-y-auto):not(.no-lens) { position: relative; }
-html[data-style="glass"] .surface-card:not(.overflow-y-auto):not(.no-lens)::after {
-  content: '';
-  position: absolute;
-  /* Held 7px inside the card so the displaced edge can never reach the border.
-     The outer ring keeps the card's own backdrop-filter, so it still reads as
-     glass — it just is not lensed. */
-  inset: 7px;
-  z-index: -1;
-  border-radius: calc(var(--s-radius) - 7px);
-  backdrop-filter: blur(0px);
-  -webkit-backdrop-filter: blur(0px);
-  filter: url(#glass-warp);
-  pointer-events: none;
-}
-/* Lensing off on small screens. An SVG displacement filter per card is the
-   heaviest paint on the page, and the cards are too small there for the effect
-   to be legible anyway. The edge and blur carry the glass on their own. */
-@media (max-width: 900px) {
-  html[data-style="glass"] .surface-card::after { filter: none; backdrop-filter: none; }
-}
-html[data-style="glass"] .surface-nav-item.is-active { position: relative; }
-html[data-style="glass"] .surface-nav-item.is-active::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 1.5px;
-  background: var(--s-rim);
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-          mask-composite: exclude;
-  pointer-events: none;
-}
-
-
-/* Scrollbars, glass theme only. Nothing else on screen is opaque, so a system
-   scrollbar reads as a white slab bolted onto the pane. Hidden, not disabled:
-   the wheel, trackpad, keyboard and touch all still scroll.
-
-   Scoped to vertically scrolling boxes on purpose. Hiding this on EVERY element
-   also hid the horizontal bar under wide tables, and a mouse wheel does not
-   scroll sideways — that made the right-hand columns of Staff, Products and
-   Orders unreachable rather than merely unstyled. */
-html[data-style="glass"] .overflow-y-auto,
-html[data-style="glass"] body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-html[data-style="glass"] .overflow-y-auto::-webkit-scrollbar,
-html[data-style="glass"] body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
 /* Prominent primary action button — elevated + brand glow so page CTAs read
    as strongly as the chart/data cards. Brand orange is constant across themes. */
 .btn-primary {
@@ -606,13 +463,13 @@ html[data-style="glass"] body::-webkit-scrollbar {
   background: var(--orange-primary);
   border-radius: 12px;
   cursor: pointer;
-  box-shadow: 0 8px 20px -6px rgba(249, 115, 22, 0.55), 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
   transition: transform 150ms ease, box-shadow 220ms ease, background-color 200ms ease;
 }
 .btn-primary:hover {
   background: var(--orange-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 14px 30px -8px rgba(249, 115, 22, 0.7), 0 4px 10px rgba(0, 0, 0, 0.12);
+  transform: none;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
 }
 .btn-primary:active { transform: translateY(0); box-shadow: 0 4px 12px -4px rgba(249, 115, 22, 0.5); }
 .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
@@ -639,3 +496,116 @@ html[data-style="glass"] body::-webkit-scrollbar {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+:root {
+  --field-bg: #fff;
+}
+html.dark {
+  color-scheme: dark;
+  --field-bg: #20222b;
+}
+html:not(.dark) { color-scheme: light; }
+html[data-style="neumorphism"] { --field-bg: #f4f0eb; }
+html.dark[data-style="neumorphism"] { --field-bg: #292c33; }
+html[data-style="skeuomorphism"] { --field-bg: #fffaf3; }
+html.dark[data-style="skeuomorphism"] { --field-bg: #302a23; }
+
+.app-shell { height: 100dvh; }
+.workspace-main { scrollbar-gutter: stable; overscroll-behavior: contain; }
+.workspace-main:focus { outline: none; }
+.control-icon {
+  align-items: center; justify-content: center; width: 40px; height: 40px;
+  flex-shrink: 0; border-radius: 10px; cursor: pointer;
+  transition: background-color 140ms ease, color 140ms ease;
+}
+.control-icon:not(.lg\:hidden) { display: inline-flex; }
+.control-icon:hover { background: var(--orange-light); color: var(--orange-primary); }
+.sidebar-toggle {
+  position: absolute; top: 50%; right: -12px; z-index: 40;
+  transform: translateY(-50%);
+}
+.sidebar-shell nav { min-height: 0; }
+.sidebar-logo {
+  padding-inline: 20px; gap: 12px;
+  transition: padding 260ms cubic-bezier(.32,.72,0,1), gap 260ms cubic-bezier(.32,.72,0,1);
+}
+.sidebar-link {
+  padding-inline: 16px; gap: 12px;
+  transition: padding 260ms cubic-bezier(.32,.72,0,1), gap 260ms cubic-bezier(.32,.72,0,1), background-color 140ms ease, color 140ms ease;
+}
+.sidebar-shell[data-collapsed="true"] .sidebar-logo { padding-inline: 15px; gap: 0; }
+.sidebar-shell[data-collapsed="true"] .sidebar-link { padding-inline: 13px; gap: 0; }
+.sidebar-link .nav-label { flex-shrink: 0; white-space: nowrap; }
+.sidebar-link.is-active { background: transparent; box-shadow: none; }
+.sidebar-nav-icon { transition: transform 160ms ease, color 160ms ease; }
+.sidebar-link:hover .sidebar-nav-icon { transform: translateY(-1px); }
+.sidebar-link:active .sidebar-nav-icon { transform: scale(.94); }
+.skip-link { position: fixed; left: 16px; top: -80px; z-index: 100; padding: 12px 16px; background: var(--field-bg); border: 2px solid var(--orange-primary); border-radius: 10px; }
+.skip-link:focus { top: 16px; }
+
+@layer base {
+  button, a, input, select, textarea { -webkit-tap-highlight-color: transparent; }
+  button { touch-action: manipulation; }
+  button:not(:disabled) { transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea {
+    background-color: var(--field-bg); color: var(--text-primary); min-height: 42px;
+    transition: border-color 140ms ease, box-shadow 140ms ease;
+  }
+  input::placeholder, textarea::placeholder { color: var(--text-muted); opacity: 1; }
+  table { font-variant-numeric: tabular-nums; }
+  th { font-weight: 600; }
+  tbody tr { transition: background-color 120ms ease; }
+  tbody tr:hover { background-color: color-mix(in srgb, var(--orange-primary) 4%, transparent); }
+}
+.surface-card.is-sheet input, .surface-card.is-sheet select, .surface-card.is-sheet textarea { background-color: var(--field-bg); }
+.surface-card[role="dialog"] { background: var(--s-menu-bg); backdrop-filter: none; }
+.btn-primary { min-height: 44px; justify-content: center; }
+.btn-primary:active:not(:disabled) { transform: scale(.99); }
+::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--text-muted) 45%, transparent); }
+
+.pos-workspace { height: 100%; min-height: 0; }
+.pos-search { min-height: 160px; }
+.pos-empty { min-height: 110px; }
+.pos-cart-line { display: grid; grid-template-columns: minmax(0,1fr) auto; gap: 8px 12px; }
+.pos-quantity { display: flex; align-items: center; gap: 6px; }
+.pos-quantity button, .pos-remove { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 9px; }
+.pos-checkout { background: var(--s-menu-bg); border-radius: 0 0 var(--s-radius) var(--s-radius); }
+.pos-product { transition: border-color 140ms ease, background-color 140ms ease; }
+.pos-product:hover:not(:disabled) { border-color: var(--orange-primary); }
+.pos-product:active:not(:disabled) { background: var(--orange-light); }
+.pos-line-value { animation: value-confirm 240ms ease-out; }
+@keyframes value-confirm { from { background-color: var(--orange-light); } to { background-color: transparent; } }
+
+.theme-preview { height: 92px; padding: 10px; border-radius: 9px; display: grid; grid-template-columns: 22px 1fr; gap: 8px; background: #edf1f7; }
+.theme-preview > i { display: block; border-radius: 5px; background: #e4e8ef; }
+.theme-preview > span { display: flex; flex-direction: column; gap: 7px; padding: 10px; border-radius: 6px; background: #fff; }
+.theme-preview b { height: 5px; border-radius: 3px; background: #d6dce5; width: 80%; }
+.theme-preview b:first-child { background: var(--orange-primary); width: 45%; }
+.preview-glass { background: linear-gradient(120deg,#d7e8fc,#fce7d6); }
+.preview-glass > span, .preview-glass > i { background: #ffffff80; border: 1px solid #fff9; }
+.preview-neumorphism { background: #ece7e1; }
+.preview-neumorphism > span, .preview-neumorphism > i { background: #ece7e1; box-shadow: 3px 3px 6px #ccc6bf,-3px -3px 6px #fff; }
+.preview-flat > span, .preview-flat > i { border: 1px solid #cbd2dc; border-radius: 2px; }
+.preview-skeuomorphism { background: #e9ddcb; }
+.preview-skeuomorphism > span, .preview-skeuomorphism > i { background: linear-gradient(#fffaf3,#eddfcc); border: 1px solid #c8b79f; box-shadow: inset 0 1px #fff,0 2px 3px #8f79552b; }
+
+@media (max-width: 1023px) {
+  .control-icon.lg\:hidden { display: inline-flex; }
+  .pos-workspace { height: auto; min-height: 100%; }
+  .pos-search { max-height: 38dvh; }
+  .pos-cart { min-height: 340px; }
+  .pos-checkout { position: sticky; bottom: 0; z-index: 1; }
+}
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
+  .surface-card.is-sheet.p-6 { padding: 18px; }
+  .pos-quantity button, .pos-remove { width: 40px; height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  .press-spring:active, .btn-primary:active { transform: none; }
+  .sidebar-link:hover .sidebar-nav-icon, .sidebar-link:active .sidebar-nav-icon { transform: none; }
+}
+
+

@@ -37,7 +37,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="surface-card overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden">
         <div className="px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink">{t('dashboard.recentOrders')}</h3>
         </div>

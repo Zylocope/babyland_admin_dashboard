@@ -219,7 +219,7 @@ export default function Playground() {
         </div>
       </div>
 
-      <div className="surface-card overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden">
         <div className="flex flex-wrap items-center gap-3 px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink flex-1">{t('playground.cardsTitle')}</h3>
 

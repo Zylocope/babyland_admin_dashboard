@@ -55,7 +55,7 @@ export default function Orders() {
         <span className="text-sm text-sub">{t('orders.count', { count: filtered.length })}</span>
       </div>
 
-      <div className="surface-card overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>
