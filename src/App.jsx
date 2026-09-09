@@ -1,21 +1,28 @@
+import { Suspense, lazy } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AppLayout from './components/layout/AppLayout';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
-import Products from './pages/Products';
-import ProductForm from './pages/ProductForm';
-import Categories from './pages/Categories';
-import Orders from './pages/Orders';
-import POS from './pages/POS';
-import SalesDashboard from './pages/SalesDashboard';
-import Playground from './pages/Playground';
-import PlaygroundApp from './pages/PlaygroundApp';
-import Customers from './pages/Customers';
-import Staff from './pages/Staff';
-import Settings from './pages/Settings';
-import Assistant from './pages/Assistant';
+import RouteFallback from './components/common/RouteFallback';
+
+// The shell (layout, sidebar, header) stays eager -- it is on screen for every
+// route, so deferring it would only add a round trip before anything renders.
+// Pages are split: nobody loads all thirteen, and the two chart screens drag in
+// recharts, which is the single heaviest dependency in the build.
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Products = lazy(() => import('./pages/Products'));
+const ProductForm = lazy(() => import('./pages/ProductForm'));
+const Categories = lazy(() => import('./pages/Categories'));
+const Orders = lazy(() => import('./pages/Orders'));
+const POS = lazy(() => import('./pages/POS'));
+const SalesDashboard = lazy(() => import('./pages/SalesDashboard'));
+const Playground = lazy(() => import('./pages/Playground'));
+const PlaygroundApp = lazy(() => import('./pages/PlaygroundApp'));
+const Customers = lazy(() => import('./pages/Customers'));
+const Staff = lazy(() => import('./pages/Staff'));
+const Settings = lazy(() => import('./pages/Settings'));
+const Assistant = lazy(() => import('./pages/Assistant'));
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -34,6 +41,9 @@ function AppRoutes() {
   const { user } = useAuth();
 
   return (
+    // One boundary around the whole switch: a page swap is the only thing that
+    // suspends, and the shell stays mounted behind the fallback.
+    <Suspense fallback={<RouteFallback />}>
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
 
@@ -67,6 +77,7 @@ function AppRoutes() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </Suspense>
   );
 }
 
