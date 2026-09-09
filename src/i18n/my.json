@@ -60,7 +60,8 @@
   "header": {
     "search": "ရှာဖွေရန်...",
     "todayRevenue": "ယနေ့ဝင်ငွေ",
-    "lowStockAlert": "လက်ကျန်နည်းပစ္စည်း {{count}} ခု"
+    "lowStockAlert": "လက်ကျန်နည်းပစ္စည်း {{count}} ခု",
+    "revenueUnavailable": "မရနိုင်ပါ"
   },
   "banner": {
     "welcome": "ကြိုဆိုပါတယ် မောင်/မ {{name}}"
@@ -133,7 +134,8 @@
     "saveChanges": "သိမ်းဆည်းရန်",
     "allCategories": "အမျိုးအစားအားလုံး",
     "allStatuses": "အခြေအနေအားလုံး",
-    "export": "Export"
+    "export": "Export",
+    "notConnected": "ဤစာမျက်နှာသည် backend နှင့် မချိတ်ဆက်ရသေးပါ — ပြထားသည်များမှာ တကယ့်ဒေတာ မဟုတ်ပါ။"
   },
   "badge": {
     "Pending": "ဆိုင်းငံ့",
@@ -271,7 +273,8 @@
     "createAccount": "အကောင့် ဖန်တီးရန်",
     "deleteTitle": "အကောင့် ဖျက်ရန်",
     "deleteMsg": "{{name}} ၏ အကောင့်ကို ဖျက်မှာလား။ ဝင်ရောက်ခွင့် အားလုံး ဆုံးရှုံးပါမည်။",
-    "noData": "ဝန်ထမ်း မရှိပါ — backend endpoint မရှိသေးပါ"
+    "noData": "ဝန်ထမ်း မရှိပါ — backend endpoint မရှိသေးပါ",
+    "actionsDisabled": "ဝန်ထမ်းအကောင့်များ backend နှင့် မချိတ်ဆက်ရသေးပါ။ သိမ်းပြီးဟု ထင်ရမည်စိုး၍ ဖန်တီး၊ ပြင်၊ ဖျက်ခြင်းများကို ပိတ်ထားသည်။"
   },
   "playground": {
     "checkInTitle": "Walk-in ဝင်ရောက်မှတ်တမ်း",

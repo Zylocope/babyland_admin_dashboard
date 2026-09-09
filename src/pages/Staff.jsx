@@ -5,6 +5,7 @@ import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import NotConnected from '../components/common/NotConnected';
 
 const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone: '', password: '' };
 
@@ -76,13 +77,15 @@ export default function Staff() {
 
   return (
     <div className="space-y-5">
+      <NotConnected>{t('staff.actionsDisabled')}</NotConnected>
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('staff.search')} />
         </div>
         <span className="text-sm text-sub">{t('staff.count', { count: filtered.length })}</span>
-        <button onClick={openCreate}
-          className="px-3 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover flex items-center gap-2 font-medium transition-colors">
+        <button onClick={openCreate} disabled title={t('staff.actionsDisabled')}
+          className="px-3 py-2 text-sm bg-brand text-white rounded-lg flex items-center gap-2 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
           <IconPlus stroke={1.5} size={14} /> {t('staff.add')}
         </button>
       </div>
@@ -119,10 +122,10 @@ export default function Staff() {
                   <td className="px-4 py-3.5 text-sub">{s.createdAt}</td>
                   <td className="px-4 py-3.5">
                     <div className="flex items-center gap-1.5">
-                      <button onClick={() => openEdit(s)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors" title={t('common.edit')}>
+                      <button onClick={() => openEdit(s)} disabled title={t('staff.actionsDisabled')} className="p-1.5 rounded-lg text-mute transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                         <IconPencil stroke={1.5} size={15} />
                       </button>
-                      <button onClick={() => setConfirmDelete(s)} className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors" title={t('common.delete')}>
+                      <button onClick={() => setConfirmDelete(s)} disabled title={t('staff.actionsDisabled')} className="p-1.5 rounded-lg text-mute transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
                         <IconTrash stroke={1.5} size={15} />
                       </button>
                     </div>

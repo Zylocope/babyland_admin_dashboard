@@ -8,15 +8,13 @@
 // Deliberately NOT keyed per user: a reward card belongs to the shop, not to
 // whoever is holding the phone, so two staff on one device share the same list.
 
+import { shopToday } from './shopDay.js';
+
 export const STORE_KEY = 'al_playground';
 
-// Myanmar is UTC+06:30 with no DST. toISOString() is UTC, so the shop's
-// "today" was rolling over at 06:30 local -- a check-in at 07:00 counted as the
-// previous day. Shifting by the offset gives the Myanmar calendar date whatever
-// the device clock is set to, which is what the shop's day actually means.
-const MM_OFFSET_MIN = 6 * 60 + 30;
-export const today = () =>
-  new Date(Date.now() + MM_OFFSET_MIN * 60_000).toISOString().slice(0, 10);
+// Re-exported so the playground and the header cannot drift apart on what
+// "today" means. See utils/shopDay.js for why it is not the device date.
+export const today = shopToday;
 
 // Pure so it can be tested without a browser. `saved` is whatever came out of
 // storage — assume nothing about its shape.

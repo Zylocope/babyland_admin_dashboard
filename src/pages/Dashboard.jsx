@@ -1,12 +1,15 @@
 import { IconCash, IconClock, IconCircleCheck, IconAlertTriangle, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import StatCard from '../components/common/StatCard';
+import NotConnected from '../components/common/NotConnected';
 
 export default function Dashboard() {
   const { t } = useTranslation();
 
   return (
     <div className="space-y-6">
+      <NotConnected>{t('common.notConnected')}</NotConnected>
+
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon={IconCash}        tone="store"     label={t('dashboard.storeSales')}      value={t('dashboard.noData')} />
         <StatCard icon={IconClock}       tone="pending"   label={t('dashboard.pendingOrders')}   value={t('dashboard.noData')} />

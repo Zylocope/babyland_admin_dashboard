@@ -60,7 +60,8 @@
   "header": {
     "search": "Search anything...",
     "todayRevenue": "Today's Revenue",
-    "lowStockAlert": "{{count}} low-stock items"
+    "lowStockAlert": "{{count}} low-stock items",
+    "revenueUnavailable": "Unavailable"
   },
   "banner": {
     "welcome": "Welcome back, {{name}}"
@@ -133,7 +134,8 @@
     "saveChanges": "Save Changes",
     "allCategories": "All Categories",
     "allStatuses": "All Statuses",
-    "export": "Export"
+    "export": "Export",
+    "notConnected": "This screen is not connected to the backend yet — nothing shown here is live data."
   },
   "badge": {
     "Pending": "Pending",
@@ -271,7 +273,8 @@
     "createAccount": "Create Account",
     "deleteTitle": "Delete Account",
     "deleteMsg": "Delete {{name}}'s account? They will lose all access.",
-    "noData": "No staff — no backend endpoint yet"
+    "noData": "No staff — no backend endpoint yet",
+    "actionsDisabled": "Staff accounts are not connected to the backend yet. Creating, editing and deleting are disabled so nothing looks saved when it is not."
   },
   "playground": {
     "checkInTitle": "Walk-in Check-in",

@@ -7,6 +7,7 @@ import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import NotConnected from '../components/common/NotConnected';
 
 const STATUS_FLOW = ['Pending', 'Processing', 'Shipped', 'Delivered'];
 
@@ -40,6 +41,8 @@ export default function Orders() {
 
   return (
     <div className="space-y-5">
+      <NotConnected>{t('common.notConnected')}</NotConnected>
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('orders.search')} />

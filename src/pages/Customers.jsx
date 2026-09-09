@@ -7,6 +7,7 @@ import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import Badge from '../components/common/Badge';
 import { formatMMK } from '../utils/currency';
+import NotConnected from '../components/common/NotConnected';
 
 export default function Customers() {
   const { t } = useTranslation();
@@ -32,6 +33,8 @@ export default function Customers() {
 
   return (
     <div className="space-y-5">
+      <NotConnected>{t('common.notConnected')}</NotConnected>
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('customers.search')} />
