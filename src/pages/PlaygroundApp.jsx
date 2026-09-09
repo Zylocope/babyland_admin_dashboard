@@ -6,6 +6,7 @@ import {
 } from '@tabler/icons-react';
 import { useAuth } from '../context/AuthContext';
 import { usePlaygroundVisitors, PLAYGROUND_FREE_AT } from '../hooks/usePlaygroundVisitors';
+import Gauge from '../components/common/Gauge';
 
 const NAVY = '#1B2A4A';
 
@@ -14,7 +15,7 @@ const NAVY = '#1B2A4A';
 export default function PlaygroundApp() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const [tab, setTab] = useState('checkin');
+  const [tab, setTab] = useState('today');
   const [search, setSearch] = useState('');
 
   const {
@@ -175,23 +176,60 @@ export default function PlaygroundApp() {
 
           {tab === 'today' && (
             <>
+              {/* Today's Increase — the reference's home card: gauge on the left,
+                  legend rows down the right with a coloured rule per series. */}
+              <div className="surface-card p-5">
+                <p className="text-[13px] font-semibold text-ink">{t('playground.todayBreakdown')}</p>
+                <div className="flex items-center gap-3 mt-1">
+                  <div className="relative flex-shrink-0">
+                    <Gauge width={168} segments={[
+                      { value: log.length - freeToday, color: 'var(--orange-primary)' },
+                      { value: freeToday, color: NAVY },
+                    ]} />
+                    <div className="absolute inset-x-0 bottom-0 text-center">
+                      <p className="text-[28px] font-extrabold text-ink tabular-nums leading-none">{log.length}</p>
+                      <p className="text-[10px] text-sub mt-1">{t('playground.checkInsToday')}</p>
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0 space-y-3">
+                    {[
+                      { label: t('playground.pointVisits'), value: log.length - freeToday, color: 'var(--orange-primary)' },
+                      { label: t('playground.free'), value: freeToday, color: NAVY },
+                      { label: t('playground.readyForFree'), value: readyForFree, color: null },
+                    ].map(s => (
+                      <div key={s.label} className="border-l-2 pl-2.5"
+                        style={{ borderColor: s.color ?? 'var(--border)' }}>
+                        <p className="text-[10px] text-sub leading-tight truncate">{s.label}</p>
+                        <p className="text-[17px] font-bold text-ink tabular-nums leading-tight">{s.value}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Tile row, as in the reference. Each one goes somewhere real. */}
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { key: 'checkin', icon: IconUserPlus, label: t('playground.tabCheckIn') },
+                  { key: 'visitors', icon: IconUsers, label: t('playground.cardsTitle') },
+                  { key: 'visitors', icon: IconGift, label: t('playground.readyForFree') },
+                ].map(({ key, icon: Icon, label }, i) => (
+                  <button key={i} onClick={() => setTab(key)}
+                    className="press-spring surface-card p-3 flex flex-col items-center gap-2 cursor-pointer">
+                    <span className="w-9 h-9 rounded-full border-2 flex items-center justify-center"
+                      style={{ borderColor: NAVY, color: NAVY }}>
+                      <Icon size={16} stroke={1.8} />
+                    </span>
+                    <span className="text-[11px] font-medium text-ink text-center leading-tight">{label}</span>
+                  </button>
+                ))}
+              </div>
+
               <div className="surface-card p-5">
                 <p className="text-[13px] text-sub">{t('playground.totalVisits')}</p>
-                <p className="text-[44px] font-extrabold text-ink tabular-nums leading-none tracking-tight mt-1">
+                <p className="text-[40px] font-extrabold text-ink tabular-nums leading-none tracking-tight mt-1">
                   {totalVisits.toLocaleString()}
                 </p>
-                <div className="grid grid-cols-3 gap-3 mt-5">
-                  {[
-                    { label: t('playground.checkInsToday'), value: log.length, color: 'var(--orange-primary)' },
-                    { label: t('playground.free'), value: freeToday, color: NAVY },
-                    { label: t('playground.readyForFree'), value: readyForFree, color: 'var(--status-delivered)' },
-                  ].map(s => (
-                    <div key={s.label} className="border-l-2 pl-2.5" style={{ borderColor: s.color }}>
-                      <p className="text-[10px] text-sub leading-tight">{s.label}</p>
-                      <p className="text-[20px] font-bold text-ink tabular-nums leading-tight mt-0.5">{s.value}</p>
-                    </div>
-                  ))}
-                </div>
               </div>
 
               <div className="surface-card p-5">

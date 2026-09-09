@@ -3,6 +3,7 @@ import { IconGift, IconUserPlus, IconCheck, IconAlertTriangle, IconChevronRight 
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import SearchInput from '../components/common/SearchInput';
+import Gauge from '../components/common/Gauge';
 import { usePlaygroundVisitors, PLAYGROUND_FREE_AT, today } from '../hooks/usePlaygroundVisitors';
 
 // The reference pairs brand orange with a deep navy as its second series.
@@ -15,30 +16,6 @@ const PERIODS = [
   { key: 'd30', days: 30 },
   { key: 'all', days: null },
 ];
-
-// Semicircle gauge. The segments are dash offsets along ONE arc rather than
-// separate stacked arcs, so their ends always meet exactly.
-function Gauge({ free, points }) {
-  const R = 68;
-  const LEN = Math.PI * R;
-  const total = free + points;
-  const seg = (n) => (total ? (n / total) * LEN : 0);
-  const arcs = [
-    { len: seg(points), color: 'var(--orange-primary)', at: 0 },
-    { len: seg(free), color: NAVY, at: seg(points) },
-  ];
-  return (
-    <svg viewBox="0 0 180 104" className="w-[200px]">
-      <path d="M 22 92 A 68 68 0 0 1 158 92" fill="none" stroke="var(--border)" strokeWidth="17" strokeLinecap="round" />
-      {/* A zero-length dash still paints a round cap, so an empty segment would
-          show as a stray dot at the start of the arc. Drop those. */}
-      {arcs.filter(a => a.len > 0.5).map((a, i) => (
-        <path key={i} d="M 22 92 A 68 68 0 0 1 158 92" fill="none" stroke={a.color} strokeWidth="17"
-          strokeLinecap="round" strokeDasharray={`${a.len} ${LEN}`} strokeDashoffset={-a.at} />
-      ))}
-    </svg>
-  );
-}
 
 function MiniStat({ label, value, pct, color }) {
   return (
@@ -125,7 +102,10 @@ export default function Playground() {
           <p className="text-[13px] font-semibold text-ink">{t('playground.todayBreakdown')}</p>
           <div className="flex items-center gap-4 mt-1">
             <div className="relative flex-shrink-0">
-              <Gauge free={freeToday} points={log.length - freeToday} />
+              <Gauge segments={[
+                { value: log.length - freeToday, color: 'var(--orange-primary)' },
+                { value: freeToday, color: NAVY },
+              ]} />
               <div className="absolute inset-x-0 bottom-1 text-center">
                 <p className="text-[30px] font-extrabold text-ink tabular-nums leading-none">{log.length}</p>
                 <p className="text-[11px] text-sub mt-1">{t('playground.checkInsToday')}</p>
