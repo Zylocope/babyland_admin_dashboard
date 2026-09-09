@@ -9,9 +9,10 @@ import AssistantChart from '../components/common/AssistantChart';
 const MAX_TOOL_ROUNDS = 5;
 const QUOTA_ERROR = 'QUOTA';
 
-const askGemini = async (contents) => {
+const askGemini = async (contents, signal) => {
   const res = await fetch('/api/chat', {
     method: 'POST',
+    signal,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       systemInstruction: { parts: [{ text: systemPrompt() }] },
@@ -39,7 +40,9 @@ export default function Assistant() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [charts, setCharts] = useState({});
+  const [retry, setRetry] = useState(null);   // the quick action that failed
   const endRef = useRef(null);
+  const abortRef = useRef(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [contents, busy]);
 
@@ -51,18 +54,26 @@ export default function Assistant() {
 
     let next = [...contents, { role: 'user', parts: [{ text: text.trim() }] }];
     setContents(next);
-    let pendingChart = null;
+    // One chart per tool result, not one per answer. A sales-and-stock question
+    // produces two, and the second used to overwrite the first before either was
+    // shown.
+    let pending = [];
+    let finished = false;
+
+    const abort = new AbortController();
+    abortRef.current = abort;
 
     try {
       for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-        const reply = await askGemini(next);
+        const reply = await askGemini(next, abort.signal);
+        if (abort.signal.aborted) return;
         next = [...next, reply];
         setContents(next);
 
         const calls = (reply.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall);
         if (!calls.length) {
-          // The final text message is the one the chart belongs under.
-          if (pendingChart) setCharts(c => ({ ...c, [next.length - 1]: pendingChart }));
+          finished = true;
+          if (pending.length) setCharts(c => ({ ...c, [next.length - 1]: pending }));
           break;
         }
 
@@ -70,11 +81,12 @@ export default function Assistant() {
           fc,
           response: await runTool(fc.name, fc.args ?? {}),
         })));
+        if (abort.signal.aborted) return;
 
         // Derive the visual from the same result the answer will be written from.
         for (const { fc, response } of results) {
           const spec = chartFromTool(fc.name, response);
-          if (spec) pendingChart = spec;
+          if (spec) pending = [...pending, { ...spec, tool: fc.name, range: response?.range }];
         }
 
         const parts = results.map(({ fc, response }) => ({
@@ -87,25 +99,46 @@ export default function Assistant() {
         next = [...next, { role: 'user', parts }];
         setContents(next);
       }
+
+      // Falling out of the loop without a text reply used to end the turn in
+      // silence, looking like the assistant had simply ignored the question.
+      if (!finished && !abort.signal.aborted) {
+        const capped = [...next, { role: 'model', parts: [{ text: t('assistant.roundLimit', { rounds: MAX_TOOL_ROUNDS }) }] }];
+        setContents(capped);
+        if (pending.length) setCharts(c => ({ ...c, [capped.length - 1]: pending }));
+      }
     } catch (err) {
-      setError(err.message === QUOTA_ERROR ? t('assistant.quota') : err.message);
+      if (err.name !== 'AbortError') {
+        setError(err.message === QUOTA_ERROR ? t('assistant.quota') : err.message);
+      }
     } finally {
+      // Cancelling can land mid-request (fetch rejects) or between rounds (the
+      // early return above), and only the first of those throws. Reporting from
+      // here covers both, so Stop never fails silently.
+      if (abort.signal.aborted) setError(t('assistant.stopped'));
+      abortRef.current = null;
       setBusy(false);
     }
   };
 
+  const stop = () => abortRef.current?.abort();
+
   const quick = async (action) => {
     if (busy) return;
     setError('');
+    setRetry(null);
     setBusy(true);
     const asked = [...contents, { role: 'user', parts: [{ text: t(action.labelKey) }] }];
     setContents(asked);
     try {
-      const { text, chart } = await runQuickAction(action, t);
+      const { text, chart, status } = await runQuickAction(action, t);
       // Kept in the transcript so a typed follow-up still has the numbers in context.
       const answered = [...asked, { role: 'model', parts: [{ text }] }];
       setContents(answered);
-      if (chart) setCharts(m => ({ ...m, [answered.length - 1]: chart }));
+      if (chart) setCharts(m => ({ ...m, [answered.length - 1]: [chart] }));
+      // A failed report offers a way back; an empty one is a real answer and
+      // must not.
+      setRetry(status === 'failed' ? action : null);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -158,18 +191,32 @@ export default function Assistant() {
                     {text}
                   </div>
                 )}
-                {!mine && charts[i] && <AssistantChart spec={charts[i]} />}
+                {!mine && charts[i]?.map((spec, ci) => (
+                  <AssistantChart key={ci} spec={spec} />
+                ))}
               </div>
             </div>
           );
         })}
 
         {busy && (
-          <p className="flex items-center gap-2 text-sm text-mute">
-            <IconLoader2 size={15} stroke={1.5} className="animate-spin" /> {t('assistant.thinking')}
-          </p>
+          <div className="flex items-center gap-3">
+            <p className="flex items-center gap-2 text-sm text-mute">
+              <IconLoader2 size={15} stroke={1.5} className="animate-spin" /> {t('assistant.thinking')}
+            </p>
+            <button onClick={stop} type="button"
+              className="px-2.5 py-1 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand transition-colors cursor-pointer">
+              {t('assistant.stop')}
+            </button>
+          </div>
         )}
         {error && <p className="text-sm text-[#EF4444]">{error}</p>}
+        {retry && !busy && (
+          <button type="button" onClick={() => quick(retry)}
+            className="self-start px-2.5 py-1 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand transition-colors cursor-pointer">
+            {t('assistant.retry')}
+          </button>
+        )}
         <div ref={endRef} />
       </div>
 

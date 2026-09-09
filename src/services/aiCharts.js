@@ -29,14 +29,38 @@ const padRange = (range, byDay) => {
   return out;
 };
 
+// A long range is aggregated, never trimmed. Above this many points a daily bar
+// per day is unreadable anyway, so days are summed into weeks (or months beyond
+// roughly seven months). Summing keeps every kyat; dropping days would not.
+const MAX_POINTS = 31;
+
+const bucketise = (rows) => {
+  if (rows.length <= MAX_POINTS) return { granularity: 'day', data: rows };
+  const size = rows.length > 210 ? 30 : 7;
+  const data = [];
+  for (let i = 0; i < rows.length; i += size) {
+    const span = rows.slice(i, i + size);
+    const sum = (key) => span.reduce((acc, r) => acc + r[key], 0);
+    data.push({
+      date: span[0].date,
+      day: span.length > 1 ? `${span[0].day}–${span[span.length - 1].day}` : span[0].day,
+      revenue: sum('revenue'),
+      inStore: sum('inStore'),
+      online: sum('online'),
+    });
+  }
+  return { granularity: size === 7 ? 'week' : 'month', data };
+};
+
 export const chartFromTool = (toolName, result) => {
   if (!result || result.error) return null;
 
   if (toolName === 'sales_summary') {
     if (!result.range || !result.by_day?.length) return null;
-    const data = padRange(result.range, result.by_day);
-    if (data.length < 2) return null;
-    return { kind: 'sales', data, hasOnline: data.some(d => d.online > 0) };
+    const padded = padRange(result.range, result.by_day);
+    if (padded.length < 2) return null;
+    const { granularity, data } = bucketise(padded);
+    return { kind: 'sales', data, granularity, hasOnline: data.some(d => d.online > 0) };
   }
 
   if (toolName === 'compare_periods') {

@@ -45,4 +45,22 @@ assert.equal(empty.totals.margin_pct, 0);
 assert.equal(empty.totals.avg_basket_mmk, 0);
 assert.equal(empty.by_day.length, 0);
 
+
+// --- regression: the reporting range must survive the reducer ---------------
+// by_day was capped at the last 31 dates while totals were computed from every
+// row, so a longer range produced a chart that disagreed with its own headline.
+const long = Array.from({ length: 40 }, (_, i) => {
+  const d = new Date(Date.UTC(2026, 6, 1) + i * 86400000).toISOString().slice(0, 10);
+  return { sale_date: d, is_online_sale: false, total_sale: '100', total_cost: '60', transactions: 1, items_sold: 1 };
+});
+const wide = summarizeSales(long);
+assert.equal(wide.by_day.length, 40, 'every date in the range must be kept');
+assert.equal(wide.totals.revenue_mmk, 4000);
+assert.equal(
+  wide.by_day.reduce((sum, d) => sum + d.revenue_mmk, 0),
+  wide.totals.revenue_mmk,
+  'by_day must reconcile with totals — a gap here is a false zero on the chart'
+);
+assert.equal(wide.by_day[0].date, '2026-07-01', 'the oldest day must not be dropped');
+
 console.log('salesRollup ok');

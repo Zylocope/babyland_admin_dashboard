@@ -1,5 +1,12 @@
-// Gemini proxy. Only job: hold the API key. It never touches shop data —
-// the browser runs the tools with its own admin session and posts results back.
+// Gemini proxy. Its only job is to hold the API key.
+//
+// It holds NO shop credentials and never queries the backend: the browser runs
+// every tool with its own admin session. But shop data DOES pass through here.
+// The tool loop posts each result back to Gemini in the request body, so sales
+// figures, stock levels and product names are relayed by this function even
+// though it never fetches them. An earlier comment said it "never touches shop
+// data", which was wrong in the way that matters — the privacy question is what
+// reaches Gemini, and the answer is: whatever the tools returned.
 const MODEL = process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite';
 const DAILY_CAP = Number(process.env.GEMINI_DAILY_CAP || 200);
 

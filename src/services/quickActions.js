@@ -9,12 +9,17 @@
 import { format, subDays } from 'date-fns';
 import { runTool } from './aiTools';
 import { chartFromTool } from './aiCharts';
+import { classifyReport, isFailed } from './reportState.js';
 
 const day = (offset = 0) => format(subDays(new Date(), offset), 'yyyy-MM-dd');
 const mmk = (n) => `${new Intl.NumberFormat('en-US').format(Math.round(n || 0))} MMK`;
 
 const salesLine = (res, t) => {
-  if (!res || res.note || !res.totals || res.totals.transactions === 0) return t('quick.noSales');
+  // Failure and emptiness are different answers. A request that never landed has
+  // no `totals`, which used to fall through to "no sales" -- a manager reading a
+  // broken connection as a quiet day.
+  if (isFailed(res)) return t('quick.failed');
+  if (res.note || !res.totals || res.totals.transactions === 0) return t('quick.noSales');
   const { totals, by_channel: ch } = res;
   const lines = [
     t('quick.salesLine', {
@@ -38,7 +43,7 @@ const salesLine = (res, t) => {
 };
 
 const lowStockLine = (res, t) => {
-  if (!res || res.error) return t('quick.failed');
+  if (isFailed(res)) return t('quick.failed');
   if (!res.low_stock_count) return t('quick.noLowStock', { threshold: res.threshold });
   const rows = res.products.map(p => `- ${p.name} — ${p.stock} (${mmk(p.price_mmk)})`);
   return [t('quick.lowStockLine', {
@@ -49,7 +54,7 @@ const lowStockLine = (res, t) => {
 };
 
 const compareLine = (res, t) => {
-  if (!res || res.error || !res.current) return t('quick.failed');
+  if (isFailed(res) || !res.current) return t('quick.failed');
   const { current: c, previous: p, change_pct: d } = res;
   const arrow = (v) => (v === null ? '' : v > 0 ? `▲ ${v}%` : v < 0 ? `▼ ${Math.abs(v)}%` : '= 0%');
   return [
@@ -60,14 +65,14 @@ const compareLine = (res, t) => {
 };
 
 const stockValueLine = (res, t) => {
-  if (!res || res.error || !res.categories?.length) return t('quick.failed');
+  if (isFailed(res) || !res.categories?.length) return t('quick.failed');
   const total = res.categories.reduce((sum, c) => sum + c.retail_value_mmk, 0);
   const rows = res.categories.slice(0, 8).map(c => `- ${c.category} — ${mmk(c.retail_value_mmk)} (${c.units})`);
   return [t('quick.stockValueLine', { total: mmk(total), products: res.total_products }), ...rows].join('\n');
 };
 
 const categoriesLine = (res, t) =>
-  res?.error ? t('quick.failed') : t('quick.categoriesLine', { count: res.count, list: res.categories.join(', ') });
+  isFailed(res) ? t('quick.failed') : t('quick.categoriesLine', { count: res.count, list: res.categories.join(', ') });
 
 export const QUICK_ACTIONS = [
   {
@@ -123,5 +128,11 @@ export const QUICK_ACTIONS = [
 
 export const runQuickAction = async (action, t) => {
   const result = await runTool(action.tool, action.args());
-  return { text: action.render(result, t), chart: chartFromTool(action.tool, result) };
+  // status travels with the text so the caller can offer Retry on a failure
+  // without re-parsing the rendered string to guess what happened.
+  return {
+    text: action.render(result, t),
+    chart: chartFromTool(action.tool, result),
+    status: classifyReport(result),
+  };
 };

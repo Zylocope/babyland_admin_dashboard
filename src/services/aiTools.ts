@@ -1,7 +1,8 @@
 // The "data-driven" half of the assistant: every answer comes from these calls,
 // never from the model's memory. Tools run in the browser so they reuse the
 // existing admin session — the /api/chat proxy stays blind to shop data.
-import { format, subDays, parseISO, getDay } from "date-fns";
+import { format, parseISO, getDay } from "date-fns";
+import { shopToday, shopDaysAgo } from "../utils/shopDay";
 import { getSaleSummary } from "./salesService";
 import { getAllProducts, searchProductsSimple } from "./productService";
 import { getCategories } from "./categoryService";
@@ -9,7 +10,9 @@ import { getCategories } from "./categoryService";
 import { summarizeSales } from "./salesRollup.js";
 import type { AdminProduct } from "../types";
 
-const today = () => format(new Date(), "yyyy-MM-dd");
+// The shop's day, not the device's. These ranges are what the assistant quotes
+// back to a manager, so they have to mean the same thing on every machine.
+const today = shopToday;
 const num = (v: string | number | null | undefined) => Number(v ?? 0);
 
 const slim = (p: AdminProduct) => ({
@@ -22,7 +25,7 @@ const slim = (p: AdminProduct) => ({
 });
 
 const salesSummary = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {
-  const start = start_date || format(subDays(new Date(), 29), "yyyy-MM-dd");
+  const start = start_date || shopDaysAgo(29);
   const end = end_date || today();
   const rows = await getSaleSummary({ start_date: start, end_date: end });
   if (!rows.length) return { range: { start, end }, note: "No sales recorded in this range." };
@@ -56,10 +59,10 @@ const categoryList = async () => {
 // with one number. Runs the same summary over two adjacent ranges.
 const comparePeriods = async ({ period = "month" }: { period?: "week" | "month" }) => {
   const span = period === "week" ? 7 : 30;
-  const curStart = format(subDays(new Date(), span - 1), "yyyy-MM-dd");
+  const curStart = shopDaysAgo(span - 1);
   const curEnd = today();
-  const prevStart = format(subDays(new Date(), span * 2 - 1), "yyyy-MM-dd");
-  const prevEnd = format(subDays(new Date(), span), "yyyy-MM-dd");
+  const prevStart = shopDaysAgo(span * 2 - 1);
+  const prevEnd = shopDaysAgo(span);
 
   const [cur, prev] = await Promise.all([
     getSaleSummary({ start_date: curStart, end_date: curEnd }),
@@ -73,6 +76,13 @@ const comparePeriods = async ({ period = "month" }: { period?: "week" | "month" 
 
   return {
     period,
+    // These are ROLLING windows, not calendar months. "This month vs last month"
+    // was the label while the code compared the last 30 days against the 30
+    // before that, so the shape is stated explicitly and the exact dates travel
+    // with the numbers for the answer to quote.
+    window: "rolling",
+    window_days: span,
+    label: `${span} days to ${curEnd} vs the ${span} days before`,
     current: { range: { start: curStart, end: curEnd }, ...a },
     previous: { range: { start: prevStart, end: prevEnd }, ...b },
     change_pct: {
@@ -87,7 +97,7 @@ const WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frida
 
 // Which days actually earn — staffing and opening-hours decisions come from this.
 const salesByWeekday = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {
-  const start = start_date || format(subDays(new Date(), 89), "yyyy-MM-dd");
+  const start = start_date || shopDaysAgo(89);
   const end = end_date || today();
   const rows = await getSaleSummary({ start_date: start, end_date: end });
   if (!rows.length) return { range: { start, end }, note: "No sales recorded in this range." };

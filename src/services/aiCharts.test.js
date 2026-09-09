@@ -74,4 +74,35 @@ assert.equal(cat.data.length, 8);
 assert.equal(cat.unit, 'mmk');
 assert.equal(chartFromTool('stock_by_category', { categories: [{ category: 'only', retail_value_mmk: 5 }] }), null);
 
+
+// --- regression: long ranges aggregate, they do not invent zeros ------------
+// 40 real selling days must not be padded down to a 31-day tail with nine
+// leading zeros. Points are bucketed, and the plotted revenue must still equal
+// the revenue that went in.
+const days = Array.from({ length: 40 }, (_, i) => ({
+  date: new Date(Date.UTC(2026, 6, 1) + i * 86400000).toISOString().slice(0, 10),
+  revenue_mmk: 100, in_store_mmk: 100, online_mmk: 0,
+}));
+const wide = chartFromTool('sales_summary', {
+  range: { start: '2026-07-01', end: '2026-08-09' },
+  by_day: days,
+});
+assert.equal(wide.granularity, 'week', '40 days should bucket into weeks');
+assert.ok(wide.data.length <= 31, 'a long range must not render one bar per day');
+assert.equal(
+  wide.data.reduce((sum, d) => sum + d.revenue, 0),
+  4000,
+  'aggregation must preserve every kyat'
+);
+assert.ok(wide.data.every(d => d.revenue > 0), 'no bucket may be a fabricated zero');
+
+// A short range stays daily and still pads genuine gaps, which are real zeros.
+const short = chartFromTool('sales_summary', {
+  range: { start: '2026-08-01', end: '2026-08-05' },
+  by_day: [{ date: '2026-08-03', revenue_mmk: 500, in_store_mmk: 500, online_mmk: 0 }],
+});
+assert.equal(short.granularity, 'day');
+assert.equal(short.data.length, 5);
+assert.equal(short.data.filter(d => d.revenue === 0).length, 4, 'genuine no-sale days stay zero');
+
 console.log('aiCharts ok');

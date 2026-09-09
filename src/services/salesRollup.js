@@ -49,9 +49,15 @@ export const summarizeSales = (rows) => {
   return {
     totals: close(grand),
     by_channel: { in_store: close(inStore), online: close(online) },
+    // Complete, never truncated. This used to keep only the last 31 dates while
+    // `totals` was computed from every row, so a longer range produced a chart
+    // that disagreed with its own headline: aiCharts pads every date in the
+    // requested range, and a date missing from by_day is indistinguishable from
+    // a date with no sales, so the dropped days were drawn as real zeros.
+    // Aggregation for long ranges belongs in the chart, not here -- the reducer's
+    // job is to be true.
     by_day: [...byDay.entries()]
       .sort(([a], [b]) => a.localeCompare(b))
-      .slice(-31)
       .map(([date, d]) => ({
         date,
         ...close(d.all),
