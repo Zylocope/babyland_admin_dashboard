@@ -177,7 +177,7 @@ html:not([data-style]) body {
     0 10px 30px -14px rgba(120, 95, 165, 0.3);
 
   --s-card-bg: rgba(255, 255, 255, 0.12);
-  --s-menu-bg: rgba(252, 248, 255, 0.97);
+  --s-menu-bg: #FCF8FF;
   --s-card-border: rgba(255, 255, 255, 0.3);
   --s-card-blur: blur(8px) saturate(var(--saturation));
   --s-card-shadow:
@@ -235,7 +235,7 @@ html:not([data-style]) body {
   --s-panel-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px -14px rgba(0, 0, 0, 0.65);
 
   --s-card-bg: rgba(42, 38, 50, 0.32);
-  --s-menu-bg: rgba(30, 27, 38, 0.98);
+  --s-menu-bg: #1E1B26;
   --s-card-border: rgba(255, 255, 255, 0.1);
   --s-card-blur: blur(8px) saturate(var(--saturation));
   --s-card-shadow:
@@ -541,12 +541,19 @@ html[data-style="glass"] .surface-nav-item.is-active::after {
 
 /* Scrollbars, glass theme only. Nothing else on screen is opaque, so a system
    scrollbar reads as a white slab bolted onto the pane. Hidden, not disabled:
-   the wheel, trackpad, keyboard and touch all still scroll. */
-html[data-style="glass"] * {
+   the wheel, trackpad, keyboard and touch all still scroll.
+
+   Scoped to vertically scrolling boxes on purpose. Hiding this on EVERY element
+   also hid the horizontal bar under wide tables, and a mouse wheel does not
+   scroll sideways — that made the right-hand columns of Staff, Products and
+   Orders unreachable rather than merely unstyled. */
+html[data-style="glass"] .overflow-y-auto,
+html[data-style="glass"] body {
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-html[data-style="glass"] *::-webkit-scrollbar {
+html[data-style="glass"] .overflow-y-auto::-webkit-scrollbar,
+html[data-style="glass"] body::-webkit-scrollbar {
   width: 0;
   height: 0;
 }

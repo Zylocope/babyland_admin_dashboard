@@ -31,8 +31,11 @@ export default function SubBar({ views, view, onView, children }) {
           <IconChevronDown size={15} stroke={1.7} className={`text-mute transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
 
+        {/* overflow-hidden matters: the rows are full-bleed with square corners,
+            so without it the selected row's background paints straight over the
+            menu's rounded corners. */}
         {open && (
-          <div className="absolute left-0 mt-1.5 w-64 surface-menu py-1.5 z-40">
+          <div className="absolute left-0 mt-1.5 w-64 surface-menu overflow-hidden py-1.5 z-40">
             <p className="px-3.5 pb-1.5 text-[11px] uppercase tracking-wide text-mute">{t('subbar.view')}</p>
             {views.map(v => {
               const active = v.key === current.key;
