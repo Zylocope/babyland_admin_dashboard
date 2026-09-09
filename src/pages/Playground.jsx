@@ -1,10 +1,9 @@
 import { useMemo, useState } from 'react';
 import { IconGift, IconUserPlus, IconCheck, IconAlertTriangle, IconChevronRight } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
+import { Link } from 'react-router-dom';
 import SearchInput from '../components/common/SearchInput';
-
-const PLAYGROUND_FREE_AT = 10;
-const today = () => new Date().toISOString().slice(0, 10);
+import { usePlaygroundVisitors, PLAYGROUND_FREE_AT, today } from '../hooks/usePlaygroundVisitors';
 
 // The reference pairs brand orange with a deep navy as its second series.
 // One constant beats a token nothing else needs.
@@ -64,57 +63,14 @@ function Legend({ label, value, color }) {
 
 export default function Playground() {
   const { t } = useTranslation();
-  const [visitors, setVisitors] = useState([]);
-  const [phone, setPhone] = useState('');
-  const [name, setName] = useState('');
   const [search, setSearch] = useState('');
-  const [result, setResult] = useState(null);
-  const [conflict, setConflict] = useState(null);
-  const [log, setLog] = useState([]);
   const [period, setPeriod] = useState('all');
 
-  const reset = () => { setPhone(''); setName(''); setConflict(null); };
-
-  const award = (existing, typedName) => {
-    const isFree = existing && existing.points >= PLAYGROUND_FREE_AT;
-    let updated;
-
-    if (!existing) {
-      updated = { id: `PG${Date.now()}`, phone: phone.trim(), name: typedName, points: 1, visits: 1, lastVisit: today() };
-      setVisitors(v => [updated, ...v]);
-    } else {
-      updated = {
-        ...existing,
-        points: isFree ? 0 : existing.points + 1,
-        visits: existing.visits + 1,
-        lastVisit: today(),
-      };
-      setVisitors(v => v.map(x => (x.id === updated.id ? updated : x)));
-    }
-
-    setResult({ kind: isFree ? 'free' : existing ? 'point' : 'new', visitor: updated });
-    setLog(l => [{ at: new Date().toLocaleTimeString(), name: updated.name, phone: updated.phone, free: isFree }, ...l].slice(0, 8));
-    reset();
-  };
-
-  const checkIn = (e) => {
-    e.preventDefault();
-    setResult(null);
-    const p = phone.trim();
-    const n = name.trim();
-    if (!p || !n) return;
-
-    const existing = visitors.find(v => v.phone === p);
-    if (existing && existing.name.toLowerCase() !== n.toLowerCase()) {
-      setConflict({ visitor: existing, typedName: n });
-      return;
-    }
-    award(existing, n);
-  };
-
-  const freeToday = log.filter(l => l.free).length;
-  const readyForFree = visitors.filter(v => v.points >= PLAYGROUND_FREE_AT).length;
-  const totalVisits = visitors.reduce((sum, v) => sum + v.visits, 0);
+  const {
+    visitors, log, phone, setPhone, name, setName,
+    result, conflict, setConflict, checkIn, award,
+    freeToday, readyForFree, totalVisits,
+  } = usePlaygroundVisitors();
 
   // The period control filters the card list by last visit. It deliberately does
   // NOT drive the figures above: check-ins are session-local, so daily/weekly/
@@ -145,10 +101,13 @@ export default function Playground() {
                 {totalVisits.toLocaleString()}
               </p>
             </div>
-            <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-sub border border-app rounded-full px-3 py-1.5">
-              {t('playground.visitorCount', { n: visitors.length })}
+            {/* The staff app has no other entry point — it lives outside AppLayout,
+                so it is not in the sidebar. */}
+            <Link to="/playground-app"
+              className="press-spring inline-flex items-center gap-1 text-[12px] font-semibold text-brand border border-app rounded-full px-3 py-1.5 hover:bg-brand-light transition-colors">
+              {t('playground.openStaffApp')}
               <IconChevronRight size={13} stroke={2} />
-            </span>
+            </Link>
           </div>
 
           <div className="flex gap-5 mt-6">

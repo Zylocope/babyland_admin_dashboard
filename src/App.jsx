@@ -11,6 +11,7 @@ import Orders from './pages/Orders';
 import POS from './pages/POS';
 import SalesDashboard from './pages/SalesDashboard';
 import Playground from './pages/Playground';
+import PlaygroundApp from './pages/PlaygroundApp';
 import Customers from './pages/Customers';
 import Staff from './pages/Staff';
 import Settings from './pages/Settings';
@@ -35,6 +36,13 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
+
+      {/* Staff app view — deliberately OUTSIDE AppLayout so it renders full
+          bleed with no desktop sidebar or header. This is the screen staff hold
+          at the playground door; /playground stays the admin info page. */}
+      <Route path="/playground-app" element={
+        <ProtectedRoute><RoleRoute roles={['TicketStaff']}><PlaygroundApp /></RoleRoute></ProtectedRoute>
+      } />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         {/* Playground staff get the playground dashboard, not the store one. */}
         <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground" replace /> : <Dashboard />} />

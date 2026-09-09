@@ -301,6 +301,11 @@
     "visitorCount": "{{n}} visitors",
     "todayBreakdown": "Today's Increase",
     "pointVisits": "Point Visits",
+    "appTitle": "Playground",
+    "openStaffApp": "Staff app",
+    "tabCheckIn": "Check in",
+    "tabVisitors": "Visitors",
+    "tabToday": "Today",
     "period": {
       "today": "Today",
       "d7": "7 days",

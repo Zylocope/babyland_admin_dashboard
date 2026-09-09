@@ -301,6 +301,11 @@
     "visitorCount": "ဖောက်သည် {{n}} ဦး",
     "todayBreakdown": "ယနေ့ တိုးတက်မှု",
     "pointVisits": "အမှတ်ရ လာရောက်မှု",
+    "appTitle": "ကစားကွင်း",
+    "openStaffApp": "ဝန်ထမ်း app",
+    "tabCheckIn": "ဝင်ရောက်ရန်",
+    "tabVisitors": "ဖောက်သည်များ",
+    "tabToday": "ယနေ့",
     "period": {
       "today": "ယနေ့",
       "d7": "၇ ရက်",
