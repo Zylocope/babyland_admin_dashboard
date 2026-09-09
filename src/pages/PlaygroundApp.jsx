@@ -237,7 +237,7 @@ export default function PlaygroundApp() {
                   <p className="text-sm text-mute py-6 text-center">{t('playground.noCheckIns')}</p>
                 ) : (
                   <div className="space-y-2.5">
-                    {log.map((l, i) => (
+                    {log.slice(0, 8).map((l, i) => (
                       <div key={i} className="flex items-center gap-3">
                         <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
                           style={{ background: l.free ? 'var(--series-2)' : 'var(--orange-primary)' }}>

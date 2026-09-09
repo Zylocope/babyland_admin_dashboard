@@ -22,7 +22,7 @@ export default function Customers() {
     c.name.toLowerCase().includes(search.toLowerCase()) || c.phone.includes(search) || c.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  const customerOrders = (cId) => {
+  const customerOrders = () => {
     return [];
   };
 

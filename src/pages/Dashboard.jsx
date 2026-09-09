@@ -1,7 +1,6 @@
 import { IconCash, IconClock, IconCircleCheck, IconAlertTriangle, IconDatabase } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import StatCard from '../components/common/StatCard';
-import { formatMMKShort } from '../utils/currency';
 
 export default function Dashboard() {
   const { t } = useTranslation();

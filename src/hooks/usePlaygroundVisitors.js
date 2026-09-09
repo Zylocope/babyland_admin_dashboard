@@ -43,7 +43,11 @@ export function usePlaygroundVisitors() {
     }
 
     setResult({ kind: isFree ? 'free' : existing ? 'point' : 'new', visitor: updated });
-    setLog(l => [{ at: new Date().toLocaleTimeString(), name: updated.name, phone: updated.phone, free: isFree }, ...l].slice(0, 8));
+    // Every entry carries its day. Counters below are derived from the log, so
+    // truncating it here corrupted them: past eight visits "Check-ins Today"
+    // froze at 8 and free visits fell off the end entirely. The list is capped
+    // only for storage, and sliced for display at the call site.
+    setLog(l => [{ day: today(), at: new Date().toLocaleTimeString(), name: updated.name, phone: updated.phone, free: isFree }, ...l].slice(0, 500));
     reset();
   };
 
@@ -62,12 +66,16 @@ export function usePlaygroundVisitors() {
     award(existing, n);
   };
 
-  const freeToday = log.filter(l => l.free).length;
+  // Filtering by day rather than trusting the stored stamp means a tab left
+  // open across the rollover corrects itself on the next check-in, instead of
+  // counting yesterday's visits as today's.
+  const todaysLog = log.filter(l => l.day === today());
+  const freeToday = todaysLog.filter(l => l.free).length;
   const readyForFree = visitors.filter(v => v.points >= PLAYGROUND_FREE_AT).length;
   const totalVisits = visitors.reduce((sum, v) => sum + v.visits, 0);
 
   return {
-    visitors, log, phone, setPhone, name, setName,
+    visitors, log: todaysLog, phone, setPhone, name, setName,
     result, conflict, setConflict,
     checkIn, award,
     freeToday, readyForFree, totalVisits,

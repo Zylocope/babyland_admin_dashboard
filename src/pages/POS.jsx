@@ -47,7 +47,7 @@ export default function POS() {
   // Debounced live product search (real backend).
   useEffect(() => {
     const q = query.trim();
-    if (!q) { setResults([]); setSearchError(''); return; }
+    if (!q) { setResults([]); setSearchError(''); setSearching(false); return; }
 
     let active = true;
     setSearching(true);
@@ -142,7 +142,7 @@ export default function POS() {
                   <button
                     key={p.id}
                     onClick={() => addToCart(p)}
-                    disabled={out}
+                    disabled={out || submitting}
                     className="surface-card p-3 text-left hover:-translate-y-0.5 transition-transform disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                   >
                     <p className="font-medium text-ink text-sm leading-snug line-clamp-2">{p.name}</p>
@@ -179,12 +179,12 @@ export default function POS() {
                 <p className="text-xs text-mute">{formatMMK(l.price)} × {l.qty}</p>
               </div>
               <div className="flex items-center gap-1.5">
-                <button onClick={() => setQty(l.id, l.qty - 1)} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light cursor-pointer"><IconMinus size={13} /></button>
+                <button onClick={() => setQty(l.id, l.qty - 1)} disabled={submitting} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconMinus size={13} /></button>
                 <span className="w-7 text-center text-sm tabular-nums">{l.qty}</span>
-                <button onClick={() => setQty(l.id, l.qty + 1)} disabled={l.qty >= l.stock} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconPlus size={13} /></button>
+                <button onClick={() => setQty(l.id, l.qty + 1)} disabled={l.qty >= l.stock || submitting} className="p-1 rounded-md border border-app text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconPlus size={13} /></button>
               </div>
               <span className="w-20 text-right text-sm font-medium text-ink tabular-nums">{formatMMK(l.qty * l.price)}</span>
-              <button onClick={() => removeLine(l.id)} className="p-1 text-mute hover:text-red-600 cursor-pointer"><IconTrash size={14} /></button>
+              <button onClick={() => removeLine(l.id)} disabled={submitting} className="p-1 text-mute hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"><IconTrash size={14} /></button>
             </div>
           ))}
         </div>

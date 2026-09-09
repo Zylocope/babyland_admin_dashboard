@@ -10,7 +10,13 @@
 
 export const STORE_KEY = 'al_playground';
 
-export const today = () => new Date().toISOString().slice(0, 10);
+// Myanmar is UTC+06:30 with no DST. toISOString() is UTC, so the shop's
+// "today" was rolling over at 06:30 local -- a check-in at 07:00 counted as the
+// previous day. Shifting by the offset gives the Myanmar calendar date whatever
+// the device clock is set to, which is what the shop's day actually means.
+const MM_OFFSET_MIN = 6 * 60 + 30;
+export const today = () =>
+  new Date(Date.now() + MM_OFFSET_MIN * 60_000).toISOString().slice(0, 10);
 
 // Pure so it can be tested without a browser. `saved` is whatever came out of
 // storage — assume nothing about its shape.

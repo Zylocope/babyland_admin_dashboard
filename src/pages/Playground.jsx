@@ -192,7 +192,7 @@ export default function Playground() {
             <p className="text-sm text-mute">{t('playground.noCheckIns')}</p>
           ) : (
             <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-              {log.map((l, i) => (
+              {log.slice(0, 8).map((l, i) => (
                 <div key={i} className="flex items-center justify-between gap-3 text-sm border-b border-app pb-2 last:border-0">
                   <div className="min-w-0 flex items-center gap-3">
                     <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white"

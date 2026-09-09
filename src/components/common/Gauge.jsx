@@ -9,13 +9,15 @@ export default function Gauge({ segments, width = 200, className = '' }) {
   const LEN = Math.PI * R;
   const total = segments.reduce((sum, s) => sum + s.value, 0);
 
-  let at = 0;
-  const arcs = segments.map(s => {
-    const len = total ? (s.value / total) * LEN : 0;
-    const arc = { len, at, color: s.color };
-    at += len;
-    return arc;
-  });
+  // Offsets are derived rather than accumulated in a mutable local: reassigning
+  // during render is what react-hooks/immutability flags, and n is 2-3 here so
+  // the repeated scan costs nothing.
+  const lenOf = (s) => (total ? (s.value / total) * LEN : 0);
+  const arcs = segments.map((s, i) => ({
+    len: lenOf(s),
+    at: segments.slice(0, i).reduce((sum, prev) => sum + lenOf(prev), 0),
+    color: s.color,
+  }));
 
   return (
     <svg viewBox="0 0 180 104" style={{ width }} className={className}>

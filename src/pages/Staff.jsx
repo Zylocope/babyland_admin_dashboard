@@ -8,6 +8,43 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 
 const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone: '', password: '' };
 
+function StaffForm({ t, form, setForm, onSave, onCancel, isCreate }) {
+return (
+  <div className="space-y-4">
+    <div className="grid grid-cols-2 gap-4">
+      {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text']].map(([lk, k, type]) => (
+        <div key={k}>
+          <label className="block text-xs font-medium text-ink mb-1">{t(lk)}</label>
+          <input type={type} value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))}
+            className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+        </div>
+      ))}
+    </div>
+    <div>
+      <label className="block text-xs font-medium text-ink mb-1">{t('table.role')}</label>
+      <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
+        className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
+        <option value="SaleStaff">{t('roles.SaleStaff')}</option>
+        <option value="TicketStaff">{t('roles.TicketStaff')}</option>
+        <option value="Manager">{t('roles.Manager')}</option>
+      </select>
+    </div>
+    <div>
+      <label className="block text-xs font-medium text-ink mb-1">{isCreate ? t('staff.password') : t('staff.newPassword')}</label>
+      <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+        placeholder={isCreate ? t('staff.setPassword') : t('staff.keepPassword')}
+        className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+    </div>
+    <div className="flex justify-end gap-3 pt-2">
+      <button onClick={onCancel} className="px-4 py-2 text-sm border border-app rounded-lg text-sub hover:bg-brand-light">{t('common.cancel')}</button>
+      <button onClick={onSave} className="px-4 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover font-medium">
+        {isCreate ? t('staff.createAccount') : t('common.saveChanges')}
+      </button>
+    </div>
+  </div>
+);
+}
+
 export default function Staff() {
   const { t } = useTranslation();
   const [staff, setStaff] = useState([]);
@@ -36,40 +73,6 @@ export default function Staff() {
 
   const deleteStaff = (id) => setStaff(prev => prev.filter(s => s.id !== id));
 
-  const StaffForm = ({ onSave, onCancel, isCreate }) => (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text']].map(([lk, k, type]) => (
-          <div key={k}>
-            <label className="block text-xs font-medium text-ink mb-1">{t(lk)}</label>
-            <input type={type} value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))}
-              className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
-          </div>
-        ))}
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-ink mb-1">{t('table.role')}</label>
-        <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-          className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
-          <option value="SaleStaff">{t('roles.SaleStaff')}</option>
-          <option value="TicketStaff">{t('roles.TicketStaff')}</option>
-          <option value="Manager">{t('roles.Manager')}</option>
-        </select>
-      </div>
-      <div>
-        <label className="block text-xs font-medium text-ink mb-1">{isCreate ? t('staff.password') : t('staff.newPassword')}</label>
-        <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-          placeholder={isCreate ? t('staff.setPassword') : t('staff.keepPassword')}
-          className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
-      </div>
-      <div className="flex justify-end gap-3 pt-2">
-        <button onClick={onCancel} className="px-4 py-2 text-sm border border-app rounded-lg text-sub hover:bg-brand-light">{t('common.cancel')}</button>
-        <button onClick={onSave} className="px-4 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover font-medium">
-          {isCreate ? t('staff.createAccount') : t('common.saveChanges')}
-        </button>
-      </div>
-    </div>
-  );
 
   return (
     <div className="space-y-5">
@@ -138,11 +141,11 @@ export default function Staff() {
       </div>
 
       <Modal open={showCreate} onClose={() => setShowCreate(false)} title={t('staff.addTitle')}>
-        <StaffForm onSave={saveCreate} onCancel={() => setShowCreate(false)} isCreate />
+        <StaffForm t={t} form={form} setForm={setForm} onSave={saveCreate} onCancel={() => setShowCreate(false)} isCreate />
       </Modal>
 
       <Modal open={!!editStaff} onClose={() => setEditStaff(null)} title={t('staff.editTitle', { name: editStaff?.name })}>
-        <StaffForm onSave={saveEdit} onCancel={() => setEditStaff(null)} isCreate={false} />
+        <StaffForm t={t} form={form} setForm={setForm} onSave={saveEdit} onCancel={() => setEditStaff(null)} isCreate={false} />
       </Modal>
 
       <ConfirmDialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}
