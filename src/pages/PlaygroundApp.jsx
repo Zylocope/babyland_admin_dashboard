@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IconGift, IconUserPlus, IconCheck, IconAlertTriangle, IconSearch,
@@ -15,7 +14,6 @@ const NAVY = '#1B2A4A';
 export default function PlaygroundApp() {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const navigate = useNavigate();
   const [tab, setTab] = useState('checkin');
   const [search, setSearch] = useState('');
 
@@ -49,10 +47,6 @@ export default function PlaygroundApp() {
             <p className="font-bold text-ink text-[15px] leading-tight truncate">{t('playground.appTitle')}</p>
             <p className="text-[11px] text-mute truncate">{user?.name}</p>
           </div>
-          <button onClick={() => navigate('/')} title={t('nav.dashboard')}
-            className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-brand cursor-pointer">
-            <IconLayoutDashboard size={17} stroke={1.6} />
-          </button>
           <button onClick={logout} title={t('sidebar.logout')}
             className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-[#EF4444] cursor-pointer">
             <IconLogout size={17} stroke={1.6} />
