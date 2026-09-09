@@ -13,7 +13,10 @@ export type Admin = {
 export type AdminCategory = {
     created_at: string;
     created_by: string;
+    deleted_at?: string | null;
+    deleted_by?: string | null;
     id: string;
+    is_deleted: boolean;
     name: string;
     updated_at: string;
     updated_by: string;
@@ -22,10 +25,12 @@ export type AdminCategory = {
 export type AdminInventory = {
     created_at: string;
     created_by: string;
+    expiry_date?: string | null;
     id: string;
     product_id: string;
     quantity_received: number;
     quantity_remaining: number;
+    received_at: string;
     unit_cost: string;
     updated_at: string;
     updated_by: string;
@@ -41,6 +46,7 @@ export type AdminProduct = {
     id: string;
     image_url?: string | null;
     is_active: boolean;
+    is_perishable: boolean;
     name: string;
     quantity_in_stock: number;
     selling_price: string;
@@ -73,6 +79,11 @@ export type CreateCategoryPayload = {
     name: string;
 };
 
+export type CreateClaimTokenPayload = {
+    free_quantity: number;
+    purchased_quantity: number;
+};
+
 export type CreateProductPayload = {
     barcode: string;
     category_id?: string | null;
@@ -80,6 +91,7 @@ export type CreateProductPayload = {
     image_url?: string | null;
     inventory?: null | NewInventoryPayload;
     is_active: boolean;
+    is_perishable: boolean;
     name: string;
     selling_price: string;
     sub_category_id?: string | null;
@@ -89,14 +101,48 @@ export type CreateSalePayload = {
     sale_products: Array<SaleProduct>;
 };
 
+export type DeleteCategoryResponse = {
+    deleted_at?: string | null;
+    deleted_by?: string | null;
+    id: string;
+    is_deleted: boolean;
+};
+
+export enum DeliveryStatus {
+    PENDING = 'Pending',
+    ON_DELIVERY = 'OnDelivery',
+    RECEIVED = 'Received'
+}
+
 export type LoginRequest = {
     password: string;
     username: string;
 };
 
 export type NewInventoryPayload = {
+    expiry_date?: string | null;
     quantity_received: number;
+    received_at?: string | null;
     unit_cost: string;
+};
+
+export type PaginatedResponseAdminInventory = {
+    current_page: number;
+    data: Array<{
+        created_at: string;
+        created_by: string;
+        expiry_date?: string | null;
+        id: string;
+        product_id: string;
+        quantity_received: number;
+        quantity_remaining: number;
+        received_at: string;
+        unit_cost: string;
+        updated_at: string;
+        updated_by: string;
+    }>;
+    total_items: number;
+    total_pages: number;
 };
 
 export type PaginatedResponseAdminProduct = {
@@ -111,6 +157,7 @@ export type PaginatedResponseAdminProduct = {
         id: string;
         image_url?: string | null;
         is_active: boolean;
+        is_perishable: boolean;
         name: string;
         quantity_in_stock: number;
         selling_price: string;
@@ -129,23 +176,6 @@ export type PaginatedResponseAdminSale = {
         created_at: string;
         id: string;
         total_amount: string;
-    }>;
-    total_items: number;
-    total_pages: number;
-};
-
-export type PaginatedResponseUserProduct = {
-    current_page: number;
-    data: Array<{
-        barcode: string;
-        category?: string | null;
-        description?: string | null;
-        id: string;
-        image_url?: string | null;
-        name: string;
-        quantity_in_stock: number;
-        selling_price: string;
-        sub_category?: string | null;
     }>;
     total_items: number;
     total_pages: number;
@@ -195,7 +225,7 @@ export type SaleSummary = {
     is_online_sale: boolean;
     items_sold: number;
     margin: string;
-    margin_percentage: number;
+    margin_percentage: string;
     sale_date: string;
     total_cost: string;
     total_sale: string;
@@ -212,27 +242,25 @@ export type UpdateCategoryPayload = {
     updated_by: string;
 };
 
+export type UpdateOrderDeliveryStatusResponse = {
+    delivery_status: DeliveryStatus;
+    id: string;
+};
+
+export type UpdateOrderTrackingUrlPayload = {
+    order_tracking_url: string;
+};
+
 export type UpdateProductPayload = {
     barcode: string;
     category_id: string;
     description?: string | null;
     image_url?: string | null;
     is_active: boolean;
+    is_perishable: boolean;
     name: string;
     selling_price: string;
     sub_category_id?: string | null;
-};
-
-export type UserProduct = {
-    barcode: string;
-    category?: string | null;
-    description?: string | null;
-    id: string;
-    image_url?: string | null;
-    name: string;
-    quantity_in_stock: number;
-    selling_price: string;
-    sub_category?: string | null;
 };
 
 export type GetAllCategoriesData = {
@@ -243,14 +271,21 @@ export type GetAllCategoriesData = {
 };
 
 export type GetAllCategoriesErrors = {
-    400: unknown;
-    401: unknown;
-    409: unknown;
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type GetAllCategoriesResponses = {
-    201: Array<AdminCategory>;
+    /**
+     * List of all categories
+     */
+    200: Array<AdminCategory>;
 };
 
 export type GetAllCategoriesResponse = GetAllCategoriesResponses[keyof GetAllCategoriesResponses];
@@ -263,39 +298,141 @@ export type CreateCategoryData = {
 };
 
 export type CreateCategoryErrors = {
+    /**
+     * Bad request
+     */
     400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
     401: unknown;
-    409: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type CreateCategoryResponses = {
+    /**
+     * Category created
+     */
     201: AdminCategory;
 };
 
 export type CreateCategoryResponse = CreateCategoryResponses[keyof CreateCategoryResponses];
 
+export type DeleteCategoryData = {
+    body?: never;
+    path: {
+        /**
+         * Category UUID
+         */
+        id: string;
+    };
+    query?: never;
+    url: '/admin/categories/{id}';
+};
+
+export type DeleteCategoryErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type DeleteCategoryResponses = {
+    /**
+     * Category (soft) deleted
+     */
+    200: DeleteCategoryResponse;
+};
+
+export type DeleteCategoryResponse2 = DeleteCategoryResponses[keyof DeleteCategoryResponses];
+
 export type UpdateCategoryData = {
     body: UpdateCategoryPayload;
-    path?: never;
+    path: {
+        /**
+         * Category UUID
+         */
+        id: string;
+    };
     query?: never;
     url: '/admin/categories/{id}';
 };
 
 export type UpdateCategoryErrors = {
+    /**
+     * Bad request
+     */
     400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
     401: unknown;
-    409: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type UpdateCategoryResponses = {
-    201: AdminCategory;
+    /**
+     * Category updated
+     */
+    200: AdminCategory;
 };
 
 export type UpdateCategoryResponse = UpdateCategoryResponses[keyof UpdateCategoryResponses];
 
-export type CreateInventoryData = {
+export type GetProductInventoryRecordsData = {
+    body?: never;
+    path: {
+        /**
+         * Product UUID
+         */
+        product_id: string;
+    };
+    query?: {
+        page?: number;
+        page_size?: number;
+    };
+    url: '/admin/inventory/{product_id}';
+};
+
+export type GetProductInventoryRecordsErrors = {
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Product not found
+     */
+    404: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetProductInventoryRecordsResponses = {
+    /**
+     * Paginated inventory records
+     */
+    200: PaginatedResponseAdminInventory;
+};
+
+export type GetProductInventoryRecordsResponse = GetProductInventoryRecordsResponses[keyof GetProductInventoryRecordsResponses];
+
+export type InsertInventoryRecordData = {
     body: NewInventoryPayload;
     path: {
         /**
@@ -307,18 +444,33 @@ export type CreateInventoryData = {
     url: '/admin/inventory/{product_id}';
 };
 
-export type CreateInventoryErrors = {
+export type InsertInventoryRecordErrors = {
+    /**
+     * Bad request
+     */
     400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
     401: unknown;
+    /**
+     * Product not found
+     */
     404: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
-export type CreateInventoryResponses = {
+export type InsertInventoryRecordResponses = {
+    /**
+     * Inventory record created
+     */
     200: AdminInventory;
 };
 
-export type CreateInventoryResponse = CreateInventoryResponses[keyof CreateInventoryResponses];
+export type InsertInventoryRecordResponse = InsertInventoryRecordResponses[keyof InsertInventoryRecordResponses];
 
 export type AdminLoginHandlerData = {
     body: LoginRequest;
@@ -328,10 +480,20 @@ export type AdminLoginHandlerData = {
 };
 
 export type AdminLoginHandlerErrors = {
+    /**
+     * Invalid credentials
+     */
     401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
 export type AdminLoginHandlerResponses = {
+    /**
+     * Authenticated admin details
+     */
     200: Admin;
 };
 
@@ -344,9 +506,126 @@ export type AdminLogoutHandlerData = {
     url: '/admin/logout';
 };
 
+export type AdminLogoutHandlerErrors = {
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
 export type AdminLogoutHandlerResponses = {
+    /**
+     * Session destroyed
+     */
     200: unknown;
 };
+
+export type UpdateOrderDeliveryStatusData = {
+    body?: never;
+    path: {
+        /**
+         * Order ID/UUID
+         */
+        order_id: string;
+    };
+    query?: never;
+    url: '/admin/orders/update_status/{order_id}';
+};
+
+export type UpdateOrderDeliveryStatusErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type UpdateOrderDeliveryStatusResponses = {
+    /**
+     * Order delivery status updated
+     */
+    200: UpdateOrderDeliveryStatusResponse;
+};
+
+export type UpdateOrderDeliveryStatusResponse2 = UpdateOrderDeliveryStatusResponses[keyof UpdateOrderDeliveryStatusResponses];
+
+export type UpdateOrderTrackingUrlHandlerData = {
+    body: UpdateOrderTrackingUrlPayload;
+    path: {
+        /**
+         * Order UUID
+         */
+        order_id: string;
+    };
+    query?: never;
+    url: '/admin/orders/{order_id}';
+};
+
+export type UpdateOrderTrackingUrlHandlerErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type UpdateOrderTrackingUrlHandlerResponses = {
+    /**
+     * Order tracking url updated
+     */
+    200: UpdateOrderTrackingUrlPayload;
+};
+
+export type UpdateOrderTrackingUrlHandlerResponse = UpdateOrderTrackingUrlHandlerResponses[keyof UpdateOrderTrackingUrlHandlerResponses];
+
+export type CreatPlaygroundTokenData = {
+    body: CreateClaimTokenPayload;
+    path?: never;
+    query?: never;
+    url: '/admin/playground/tokens';
+};
+
+export type CreatPlaygroundTokenErrors = {
+    /**
+     * Unauthorized - Missing or invalid Session Cookie
+     */
+    401: unknown;
+    /**
+     * Forbidden - Insufficient privileges
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type CreatPlaygroundTokenResponses = {
+    /**
+     * Claim token
+     */
+    200: string;
+};
+
+export type CreatPlaygroundTokenResponse = CreatPlaygroundTokenResponses[keyof CreatPlaygroundTokenResponses];
 
 export type GetProductsPaginatedAdminData = {
     body?: never;
@@ -360,6 +639,10 @@ export type GetProductsPaginatedAdminData = {
 
 export type GetProductsPaginatedAdminErrors = {
     /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
      * Internal server error
      */
     500: unknown;
@@ -369,7 +652,7 @@ export type GetProductsPaginatedAdminResponses = {
     /**
      * Paginated list of products
      */
-    200: PaginatedResponseUserProduct;
+    200: PaginatedResponseAdminProduct;
 };
 
 export type GetProductsPaginatedAdminResponse = GetProductsPaginatedAdminResponses[keyof GetProductsPaginatedAdminResponses];
@@ -382,13 +665,28 @@ export type CreateProductData = {
 };
 
 export type CreateProductErrors = {
+    /**
+     * Bad request
+     */
     400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
     401: unknown;
+    /**
+     * Conflict - Product already exists
+     */
     409: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type CreateProductResponses = {
+    /**
+     * Product created
+     */
     201: AdminProduct;
 };
 
@@ -402,11 +700,20 @@ export type GetAllProductsData = {
 };
 
 export type GetAllProductsErrors = {
-    401: unknown;
+    /**
+     * Forbidden - Missing or invalid session
+     */
     403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
 };
 
 export type GetAllProductsResponses = {
+    /**
+     * List of all products
+     */
     200: Array<AdminProduct>;
 };
 
@@ -426,15 +733,11 @@ export type SearchProductsAdminData = {
 
 export type SearchProductsAdminErrors = {
     /**
-     * Invalid query parameters or JSON payload validation failed
+     * Invalid query parameters
      */
     400: unknown;
     /**
-     * Unauthorized - Missing or invalid session
-     */
-    401: unknown;
-    /**
-     * Forbidden - Requires admin privileges
+     * Forbidden - Missing or invalid session
      */
     403: unknown;
     /**
@@ -445,7 +748,7 @@ export type SearchProductsAdminErrors = {
 
 export type SearchProductsAdminResponses = {
     /**
-     * Successfully retrieved paginated admin products
+     * Paginated list of matching products
      */
     200: PaginatedResponseAdminProduct;
 };
@@ -456,29 +759,19 @@ export type SearchProductsAdminAdvancedData = {
     body: ProductSearchParamsAdmin;
     path?: never;
     query?: {
-        /**
-         * The page number to retrieve (1-indexed)
-         */
         page?: number;
-        /**
-         * Number of items per page
-         */
-        limit?: number;
+        page_size?: number;
     };
     url: '/admin/products/search/advanced';
 };
 
 export type SearchProductsAdminAdvancedErrors = {
     /**
-     * Invalid query parameters or JSON payload validation failed
+     * Invalid query parameters
      */
     400: unknown;
     /**
-     * Unauthorized - Missing or invalid session
-     */
-    401: unknown;
-    /**
-     * Forbidden - Requires admin privileges
+     * Forbidden - Missing or invalid session
      */
     403: unknown;
     /**
@@ -489,7 +782,7 @@ export type SearchProductsAdminAdvancedErrors = {
 
 export type SearchProductsAdminAdvancedResponses = {
     /**
-     * Successfully retrieved paginated admin products
+     * Paginated list of matching products
      */
     200: PaginatedResponseAdminProduct;
 };
@@ -509,12 +802,20 @@ export type DeleteProductData = {
 };
 
 export type DeleteProductErrors = {
+    /**
+     * Product not found
+     */
     404: unknown;
-    409: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type DeleteProductResponses = {
+    /**
+     * Product soft-deleted
+     */
     204: void;
 };
 
@@ -534,13 +835,23 @@ export type GetProductByIdAdminData = {
 
 export type GetProductByIdAdminErrors = {
     /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
      * Product not found
      */
     404: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type GetProductByIdAdminResponses = {
+    /**
+     * Product details
+     */
     200: AdminProduct;
 };
 
@@ -559,13 +870,28 @@ export type UpdateProductData = {
 };
 
 export type UpdateProductErrors = {
+    /**
+     * Bad request
+     */
     400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
     401: unknown;
+    /**
+     * Product not found
+     */
     404: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type UpdateProductResponses = {
+    /**
+     * Product updated
+     */
     200: AdminProduct;
 };
 
@@ -582,6 +908,10 @@ export type GetSalesPaginatedData = {
 };
 
 export type GetSalesPaginatedErrors = {
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
     /**
      * Internal server error
      */
@@ -610,9 +940,16 @@ export type CreateSaleErrors = {
      */
     400: unknown;
     /**
-     * Unauthorized
+     * Unauthorized - Missing or invalid session
      */
     401: unknown;
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
@@ -636,10 +973,20 @@ export type SaleSummaryData = {
 };
 
 export type SaleSummaryErrors = {
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type SaleSummaryResponses = {
+    /**
+     * Daily sales summary
+     */
     200: Array<SaleSummary>;
 };
 
@@ -659,13 +1006,23 @@ export type GetSaleDetailByIdData = {
 
 export type GetSaleDetailByIdErrors = {
     /**
-     * Sale Detail not found
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Sale not found
      */
     404: unknown;
+    /**
+     * Internal server error
+     */
     500: unknown;
 };
 
 export type GetSaleDetailByIdResponses = {
+    /**
+     * Sale details
+     */
     200: AdminSaleDetails;
 };
 

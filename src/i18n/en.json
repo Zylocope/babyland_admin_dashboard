@@ -196,7 +196,10 @@
     "loading": "Loading categories...",
     "loadFailed": "Unable to load categories.",
     "addFailed": "Unable to add category.",
-    "editNote": "Categories can be added but not renamed yet (no backend endpoint)."
+    "updateFailed": "Could not rename the category.",
+    "deleteFailed": "Could not delete the category.",
+    "deleteTitle": "Delete category",
+    "deleteMsg": "Delete \"{{name}}\"? Products already in it keep their category id."
   },
   "pos": {
     "searchPlaceholder": "Scan barcode or search product...",
