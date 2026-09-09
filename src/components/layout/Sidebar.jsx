@@ -12,11 +12,11 @@ import { useTheme } from '../../context/ThemeContext';
 
 // `roles` = staff roles allowed (besides Manager, who sees everything).
 const NAV_ITEMS = [
-  // Not TicketStaff: the index route bounces that role to the playground, so the
-  // link looked dead when they clicked it.
-  { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: ['SaleStaff'] },
+  // Manager-only from here (roles: []). Neither staff role lands on a dashboard:
+  // TicketStaff go to the playground app, SaleStaff to the till.
+  { to: '/', icon: IconLayoutDashboard, key: 'dashboard', roles: [] },
   { to: '/pos', icon: IconCashRegister, key: 'pos', roles: ['SaleStaff'] },
-  { to: '/sales', icon: IconChartHistogram, key: 'sales', roles: ['SaleStaff'] },
+  { to: '/sales', icon: IconChartHistogram, key: 'sales', roles: [] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
   { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },

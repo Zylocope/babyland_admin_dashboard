@@ -44,12 +44,17 @@ function AppRoutes() {
         <ProtectedRoute><RoleRoute roles={['TicketStaff']}><PlaygroundApp /></RoleRoute></ProtectedRoute>
       } />
       <Route path="/" element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-        {/* Playground staff land in the staff app, not the admin layout — that is
-            the screen they actually work from. /playground stays the info page. */}
-        <Route index element={user?.role === 'TicketStaff' ? <Navigate to="/playground-app" replace /> : <Dashboard />} />
+        {/* Each staff role lands on the screen it works from; only managers get the
+            dashboard. The index route is not role-guarded, so without these
+            redirects a staff member hitting "/" would still render Dashboard. */}
+        <Route index element={
+          user?.role === 'TicketStaff' ? <Navigate to="/playground-app" replace />
+            : user?.role === 'SaleStaff' ? <Navigate to="/pos" replace />
+              : <Dashboard />
+        } />
         <Route path="playground" element={<RoleRoute roles={['TicketStaff']}><Playground /></RoleRoute>} />
         <Route path="pos" element={<RoleRoute roles={['SaleStaff']}><POS /></RoleRoute>} />
-        <Route path="sales" element={<RoleRoute roles={['SaleStaff']}><SalesDashboard /></RoleRoute>} />
+        <Route path="sales" element={<RoleRoute roles={[]}><SalesDashboard /></RoleRoute>} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
         <Route path="products/new" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
         <Route path="products/:id/edit" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
