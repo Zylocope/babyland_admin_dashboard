@@ -6,12 +6,12 @@
 // chip is unambiguous, so it needs no interpretation. Typed text still goes to
 // the model — which is what keeps Burmese working, since keyword matching in
 // Burmese is exactly where a parser would fall over.
-import { format, subDays } from 'date-fns';
+import { shopDaysAgo } from '../utils/shopDay.js';
 import { runTool } from './aiTools';
 import { chartFromTool } from './aiCharts';
 import { classifyReport, isFailed } from './reportState.js';
 
-const day = (offset = 0) => format(subDays(new Date(), offset), 'yyyy-MM-dd');
+const day = (offset = 0) => shopDaysAgo(offset);
 const mmk = (n) => `${new Intl.NumberFormat('en-US').format(Math.round(n || 0))} MMK`;
 
 const salesLine = (res, t) => {
@@ -58,6 +58,7 @@ const compareLine = (res, t) => {
   const { current: c, previous: p, change_pct: d } = res;
   const arrow = (v) => (v === null ? '' : v > 0 ? `▲ ${v}%` : v < 0 ? `▼ ${Math.abs(v)}%` : '= 0%');
   return [
+    `${t('aiChart.current')}: ${c.range.start} – ${c.range.end}\n${t('aiChart.previous')}: ${p.range.start} – ${p.range.end}`,
     t('quick.compareRevenue', { current: mmk(c.revenue_mmk), previous: mmk(p.revenue_mmk), change: arrow(d.revenue) }),
     t('quick.compareProfit', { current: mmk(c.profit_mmk), previous: mmk(p.profit_mmk), change: arrow(d.profit) }),
     t('quick.compareTxns', { current: c.transactions, previous: p.transactions, change: arrow(d.transactions) }),
@@ -131,7 +132,7 @@ export const runQuickAction = async (action, t) => {
   // status travels with the text so the caller can offer Retry on a failure
   // without re-parsing the rendered string to guess what happened.
   return {
-    text: action.render(result, t),
+    text: [result.range ? `${result.range.start} – ${result.range.end}` : '', action.render(result, t)].filter(Boolean).join('\n'),
     chart: chartFromTool(action.tool, result),
     status: classifyReport(result),
   };

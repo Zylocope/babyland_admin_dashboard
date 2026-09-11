@@ -11,20 +11,17 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 
 // `roles` = staff roles allowed (besides Manager, who sees everything).
-// Collapse motion. Labels are kept MOUNTED and collapsed to zero width instead
-// of being unmounted -- an unmounted label cannot animate, which is why they
-// used to pop. Same curve as the nav pill, so the sidebar has one motion
-// language rather than three.
+// Keep labels mounted at their natural width; fade them inside clipped rows
+// so their size does not compete with the shell's width transition.
 const COLLAPSE_MS = 260;
 const COLLAPSE_EASE = 'cubic-bezier(0.32, 0.72, 0, 1)';
 
-const labelStyle = (collapsed, i = 0) => ({
+const labelStyle = (collapsed) => ({
   opacity: collapsed ? 0 : 1,
-  maxWidth: collapsed ? 0 : '12rem',
   transform: collapsed ? 'translateX(-4px)' : 'none',
-  transition: ['opacity', 'max-width', 'transform']
+  transition: ['opacity', 'transform']
     .map(prop => `${prop} ${COLLAPSE_MS}ms ${COLLAPSE_EASE}`).join(', '),
-  transitionDelay: collapsed ? '0ms' : `${Math.min(i * 10, 60)}ms`,
+  transitionDelay: '0ms',
 });
 
 const NAV_ITEMS = [
@@ -74,7 +71,7 @@ export default function Sidebar({ collapsed, onToggle }) {
       </button>
 
       {/* Logo — 64px */}
-      <div className="flex items-center h-16 shrink-0 border-b border-app sidebar-logo">
+      <div className="flex items-center h-16 shrink-0 sidebar-logo">
         <div className="bg-brand text-white rounded-lg p-1.5 flex-shrink-0">
           <IconBabyCarriage size={20} stroke={1.5} />
         </div>
@@ -94,21 +91,14 @@ export default function Sidebar({ collapsed, onToggle }) {
             style={{
               top: '8px', // matches py-2
               background: styleTheme === 'glass' ? 'color-mix(in srgb, var(--c-glass) 36%, transparent)' : 'var(--s-nav-active-bg)',
-              boxShadow: styleTheme === 'glass' ? `
-                inset 0 0 0 1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 10%), transparent),
-                inset 2px 1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 90%), transparent), 
-                inset -1.5px -1px 0px -1px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 80%), transparent), 
-                inset -2px -6px 1px -5px color-mix(in srgb, var(--c-light) calc(var(--glass-reflex-light) * 60%), transparent), 
-                inset -1px 2px 3px -1px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 20%), transparent), 
-                inset 0px -4px 1px -2px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 10%), transparent), 
-                0px 3px 6px 0px color-mix(in srgb, var(--c-dark) calc(var(--glass-reflex-dark) * 8%), transparent)` : 'var(--s-nav-active-shadow)',
+              boxShadow: styleTheme === 'glass' ? '0 2px 5px color-mix(in srgb, var(--c-dark) 8%, transparent)' : 'var(--s-nav-active-shadow)',
               translate: `0 ${activeIndex * 38}px`,
               transition: 'translate 280ms cubic-bezier(0.22, 0.8, 0.22, 1)',
               zIndex: 0
             }}
           />
         )}
-        {visibleItems.map(({ to, icon: Icon, key }, i) => (
+        {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
             to={to} aria-label={t(`nav.${key}`)} title={collapsed ? t(`nav.${key}`) : undefined}
@@ -123,7 +113,7 @@ export default function Sidebar({ collapsed, onToggle }) {
             {({ isActive }) => (
               <>
                 <Icon size={20} stroke={isActive ? 1.9 : 1.5} className={`sidebar-nav-icon shrink-0 ${isActive ? 'text-brand' : 'text-mute'}`} />
-                <span className="nav-label overflow-hidden" style={labelStyle(collapsed, i)}>{t(`nav.${key}`)}</span>
+                <span className="nav-label overflow-hidden" style={labelStyle(collapsed)}>{t(`nav.${key}`)}</span>
               </>
             )}
           </NavLink>
@@ -131,16 +121,16 @@ export default function Sidebar({ collapsed, onToggle }) {
       </nav>
 
       {/* Bottom: user + language + dark toggle + logout */}
-      <div className="border-t border-app p-2">
-        <div className="nav-label px-2 py-1.5 mb-0.5 min-w-0 overflow-hidden" style={labelStyle(collapsed)}>
+      <div className="sidebar-footer border-t border-app p-2 shrink-0">
+        <div className="sidebar-identity nav-label px-2 min-w-0 overflow-hidden" style={labelStyle(collapsed)}>
           <p className="text-xs font-semibold text-ink truncate">{user?.name}</p>
           <span className="inline-block mt-0.5 text-[11px] text-brand font-medium whitespace-nowrap">{t(`roles.${user?.role}`)}</span>
         </div>
 
         {/* Language · settings · theme — the three switches sit together, which is
             why the header no longer needs a profile menu. */}
-        <div className={`flex items-center gap-1 mb-0.5 ${collapsed ? 'flex-col' : ''}`}>
-          <div className={`flex items-center gap-1 rounded-full border border-app p-0.5 ${collapsed ? 'flex-col w-full' : 'flex-grow'}`}>
+        <div className="sidebar-preferences">
+          <div className="sidebar-language rounded-full border border-app">
             <button
               onClick={() => i18n.changeLanguage('en')}
               title="English"
@@ -153,7 +143,7 @@ export default function Sidebar({ collapsed, onToggle }) {
               title="မြန်မာ"
               className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
             >
-              {collapsed ? 'MY' : 'မြန်မာ'}
+              MY
             </button>
           </div>
           <button
@@ -175,7 +165,7 @@ export default function Sidebar({ collapsed, onToggle }) {
         </div>
         <button
           onClick={logout} aria-label={t('sidebar.logout')}
-          className={`press-spring flex items-center w-full h-8 rounded-full text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors cursor-pointer ${collapsed ? 'justify-center px-0' : 'gap-2 px-3'}`}
+          className="sidebar-logout press-spring flex items-center w-full h-8 rounded-full text-sm text-[#EF4444] hover:bg-red-50 dark:hover:bg-red-950/30 cursor-pointer"
         >
           <IconLogout size={16} stroke={1.5} />
           <span className="nav-label overflow-hidden" style={labelStyle(collapsed)}>{t('sidebar.logout')}</span>
@@ -184,4 +174,3 @@ export default function Sidebar({ collapsed, onToggle }) {
     </aside>
   );
 }
-

@@ -339,6 +339,10 @@
     "shareToday": "Revenue share"
   },
   "assistant": {
+    "send": "Send question",
+    "latest": "Latest response",
+    "sources": "Source: {{tools}}",
+    "timeout": "This report took too long. Please retry or ask for a smaller date range.",
     "emptyTitle": "Ask about your shop",
     "emptyBody": "Answers are read from live sales and stock data, not guessed.",
     "placeholder": "Ask about sales, stock or products...",
@@ -418,8 +422,8 @@
   "quick": {
     "title": "Instant",
     "today": "Today's sales",
-    "week": "This week",
-    "month": "This month",
+    "week": "Last 7 days",
+    "month": "Last 30 days",
     "lowStock": "Low stock",
     "categories": "Categories",
     "salesLine": "Revenue {{revenue}} · profit {{profit}} ({{margin}}% margin)",
@@ -430,7 +434,7 @@
     "noLowStock": "Nothing at or below {{threshold}}.",
     "categoriesLine": "{{count}} categories: {{list}}",
     "failed": "Could not read that just now.",
-    "compare": "vs last month",
+    "compare": "Compare 30 days",
     "stockValue": "Stock by category",
     "compareRevenue": "Revenue {{current}} vs {{previous}} {{change}}",
     "compareProfit": "Profit {{current}} vs {{previous}} {{change}}",
@@ -438,8 +442,25 @@
     "stockValueLine": "{{products}} products on hand, {{total}} at retail:"
   },
   "aiChart": {
+    "titles": {
+      "sales_summary": "Sales revenue",
+      "compare_periods": "Sales comparison",
+      "sales_by_weekday": "Sales by weekday",
+      "stock_by_category": "Retail stock value by category",
+      "low_stock": "Low-stock products"
+    },
+    "title": "Report",
+    "retailValue": "Retail stock value",
+    "units": "Units",
+    "period": "Period",
+    "metric": "Metric",
+    "item": "Item",
+    "viewData": "View exact values",
+    "groupedDays": "Grouped into {{days}}-day intervals; final interval may be shorter.",
+    "showing": "Showing {{count}} of {{total}} entries",
+    "returned": "The report returned {{count}} of {{total}} matching entries.",
+    "chartDescription": "{{title}} chart. Exact values are available in the table below.",
     "previous": "Previous",
     "current": "Current"
   }
 }
-

@@ -1,116 +1,72 @@
-// Turns a tool result into a chart spec.
-//
-// The model is never asked to describe a chart — it would cost another round
-// trip and it could get the numbers wrong. Instead the visual is derived from
-// the same tool result the answer was written from, so the picture and the text
-// can never disagree, and the instant chips get charts for free.
+const DAY = 86_400_000;
+const dateMs = value => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value ?? '')) return NaN;
+  const ms = Date.parse(`${value}T00:00:00Z`);
+  return Number.isFinite(ms) && new Date(ms).toISOString().slice(0, 10) === value ? ms : NaN;
+};
+const iso = ms => new Date(ms).toISOString().slice(0, 10);
 
-// summarizeSales only emits days that had sales, so a quiet month collapses to
-// one point. Pad across the whole requested range: a day with no sales is a
-// real zero, and the flat stretch is itself information.
-const padRange = (range, byDay) => {
-  const rows = new Map(byDay.map(d => [d.date, d]));
-  const start = new Date(`${range.start}T00:00:00Z`);
-  const end = new Date(`${range.end}T00:00:00Z`);
-  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime()) || end < start) return [];
-
-  const out = [];
-  for (let d = new Date(start); d <= end && out.length < 366; d.setUTCDate(d.getUTCDate() + 1)) {
-    const key = d.toISOString().slice(0, 10);
-    const row = rows.get(key);
-    out.push({
-      date: key,
-      day: key.slice(5),
-      revenue: row?.revenue_mmk ?? 0,
-      inStore: row?.in_store_mmk ?? 0,
-      online: row?.online_mmk ?? 0,
-    });
+// Allocate chart buckets first, then sum every record into them. Chart density
+// is bounded without truncating the reporting range or iterating every day.
+const salesBuckets = (range, rows) => {
+  const start = dateMs(range.start), end = dateMs(range.end);
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
+  const days = Math.round((end - start) / DAY) + 1;
+  const bucketDays = days <= 31 ? 1 : days <= 210 ? 7 : Math.max(30, Math.ceil(days / 31));
+  const data = Array.from({ length: Math.ceil(days / bucketDays) }, (_, i) => {
+    const date = iso(start + i * bucketDays * DAY);
+    const endDate = iso(Math.min(end, start + ((i + 1) * bucketDays - 1) * DAY));
+    return { date, endDate, day: date.slice(5), revenue: 0, inStore: 0, online: 0 };
+  });
+  for (const row of rows) {
+    const day = dateMs(row.date);
+    if (!Number.isFinite(day) || day < start || day > end) continue;
+    const bucket = data[Math.floor((day - start) / DAY / bucketDays)];
+    bucket.revenue += Number(row.revenue_mmk ?? 0);
+    bucket.inStore += Number(row.in_store_mmk ?? 0);
+    bucket.online += Number(row.online_mmk ?? 0);
   }
-  return out;
+  return { data, bucketDays, granularity: bucketDays === 1 ? 'day' : bucketDays === 7 ? 'week' : 'interval' };
 };
 
-// A long range is aggregated, never trimmed. Above this many points a daily bar
-// per day is unreadable anyway, so days are summed into weeks (or months beyond
-// roughly seven months). Summing keeps every kyat; dropping days would not.
-const MAX_POINTS = 31;
-
-const bucketise = (rows) => {
-  if (rows.length <= MAX_POINTS) return { granularity: 'day', data: rows };
-  const size = rows.length > 210 ? 30 : 7;
-  const data = [];
-  for (let i = 0; i < rows.length; i += size) {
-    const span = rows.slice(i, i + size);
-    const sum = (key) => span.reduce((acc, r) => acc + r[key], 0);
-    data.push({
-      date: span[0].date,
-      day: span.length > 1 ? `${span[0].day}–${span[span.length - 1].day}` : span[0].day,
-      revenue: sum('revenue'),
-      inStore: sum('inStore'),
-      online: sum('online'),
-    });
-  }
-  return { granularity: size === 7 ? 'week' : 'month', data };
-};
-
-export const chartFromTool = (toolName, result) => {
+export const chartFromTool = (tool, result) => {
   if (!result || result.error) return null;
-
-  if (toolName === 'sales_summary') {
+  const meta = { tool, range: result.range, titleKey: `aiChart.titles.${tool}` };
+  if (tool === 'sales_summary') {
     if (!result.range || !result.by_day?.length) return null;
-    const padded = padRange(result.range, result.by_day);
-    if (padded.length < 2) return null;
-    const { granularity, data } = bucketise(padded);
-    return { kind: 'sales', data, granularity, hasOnline: data.some(d => d.online > 0) };
+    const buckets = salesBuckets(result.range, result.by_day);
+    if (!buckets || buckets.data.length < 2) return null;
+    return { ...meta, kind: 'sales', ...buckets, hasOnline: buckets.data.some(d => d.online !== 0) };
   }
-
-  if (toolName === 'compare_periods') {
+  if (tool === 'compare_periods') {
     const { current: c, previous: p } = result;
     if (!c || !p) return null;
-    return {
-      kind: 'compare',
-      // Revenue and profit share a scale; transaction counts do not, so they
-      // stay in the text answer rather than squashing the bars.
+    return { ...meta, kind: 'compare', currentRange: c.range, previousRange: p.range,
       data: [
         { metric: 'revenue', previous: p.revenue_mmk, current: c.revenue_mmk },
         { metric: 'profit', previous: p.profit_mmk, current: c.profit_mmk },
-      ],
-    };
+      ] };
   }
-
-  if (toolName === 'sales_by_weekday') {
-    const rows = (result.by_weekday ?? []).filter(d => d.revenue_mmk > 0);
-    if (rows.length < 2) return null;
-    return {
-      kind: 'bars',
-      unit: 'mmk',
-      categorical: false,
-      data: (result.by_weekday ?? []).map(d => ({ label: d.weekday.slice(0, 3), value: d.revenue_mmk })),
-    };
+  if (tool === 'sales_by_weekday') {
+    const rows = result.by_weekday ?? [];
+    if (rows.filter(d => d.revenue_mmk > 0).length < 2) return null;
+    return { ...meta, kind: 'bars', unit: 'mmk', categorical: false,
+      metricKey: 'posDash.revenue',
+      data: rows.map(d => ({ label: d.weekday.slice(0, 3), fullLabel: d.weekday, value: d.revenue_mmk })) };
   }
-
-  if (toolName === 'stock_by_category') {
+  if (tool === 'stock_by_category') {
     const rows = result.categories ?? [];
     if (rows.length < 2) return null;
-    return {
-      kind: 'bars',
-      unit: 'mmk',
-      categorical: true,
-      data: rows.slice(0, 8).map(c => ({ label: c.category, value: c.retail_value_mmk })),
-    };
+    const allData = rows.map(c => ({ label: c.category, value: c.retail_value_mmk }));
+    return { ...meta, kind: 'bars', unit: 'mmk', categorical: true,
+      metricKey: 'aiChart.retailValue', data: allData.slice(0, 8), allData, totalCount: rows.length };
   }
-
-  if (toolName === 'low_stock') {
+  if (tool === 'low_stock') {
     const products = result.products ?? [];
     if (!products.length) return null;
-    return {
-      kind: 'stock',
-      // Longest bars first reads better, and long Burmese names need truncating.
-      data: products.slice(0, 8).map(p => ({
-        name: p.name.length > 22 ? `${p.name.slice(0, 21)}…` : p.name,
-        stock: p.stock,
-      })),
-    };
+    const allData = products.map(p => ({ name: p.name, stock: p.stock }));
+    return { ...meta, kind: 'stock', data: allData.slice(0, 8), allData,
+      totalCount: result.low_stock_count ?? products.length, threshold: result.threshold };
   }
-
   return null;
 };

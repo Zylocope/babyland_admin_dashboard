@@ -339,6 +339,10 @@
     "shareToday": "ဝင်ငွေ အချိုး"
   },
   "assistant": {
+    "send": "မေးခွန်းပို့ရန်",
+    "latest": "နောက်ဆုံးအဖြေ",
+    "sources": "Data ရင်းမြစ်: {{tools}}",
+    "timeout": "ဤအစီရင်ခံစာသည် အချိန်ကြာနေပါသည်။ ထပ်စမ်းပါ သို့မဟုတ် ရက်အပိုင်းအခြားကို လျှော့၍ မေးပါ။",
     "emptyTitle": "ဆိုင်အကြောင်း မေးလိုက်ပါ",
     "emptyBody": "အဖြေတွေက အရောင်း နဲ့ stock data အစစ်ကနေ ထုတ်ပေးတာပါ။",
     "placeholder": "အရောင်း၊ stock၊ ပစ္စည်း အကြောင်း မေးပါ...",
@@ -418,8 +422,8 @@
   "quick": {
     "title": "အမြန်",
     "today": "ယနေ့ အရောင်း",
-    "week": "ဒီအပတ်",
-    "month": "ဒီလ",
+    "week": "နောက်ဆုံး ၇ ရက်",
+    "month": "နောက်ဆုံး ၃၀ ရက်",
     "lowStock": "လက်ကျန် နည်း",
     "categories": "Category များ",
     "salesLine": "ဝင်ငွေ {{revenue}} · အမြတ် {{profit}} ({{margin}}%)",
@@ -430,7 +434,7 @@
     "noLowStock": "{{threshold}} အောက် ပစ္စည်း မရှိပါ။",
     "categoriesLine": "Category {{count}} ခု: {{list}}",
     "failed": "ယခု ဖတ်၍ မရပါ။",
-    "compare": "ပြီးခဲ့သည့်လနှင့်",
+    "compare": "ရက် ၃၀ နှိုင်းယှဉ်ရန်",
     "stockValue": "Category အလိုက် Stock",
     "compareRevenue": "ဝင်ငွေ {{current}} / ယခင် {{previous}} {{change}}",
     "compareProfit": "အမြတ် {{current}} / ယခင် {{previous}} {{change}}",
@@ -438,8 +442,25 @@
     "stockValueLine": "ပစ္စည်း {{products}} မျိုး၊ စျေးနှုန်းအရ {{total}}:"
   },
   "aiChart": {
+    "titles": {
+      "sales_summary": "အရောင်းဝင်ငွေ",
+      "compare_periods": "အရောင်းနှိုင်းယှဉ်ချက်",
+      "sales_by_weekday": "ရက်အလိုက် အရောင်း",
+      "stock_by_category": "Category အလိုက် လက်လီ Stock တန်ဖိုး",
+      "low_stock": "လက်ကျန်နည်းသော ပစ္စည်းများ"
+    },
+    "title": "အစီရင်ခံစာ",
+    "retailValue": "လက်လီစျေးနှုန်းအရ Stock တန်ဖိုး",
+    "units": "အရေအတွက်",
+    "period": "ကာလ",
+    "metric": "တိုင်းတာချက်",
+    "item": "အမျိုးအမည်",
+    "viewData": "ကိန်းဂဏန်းအတိအကျ ကြည့်ရန်",
+    "groupedDays": "{{days}} ရက်စီ စုဖွဲ့ထားသည်။ နောက်ဆုံးအုပ်စုတွင် ရက်နည်းနိုင်သည်။",
+    "showing": "{{total}} ခုအနက် {{count}} ခု ပြသနေသည်",
+    "returned": "အစီရင်ခံစာတွင် ကိုက်ညီသော {{total}} ခုအနက် {{count}} ခု ရရှိသည်။",
+    "chartDescription": "{{title}} ဇယား။ ကိန်းဂဏန်းအတိအကျကို အောက်ပါဇယားတွင် ကြည့်နိုင်သည်။",
     "previous": "ယခင်",
     "current": "ယခု"
   }
 }
-

@@ -1,31 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
-import { IconSend, IconSparkles, IconDatabase, IconLoader2, IconBolt } from '@tabler/icons-react';
+import { IconSend, IconSparkles, IconDatabase, IconLoader2, IconBolt, IconArrowDown } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { toolDeclarations, runTool, systemPrompt } from '../services/aiTools';
 import { QUICK_ACTIONS, runQuickAction } from '../services/quickActions';
 import { chartFromTool } from '../services/aiCharts';
+import { finishInterruptedTools, withSignal } from '../services/assistantSession.js';
 import AssistantChart from '../components/common/AssistantChart';
 
 const MAX_TOOL_ROUNDS = 5;
-const QUOTA_ERROR = 'QUOTA';
-
 const askGemini = async (contents, signal) => {
   const res = await fetch('/api/chat', {
-    method: 'POST',
-    signal,
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      systemInstruction: { parts: [{ text: systemPrompt() }] },
-      tools: [{ functionDeclarations: toolDeclarations }],
-      contents,
-    }),
+    method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt() }] }, tools: [{ functionDeclarations: toolDeclarations }], contents }),
   });
   const data = await res.json();
   if (!res.ok) {
-    // The free tier is a daily request count, and a typed question spends two of
-    // them. Say that plainly instead of forwarding Google's billing wording.
-    const status = data?.error?.status;
-    if (status === 'RESOURCE_EXHAUSTED' || res.status === 429) throw new Error(QUOTA_ERROR);
+    if (data?.error?.status === 'RESOURCE_EXHAUSTED' || res.status === 429) throw new Error('QUOTA');
     throw new Error(data?.error?.message || data?.error || `AI request failed (${res.status})`);
   }
   const content = data?.candidates?.[0]?.content;
@@ -40,209 +30,135 @@ export default function Assistant() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [charts, setCharts] = useState({});
-  const [retry, setRetry] = useState(null);   // the quick action that failed
-  const endRef = useRef(null);
+  const [retry, setRetry] = useState(null);
+  const [progress, setProgress] = useState('');
+  const [following, setFollowing] = useState(true);
+  const scrollRef = useRef(null);
+  const messagesRef = useRef(null);
+  const followRef = useRef(true);
   const abortRef = useRef(null);
+  const inputRef = useRef(null);
 
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [contents, busy]);
+  useEffect(() => {
+    const scroll = scrollRef.current;
+    const observer = new ResizeObserver(() => {
+      if (followRef.current) scroll.scrollTop = scroll.scrollHeight;
+    });
+    observer.observe(messagesRef.current);
+    return () => { observer.disconnect(); const current = abortRef.current; abortRef.current = null; current?.abort(); };
+  }, []);
 
-  const send = async (text) => {
-    if (!text.trim() || busy) return;
-    setInput('');
-    setError('');
-    setBusy(true);
-
-    let next = [...contents, { role: 'user', parts: [{ text: text.trim() }] }];
-    setContents(next);
-    // One chart per tool result, not one per answer. A sales-and-stock question
-    // produces two, and the second used to overwrite the first before either was
-    // shown.
-    let pending = [];
-    let finished = false;
-
+  const run = async ({ text, action }) => {
+    if (abortRef.current || (!action && !text.trim())) return;
     const abort = new AbortController();
     abortRef.current = abort;
-
+    const timeout = setTimeout(() => abort.abort(new DOMException('Request timed out', 'TimeoutError')), 60_000);
+    setBusy(true); setError(''); setRetry(null);
+    followRef.current = true; setFollowing(true);
+    if (!action) setInput('');
+    let next = [...contents, { role: 'user', parts: [{ text: action ? t(action.labelKey) : text.trim() }] }];
+    setContents(next);
+    const question = { text, action };
     try {
-      for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
-        const reply = await askGemini(next, abort.signal);
-        if (abort.signal.aborted) return;
-        next = [...next, reply];
+      if (action) {
+        setProgress(t('assistant.checking', { tool: t(`assistant.tool.${action.tool}`) }));
+        const result = await withSignal(runQuickAction(action, t), abort.signal);
+        next = [...next, { role: 'model', parts: [{ text: result.text }] }];
         setContents(next);
-
-        const calls = (reply.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall);
-        if (!calls.length) {
-          finished = true;
-          if (pending.length) setCharts(c => ({ ...c, [next.length - 1]: pending }));
-          break;
+        const answerIndex = next.length - 1;
+        if (result.chart) setCharts(prev => ({ ...prev, [answerIndex]: [result.chart] }));
+        if (result.status === 'failed') setRetry(question);
+      } else {
+        let finished = false;
+        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+          setProgress(t('assistant.thinking'));
+          const reply = await withSignal(askGemini(next, abort.signal), abort.signal);
+          next = [...next, reply];
+          setContents(next);
+          const calls = (reply.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall);
+          if (!calls.length) { finished = true; break; }
+          setProgress(t('assistant.checking', { tool: calls.map(fc => t(`assistant.tool.${fc.name}`, fc.name)).join(', ') }));
+          const results = await withSignal(Promise.all(calls.map(async fc => ({ fc, response: await runTool(fc.name, fc.args ?? {}) }))), abort.signal);
+          const specs = results.map(({ fc, response }) => chartFromTool(fc.name, response)).filter(Boolean);
+          const toolIndex = next.length - 1;
+          if (specs.length) setCharts(prev => ({ ...prev, [toolIndex]: specs }));
+          next = [...next, { role: 'user', parts: results.map(({ fc, response }) => ({ functionResponse: {
+            ...(fc.id ? { id: fc.id } : {}), name: fc.name, response,
+          } })) }];
+          setContents(next);
         }
-
-        const results = await Promise.all(calls.map(async fc => ({
-          fc,
-          response: await runTool(fc.name, fc.args ?? {}),
-        })));
-        if (abort.signal.aborted) return;
-
-        // Derive the visual from the same result the answer will be written from.
-        for (const { fc, response } of results) {
-          const spec = chartFromTool(fc.name, response);
-          if (spec) pending = [...pending, { ...spec, tool: fc.name, range: response?.range }];
+        if (!finished) {
+          setContents([...next, { role: 'model', parts: [{ text: t('assistant.roundLimit', { rounds: MAX_TOOL_ROUNDS }) }] }]);
         }
-
-        const parts = results.map(({ fc, response }) => ({
-          functionResponse: {
-            ...(fc.id ? { id: fc.id } : {}),
-            name: fc.name,
-            response,
-          },
-        }));
-        next = [...next, { role: 'user', parts }];
-        setContents(next);
-      }
-
-      // Falling out of the loop without a text reply used to end the turn in
-      // silence, looking like the assistant had simply ignored the question.
-      if (!finished && !abort.signal.aborted) {
-        const capped = [...next, { role: 'model', parts: [{ text: t('assistant.roundLimit', { rounds: MAX_TOOL_ROUNDS }) }] }];
-        setContents(capped);
-        if (pending.length) setCharts(c => ({ ...c, [capped.length - 1]: pending }));
       }
     } catch (err) {
-      if (err.name !== 'AbortError') {
-        setError(err.message === QUOTA_ERROR ? t('assistant.quota') : err.message);
-      }
+      if (abortRef.current !== abort) return;
+      setContents(finishInterruptedTools(next, 'Report interrupted; do not infer values from this call.'));
+      const stopped = abort.signal.aborted && abort.signal.reason?.name !== 'TimeoutError';
+      setError(stopped ? t('assistant.stopped') : abort.signal.reason?.name === 'TimeoutError' ? t('assistant.timeout') : err.message === 'QUOTA' ? t('assistant.quota') : err.message);
+      setRetry(question);
     } finally {
-      // Cancelling can land mid-request (fetch rejects) or between rounds (the
-      // early return above), and only the first of those throws. Reporting from
-      // here covers both, so Stop never fails silently.
-      if (abort.signal.aborted) setError(t('assistant.stopped'));
-      abortRef.current = null;
-      setBusy(false);
+      clearTimeout(timeout);
+      if (abortRef.current === abort) {
+        abortRef.current = null;
+        setBusy(false); setProgress('');
+      }
     }
   };
-
+  const send = text => run({ text });
   const stop = () => abortRef.current?.abort();
-
-  const quick = async (action) => {
-    if (busy) return;
-    setError('');
-    setRetry(null);
-    setBusy(true);
-    const asked = [...contents, { role: 'user', parts: [{ text: t(action.labelKey) }] }];
-    setContents(asked);
-    try {
-      const { text, chart, status } = await runQuickAction(action, t);
-      // Kept in the transcript so a typed follow-up still has the numbers in context.
-      const answered = [...asked, { role: 'model', parts: [{ text }] }];
-      setContents(answered);
-      if (chart) setCharts(m => ({ ...m, [answered.length - 1]: [chart] }));
-      // A failed report offers a way back; an empty one is a real answer and
-      // must not.
-      setRetry(status === 'failed' ? action : null);
-    } catch (err) {
-      setError(err.message);
-    } finally {
-      setBusy(false);
-    }
+  const jump = () => {
+    followRef.current = true; setFollowing(true);
+    scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
   };
-
-  const suggestions = [t('assistant.s1'), t('assistant.s2'), t('assistant.s3')];
 
   return (
-    <div className="flex flex-col h-[calc(100vh-7rem)] gap-4">
-      <div className="surface-card flex-1 overflow-y-auto p-5 space-y-4">
-        {contents.length === 0 && (
-          <div className="h-full flex flex-col items-center justify-center gap-4 text-center">
-            <IconSparkles size={32} stroke={1.2} className="text-brand" />
-            <div>
-              <p className="font-semibold text-ink">{t('assistant.emptyTitle')}</p>
-              <p className="text-sm text-sub mt-1">{t('assistant.emptyBody')}</p>
-            </div>
-            <div className="flex flex-wrap justify-center gap-2 max-w-lg">
-              {suggestions.map(s => (
-                <button key={s} onClick={() => send(s)}
-                  className="px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:bg-brand-light transition-colors">
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {contents.map((m, i) => {
-          const text = (m.parts ?? []).filter(p => p.text).map(p => p.text).join('\n');
-          const tools = (m.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall.name);
-          if (!text && !tools.length) return null;
-          const mine = m.role === 'user';
-
-          return (
-            <div key={i} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
-              <div className={`${mine ? 'max-w-[80%] items-end' : 'max-w-[92%] w-full'} space-y-1.5`}>
-                {tools.map(name => (
-                  <p key={name} className="flex items-center gap-1.5 text-[11px] text-mute">
-                    <IconDatabase size={13} stroke={1.5} />
-                    {t('assistant.checking', { tool: t(`assistant.tool.${name}`, name) })}
-                  </p>
-                ))}
-                {text && (
-                  <div className={`px-4 py-2.5 rounded-xl text-[15px] whitespace-pre-wrap ${mine
-                    ? 'bg-brand text-white rounded-br-sm'
-                    : 'border border-app text-ink rounded-bl-sm'}`}>
-                    {text}
-                  </div>
-                )}
-                {!mine && charts[i]?.map((spec, ci) => (
-                  <AssistantChart key={ci} spec={spec} />
-                ))}
+    <div className="flex flex-col h-full min-h-0 gap-3">
+      <div className="relative flex-1 min-h-0">
+        <div ref={scrollRef} className="surface-card is-sheet h-full overflow-y-auto p-3 sm:p-5"
+          onScroll={e => { const el = e.currentTarget; const near = el.scrollHeight - el.scrollTop - el.clientHeight < 64; followRef.current = near; setFollowing(near); }}>
+          <div ref={messagesRef} className="space-y-4">
+            {contents.length === 0 && (
+              <div className="flex flex-col items-center justify-center gap-4 text-center py-10 sm:py-16">
+                <IconSparkles size={32} stroke={1.2} className="text-brand" />
+                <div><h2 className="font-semibold text-ink">{t('assistant.emptyTitle')}</h2><p className="text-sm text-sub mt-1 max-w-md">{t('assistant.emptyBody')}</p></div>
+                <div className="flex flex-wrap justify-center gap-2 max-w-lg">
+                  {[t('assistant.s1'), t('assistant.s2'), t('assistant.s3')].map(s => <button key={s} onClick={() => send(s)} className="px-3 py-2 text-xs rounded-lg border border-app text-sub hover:text-brand hover:bg-brand-light">{s}</button>)}
+                </div>
               </div>
-            </div>
-          );
-        })}
-
-        {busy && (
-          <div className="flex items-center gap-3">
-            <p className="flex items-center gap-2 text-sm text-mute">
-              <IconLoader2 size={15} stroke={1.5} className="animate-spin" /> {t('assistant.thinking')}
-            </p>
-            <button onClick={stop} type="button"
-              className="px-2.5 py-1 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand transition-colors cursor-pointer">
-              {t('assistant.stop')}
-            </button>
+            )}
+            {contents.map((m, i) => {
+              const text = (m.parts ?? []).filter(p => p.text).map(p => p.text).join('\n');
+              const tools = (m.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall.name);
+              if (!text && !tools.length) return null;
+              const mine = m.role === 'user';
+              return (
+                <div key={i} className={`flex ${mine ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`${mine ? 'max-w-[85%]' : 'w-full min-w-0'} space-y-2`}>
+                    {tools.length > 0 && <p className="flex items-center gap-1.5 text-[11px] text-mute"><IconDatabase size={13} className="shrink-0" />{t('assistant.sources', { tools: tools.map(name => t(`assistant.tool.${name}`, name)).join(', ') })}</p>}
+                    {text && <div className={`px-4 py-3 rounded-xl text-sm leading-relaxed whitespace-pre-wrap break-words ${mine ? 'bg-brand text-white rounded-br-sm' : 'border border-app text-ink rounded-bl-sm'}`}>{text}</div>}
+                    {!mine && charts[i]?.map((spec, ci) => <AssistantChart key={ci} spec={spec} />)}
+                  </div>
+                </div>
+              );
+            })}
+            {busy && <div className="flex items-center gap-3" role="status"><IconLoader2 size={16} className="animate-spin text-mute shrink-0" /><span className="text-sm text-sub">{progress}</span></div>}
+            {error && <p role="alert" className="text-sm text-red-500">{error}</p>}
+            {retry && !busy && <button onClick={() => run(retry)} className="px-3 py-2 text-xs rounded-lg border border-app text-sub hover:text-brand">{t('assistant.retry')}</button>}
           </div>
-        )}
-        {error && <p className="text-sm text-[#EF4444]">{error}</p>}
-        {retry && !busy && (
-          <button type="button" onClick={() => quick(retry)}
-            className="self-start px-2.5 py-1 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand transition-colors cursor-pointer">
-            {t('assistant.retry')}
-          </button>
-        )}
-        <div ref={endRef} />
+        </div>
+        {!following && <button onClick={jump} className="absolute right-4 bottom-3 surface-menu px-3 py-2 text-xs text-ink inline-flex items-center gap-2"><IconArrowDown size={14} />{t('assistant.latest')}</button>}
       </div>
-
-      <div className="flex flex-wrap items-center gap-1.5">
-        <span className="inline-flex items-center gap-1 text-[11px] text-mute pr-1">
-          <IconBolt size={13} stroke={1.8} /> {t('quick.title')}
-        </span>
-        {QUICK_ACTIONS.map(a => (
-          <button key={a.key} onClick={() => quick(a)} disabled={busy}
-            className="px-2.5 py-1 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
-            {t(a.labelKey)}
-          </button>
-        ))}
+      <div className="flex flex-wrap items-center gap-1.5 shrink-0">
+        <span className="inline-flex items-center gap-1 text-[11px] text-mute pr-1"><IconBolt size={13} />{t('quick.title')}</span>
+        {QUICK_ACTIONS.map(action => <button key={action.key} onClick={() => run({ action })} disabled={busy} className="px-2.5 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed">{t(action.labelKey)}</button>)}
       </div>
-
-      <form onSubmit={e => { e.preventDefault(); send(input); }} className="flex gap-2">
-        <input
-          value={input}
-          onChange={e => setInput(e.target.value)}
-          placeholder={t('assistant.placeholder')}
-          className="flex-1 px-4 py-2.5 text-[15px] border border-app rounded-lg bg-card text-ink focus:outline-none focus:ring-2 focus:ring-brand"
-        />
-        <button type="submit" disabled={busy || !input.trim()}
-          className="px-4 py-2.5 bg-brand text-white rounded-lg hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed transition-colors">
-          <IconSend size={18} stroke={1.5} />
-        </button>
+      <form onSubmit={e => { e.preventDefault(); send(input); }} className="flex items-end gap-2 shrink-0">
+        <textarea ref={inputRef} rows={2} value={input} onChange={e => setInput(e.target.value)} aria-label={t('assistant.placeholder')} placeholder={t('assistant.placeholder')}
+          onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); send(input); } }}
+          className="flex-1 min-w-0 resize-none px-4 py-2.5 text-sm border border-app rounded-xl bg-card text-ink focus:outline-none focus:ring-2 focus:ring-brand" />
+        {busy ? <button type="button" onClick={stop} className="px-4 py-3 rounded-xl border border-app text-sub hover:text-brand">{t('assistant.stop')}</button>
+          : <button type="submit" aria-label={t('assistant.send')} disabled={!input.trim()} className="p-3 bg-brand text-white rounded-xl hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed"><IconSend size={20} /></button>}
       </form>
     </div>
   );

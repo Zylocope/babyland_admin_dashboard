@@ -31,13 +31,13 @@ assert.equal(chartFromTool('sales_summary', { range: { start: '2026-08-01', end:
 assert.equal(chartFromTool('low_stock', { error: 'boom' }), null);
 assert.equal(chartFromTool('list_categories', { count: 6, categories: ['a'] }), null);
 
-// Low stock: capped at 8 bars, long names truncated so the axis stays readable.
+// Keep full names: the responsive bar list and table can wrap them.
 const stock = chartFromTool('low_stock', {
   products: Array.from({ length: 12 }, (_, i) => ({ name: 'x'.repeat(30), stock: i })),
 });
 assert.equal(stock.data.length, 8);
-assert.ok(stock.data[0].name.length <= 22);
-assert.ok(stock.data[0].name.endsWith('…'));
+assert.equal(stock.data[0].name, 'x'.repeat(30));
+assert.equal(stock.allData.length, 12);
 
 // compare_periods: two same-scale metrics only; counts stay out of the chart.
 const cmp = chartFromTool('compare_periods', {
@@ -106,3 +106,21 @@ assert.equal(short.data.length, 5);
 assert.equal(short.data.filter(d => d.revenue === 0).length, 4, 'genuine no-sale days stay zero');
 
 console.log('aiCharts ok');
+
+// Multi-year queries must keep the tail that the old 366-day guard discarded.
+const longDays = Array.from({ length: 800 }, (_, i) => ({
+  date: new Date(Date.UTC(2024, 0, 1) + i * 86400000).toISOString().slice(0, 10),
+  revenue_mmk: 100, in_store_mmk: 60, online_mmk: 40,
+}));
+const longRange = { start: longDays[0].date, end: longDays.at(-1).date };
+const longChart = chartFromTool('sales_summary', { range: longRange, by_day: longDays });
+assert.equal(longChart.data.reduce((sum, row) => sum + row.revenue, 0), 80000);
+assert.equal(longChart.data.reduce((sum, row) => sum + row.inStore, 0), 48000);
+assert.equal(longChart.data.reduce((sum, row) => sum + row.online, 0), 32000);
+assert.equal(longChart.data.at(-1).endDate, longRange.end);
+assert.deepEqual(longChart.range, longRange);
+assert.ok(longChart.data.length <= 31);
+assert.equal(cat.metricKey, 'aiChart.retailValue');
+assert.equal(cat.totalCount, 10);
+assert.equal(cat.allData.length, 10);
+assert.equal(chartFromTool('sales_summary', { range: { start: '2026-02-30', end: '2026-03-04' }, by_day: days }), null);
