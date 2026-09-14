@@ -12,7 +12,10 @@ const salesBuckets = (range, rows) => {
   const start = dateMs(range.start), end = dateMs(range.end);
   if (!Number.isFinite(start) || !Number.isFinite(end) || end < start) return null;
   const days = Math.round((end - start) / DAY) + 1;
-  const bucketDays = days <= 31 ? 1 : days <= 210 ? 7 : Math.max(30, Math.ceil(days / 31));
+  // No floor on the bucket size: Math.max(30, ...) made 210 days draw 30 weekly
+  // points and 211 days draw 8 monthly ones, so dragging the range one day
+  // further collapsed the chart. Without it the week tier runs on continuously.
+  const bucketDays = days <= 31 ? 1 : days <= 210 ? 7 : Math.ceil(days / 31);
   const data = Array.from({ length: Math.ceil(days / bucketDays) }, (_, i) => {
     const date = iso(start + i * bucketDays * DAY);
     const endDate = iso(Math.min(end, start + ((i + 1) * bucketDays - 1) * DAY));

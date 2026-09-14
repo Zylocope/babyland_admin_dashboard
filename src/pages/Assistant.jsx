@@ -8,6 +8,13 @@ import { finishInterruptedTools, withSignal } from '../services/assistantSession
 import AssistantChart from '../components/common/AssistantChart';
 
 const MAX_TOOL_ROUNDS = 5;
+// Per request, not per run. One 60s budget for the whole loop meant a five-round
+// answer, or any answer at all against a cold backend, reported a timeout while
+// nothing was wrong. Gemini hops measure 2-4.5s; the Render free tier's cold
+// start is documented at 30-60s, which is why the tool budget is the larger one.
+const GEMINI_TIMEOUT_MS = 45_000;
+const TOOL_TIMEOUT_MS = 90_000;
+const deadline = (signal, ms) => AbortSignal.any([signal, AbortSignal.timeout(ms)]);
 const askGemini = async (contents, signal) => {
   const res = await fetch('/api/chat', {
     method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
@@ -52,7 +59,6 @@ export default function Assistant() {
     if (abortRef.current || (!action && !text.trim())) return;
     const abort = new AbortController();
     abortRef.current = abort;
-    const timeout = setTimeout(() => abort.abort(new DOMException('Request timed out', 'TimeoutError')), 60_000);
     setBusy(true); setError(''); setRetry(null);
     followRef.current = true; setFollowing(true);
     if (!action) setInput('');
@@ -62,7 +68,7 @@ export default function Assistant() {
     try {
       if (action) {
         setProgress(t('assistant.checking', { tool: t(`assistant.tool.${action.tool}`) }));
-        const result = await withSignal(runQuickAction(action, t), abort.signal);
+        const result = await withSignal(runQuickAction(action, t), deadline(abort.signal, TOOL_TIMEOUT_MS));
         next = [...next, { role: 'model', parts: [{ text: result.text }] }];
         setContents(next);
         const answerIndex = next.length - 1;
@@ -70,35 +76,43 @@ export default function Assistant() {
         if (result.status === 'failed') setRetry(question);
       } else {
         let finished = false;
+        // One chart per tool result, held until the answer they belong to exists.
+        // Attaching them to the tool-call message drew them ABOVE the prose.
+        let pending = [];
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
           setProgress(t('assistant.thinking'));
-          const reply = await withSignal(askGemini(next, abort.signal), abort.signal);
+          const geminiSignal = deadline(abort.signal, GEMINI_TIMEOUT_MS);
+          const reply = await withSignal(askGemini(next, geminiSignal), geminiSignal);
           next = [...next, reply];
           setContents(next);
           const calls = (reply.parts ?? []).filter(p => p.functionCall).map(p => p.functionCall);
-          if (!calls.length) { finished = true; break; }
+          if (!calls.length) {
+            finished = true;
+            if (pending.length) setCharts(prev => ({ ...prev, [next.length - 1]: pending }));
+            break;
+          }
           setProgress(t('assistant.checking', { tool: calls.map(fc => t(`assistant.tool.${fc.name}`, fc.name)).join(', ') }));
-          const results = await withSignal(Promise.all(calls.map(async fc => ({ fc, response: await runTool(fc.name, fc.args ?? {}) }))), abort.signal);
-          const specs = results.map(({ fc, response }) => chartFromTool(fc.name, response)).filter(Boolean);
-          const toolIndex = next.length - 1;
-          if (specs.length) setCharts(prev => ({ ...prev, [toolIndex]: specs }));
+          const results = await withSignal(Promise.all(calls.map(async fc => ({ fc, response: await runTool(fc.name, fc.args ?? {}) }))), deadline(abort.signal, TOOL_TIMEOUT_MS));
+          pending = [...pending, ...results.map(({ fc, response }) => chartFromTool(fc.name, response)).filter(Boolean)];
           next = [...next, { role: 'user', parts: results.map(({ fc, response }) => ({ functionResponse: {
             ...(fc.id ? { id: fc.id } : {}), name: fc.name, response,
           } })) }];
           setContents(next);
         }
         if (!finished) {
-          setContents([...next, { role: 'model', parts: [{ text: t('assistant.roundLimit', { rounds: MAX_TOOL_ROUNDS }) }] }]);
+          const capped = [...next, { role: 'model', parts: [{ text: t('assistant.roundLimit', { rounds: MAX_TOOL_ROUNDS }) }] }];
+          setContents(capped);
+          if (pending.length) setCharts(prev => ({ ...prev, [capped.length - 1]: pending }));
         }
       }
     } catch (err) {
       if (abortRef.current !== abort) return;
       setContents(finishInterruptedTools(next, 'Report interrupted; do not infer values from this call.'));
-      const stopped = abort.signal.aborted && abort.signal.reason?.name !== 'TimeoutError';
-      setError(stopped ? t('assistant.stopped') : abort.signal.reason?.name === 'TimeoutError' ? t('assistant.timeout') : err.message === 'QUOTA' ? t('assistant.quota') : err.message);
+      setError(abort.signal.aborted ? t('assistant.stopped')
+        : err.name === 'TimeoutError' ? t('assistant.timeout')
+        : err.message === 'QUOTA' ? t('assistant.quota') : err.message);
       setRetry(question);
     } finally {
-      clearTimeout(timeout);
       if (abortRef.current === abort) {
         abortRef.current = null;
         setBusy(false); setProgress('');
