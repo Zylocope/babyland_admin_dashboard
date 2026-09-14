@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import SearchInput from '../components/common/SearchInput';
 import Gauge from '../components/common/Gauge';
+import { shopDaysAgo } from '../utils/shopDay';
 import { usePlaygroundVisitors, PLAYGROUND_FREE_AT, today } from '../hooks/usePlaygroundVisitors';
 
 
@@ -52,7 +53,7 @@ export default function Playground() {
   // pretending to be a filter.
   const filtered = useMemo(() => {
     const days = PERIODS.find(p => p.key === period)?.days;
-    const cutoff = days == null ? null : new Date(Date.now() - days * 86_400_000).toISOString().slice(0, 10);
+    const cutoff = days == null ? null : shopDaysAgo(days);
     return visitors.filter(v => {
       const matches = v.phone.includes(search) || v.name.toLowerCase().includes(search.toLowerCase());
       if (!matches) return false;

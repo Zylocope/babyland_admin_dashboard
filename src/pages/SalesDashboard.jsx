@@ -15,7 +15,7 @@ import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
 import { summarizeSales } from '../services/salesRollup';
-import { format, subDays, startOfDay, parseISO } from 'date-fns';
+import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 
 const PERIODS = ['today', 'week', 'month'];
 const PERIOD_DAYS = { today: 1, week: 7, month: 30 };
@@ -23,9 +23,8 @@ const RECEIPT_PAGE = 100;
 const tip = { borderRadius: 12, border: '1px solid var(--border)', background: 'var(--s-menu-bg, var(--bg-card))', fontSize: 12, color: 'var(--text-primary)' };
 
 function periodToDates(period) {
-  const today = startOfDay(new Date());
-  const end = format(today, 'yyyy-MM-dd');
-  return { start: format(subDays(today, PERIOD_DAYS[period] - 1), 'yyyy-MM-dd'), end };
+  const end = shopToday();
+  return { start: shopDaysAgo(PERIOD_DAYS[period] - 1, shopDayStart(end)), end };
 }
 
 function Empty({ label }) {
@@ -111,23 +110,22 @@ export default function SalesDashboard() {
 
   const chart = useMemo(() => {
     const byDate = new Map(s.by_day.map(d => [d.date, d]));
-    const today = startOfDay(new Date());
     const days = PERIOD_DAYS[period];
     return Array.from({ length: days }, (_, i) => {
-      const d = subDays(today, days - 1 - i);
-      const row = byDate.get(format(d, 'yyyy-MM-dd'));
+      const date = shopDaysAgo(days - 1 - i, shopDayStart(end));
+      const row = byDate.get(date);
       return {
-        day: format(d, 'MMM d'),
+        day: formatShopTime(shopDayStart(date), 'MMM D'),
         [inStoreLabel]: row?.in_store_mmk ?? 0,
         [onlineLabel]: row?.online_mmk ?? 0,
       };
     });
-  }, [s, period, inStoreLabel, onlineLabel]);
+  }, [s, period, end, inStoreLabel, onlineLabel]);
 
   // The sales list has no date filter server-side, so the period is applied here.
   const periodReceipts = useMemo(() => {
-    const from = parseISO(start);
-    const to = new Date(parseISO(end).getTime() + 86_400_000);
+    const from = shopDayStart(start);
+    const to = shopDayStart(shopDaysAgo(-1, shopDayStart(end)));
     return receipts.data
       .map(r => ({ ...r, _key: r.id, _at: parseApiDate(r.created_at) }))
       .filter(r => r._at && r._at >= from && r._at < to)
@@ -153,8 +151,8 @@ export default function SalesDashboard() {
 
   const receiptCols = [
     { key: 'id', label: t('salesTable.receipt'), value: r => r.id, cell: r => <span className="font-mono text-xs text-brand">{r.id.slice(0, 8)}</span> },
-    { key: 'date', label: t('salesTable.date'), value: r => format(r._at, 'yyyy-MM-dd') },
-    { key: 'time', label: t('salesTable.time'), value: r => format(r._at, 'HH:mm') },
+    { key: 'date', label: t('salesTable.date'), value: r => formatShopTime(r._at, 'YYYY-MM-DD') },
+    { key: 'time', label: t('salesTable.time'), value: r => formatShopTime(r._at, 'HH:mm') },
     { key: 'amount', label: t('salesTable.amount'), align: 'right', value: r => Number(r.total_amount), cell: r => formatMMK(Number(r.total_amount)) },
   ];
 

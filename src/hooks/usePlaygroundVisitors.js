@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { readStore, writeStore, today } from '../utils/playgroundStore';
+import { formatShopTime } from '../utils/shopDay';
 
 export const PLAYGROUND_FREE_AT = 10;
 export { today };
@@ -47,7 +48,7 @@ export function usePlaygroundVisitors() {
     // truncating it here corrupted them: past eight visits "Check-ins Today"
     // froze at 8 and free visits fell off the end entirely. The list is capped
     // only for storage, and sliced for display at the call site.
-    setLog(l => [{ day: today(), at: new Date().toLocaleTimeString(), name: updated.name, phone: updated.phone, free: isFree }, ...l].slice(0, 500));
+    setLog(l => [{ day: today(), at: formatShopTime(Date.now(), 'HH:mm:ss'), name: updated.name, phone: updated.phone, free: isFree }, ...l].slice(0, 500));
     reset();
   };
 
