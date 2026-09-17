@@ -55,7 +55,7 @@ export default function Sidebar({ collapsed, onToggle }) {
   const { styleTheme } = useTheme();
 
   return (
-    <aside data-collapsed={collapsed} className={`sidebar-shell relative flex flex-col surface-panel border rounded-2xl ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}
+    <aside onKeyDown={e => { if (e.key === 'Escape' && !collapsed) onToggle(); }} data-collapsed={collapsed} className={`sidebar-shell relative flex flex-col surface-panel border rounded-2xl ${collapsed ? 'w-16' : 'w-60'} flex-shrink-0`}
       style={{ transition: `width ${COLLAPSE_MS}ms ${COLLAPSE_EASE}` }}>
       {/* Collapse handle — centered on the sidebar edge for a consistent reach target. */}
       <button
@@ -101,6 +101,7 @@ export default function Sidebar({ collapsed, onToggle }) {
         {visibleItems.map(({ to, icon: Icon, key }) => (
           <NavLink
             key={to}
+            onClick={() => { if (!collapsed && window.matchMedia('(max-width: 1023px)').matches) onToggle(); }}
             to={to} aria-label={t(`nav.${key}`)} title={collapsed ? t(`nav.${key}`) : undefined}
             end={to === '/'}
             className={({ isActive }) =>
@@ -130,7 +131,7 @@ export default function Sidebar({ collapsed, onToggle }) {
         {/* Language · settings · theme — the three switches sit together, which is
             why the header no longer needs a profile menu. */}
         <div className="sidebar-preferences">
-          <div className="sidebar-language rounded-full border border-app">
+          <div className="sidebar-language rounded-full border border-app" hidden={collapsed}>
             <button
               onClick={() => i18n.changeLanguage('en')}
               title="English"
@@ -146,6 +147,7 @@ export default function Sidebar({ collapsed, onToggle }) {
               MY
             </button>
           </div>
+          {collapsed && <button type="button" className="sidebar-language-toggle text-xs font-semibold text-brand" onClick={() => i18n.changeLanguage(isMy ? 'en' : 'my')} aria-label={isMy ? 'Switch to English' : 'မြန်မာဘာသာသို့ ပြောင်းရန်'}>{isMy ? 'MY' : 'EN'}</button>}
           <button
             onClick={() => navigate('/settings')}
             title={t('nav.settings')}
