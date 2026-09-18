@@ -22,6 +22,7 @@ const PlaygroundApp = lazy(() => import('./pages/PlaygroundApp'));
 const Customers = lazy(() => import('./pages/Customers'));
 const Staff = lazy(() => import('./pages/Staff'));
 const Settings = lazy(() => import('./pages/Settings'));
+const Information = lazy(() => import('./pages/Information'));
 const Assistant = lazy(() => import('./pages/Assistant'));
 
 function ProtectedRoute({ children }) {
@@ -45,6 +46,7 @@ function AppRoutes() {
     // suspends, and the shell stays mounted behind the fallback.
     <Suspense fallback={<RouteFallback />}>
     <Routes>
+      {['help', 'about', 'privacy', 'terms'].map(page => <Route key={page} path={`/${page}`} element={<Information page={page} />} />)}
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <Login />} />
 
       {/* Staff app view — deliberately OUTSIDE AppLayout so it renders full

@@ -1,6 +1,7 @@
 import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
+import InformationLinks from '../components/common/InformationLinks';
 
 const STYLE_OPTIONS = [
   { id: 'glass',        labelKey: 'settings.styleGlass' },
@@ -39,6 +40,7 @@ export default function Settings() {
 
   return (
     <div className="max-w-3xl space-y-5">
+      <InformationLinks />
       {/* Language */}
       <Section title={t('settings.language')} desc={t('settings.languageDesc')}>
         <div className="flex items-center gap-2">
