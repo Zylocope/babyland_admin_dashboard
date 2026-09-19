@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IconLoader2, IconArrowLeft } from '@tabler/icons-react';
+import { IconLoader2, IconArrowLeft, IconPhoto } from '@tabler/icons-react';
 import { getCategories } from '../services/categoryService';
 import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
 
-const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, is_perishable: false, description: '' };
+const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, is_perishable: false, description: '', image_url: '' };
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -80,6 +80,7 @@ export default function ProductForm() {
       is_active: form.is_active,
       is_perishable: form.is_perishable,
       description: form.description.trim() || null,
+      image_url: form.image_url.trim() || null,
     };
 
     // Only the create endpoint accepts a nested inventory batch; on update the
@@ -168,6 +169,32 @@ export default function ProductForm() {
             <label className="block text-xs font-medium text-ink mb-1">{t('productForm.description')}</label>
             <textarea value={form.description} onChange={e => set('description', e.target.value)} rows={2}
               className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+          </div>
+
+          {/* The backend stores image_url as a plain string and has no upload
+              route, so this takes a link rather than a file — a file picker
+              would have nowhere to send the bytes. Swap the input for a
+              Supabase Storage upload when that is wired; the field it fills
+              does not change. */}
+          <div>
+            <label className="block text-xs font-medium text-ink mb-1">{t('productForm.image')}</label>
+            <div className="flex items-start gap-3">
+              <div className="w-20 h-20 flex-shrink-0 rounded-lg border border-app bg-card overflow-hidden flex items-center justify-center">
+                {form.image_url.trim() ? (
+                  <img src={form.image_url.trim()} alt="" className="w-full h-full object-cover"
+                    onError={e => { e.currentTarget.style.display = 'none'; }}
+                    onLoad={e => { e.currentTarget.style.display = ''; }} />
+                ) : (
+                  <IconPhoto size={22} stroke={1.3} className="text-mute" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <input value={form.image_url} onChange={e => set('image_url', e.target.value)}
+                  type="url" inputMode="url" placeholder="https://..."
+                  className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+                <p className="text-[11px] text-mute mt-1.5">{t('productForm.imageHelp')}</p>
+              </div>
+            </div>
           </div>
 
           <div className="border border-app rounded-lg p-4 space-y-3">

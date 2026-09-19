@@ -5,19 +5,12 @@ import Modal from './Modal';
 import { formatMMK } from '../../utils/currency';
 import { parseApiDate } from '../../utils/apiDate';
 import { getInventoryRecords, insertInventory } from '../../services/productService';
-import { format } from 'date-fns';
+import { validateStockIn } from '../../utils/stockIn';
+import { shopToday, formatShopTime } from '../../utils/shopDay';
 
-const today = () => format(new Date(), 'yyyy-MM-dd');
-
-// Mirrors the backend rules so the cashier sees the problem before the round trip:
-// quantity and cost must be positive, and expiry is required for perishable
-// products and rejected for the rest.
-const validate = (form, product, t) => {
-  if (!(Number(form.quantity) > 0)) return t('stockIn.errQty');
-  if (!(Number(form.unitCost) > 0)) return t('stockIn.errCost');
-  if (product.is_perishable && !form.expiry) return t('stockIn.errExpiry');
-  return '';
-};
+// The shop's day, not the device's. This file was the last holdout after the
+// rest of the app moved to shopDay.
+const today = () => shopToday();
 
 export default function StockInModal({ product, open, onClose, onAdded }) {
   const { t } = useTranslation();
@@ -45,7 +38,7 @@ export default function StockInModal({ product, open, onClose, onAdded }) {
 
   const submit = async (e) => {
     e.preventDefault();
-    const message = validate(form, product, t);
+    const message = validateStockIn(form, product, t);
     if (message) { setError(message); return; }
 
     setSaving(true);
@@ -142,11 +135,11 @@ export default function StockInModal({ product, open, onClose, onAdded }) {
                     const expiry = parseApiDate(b.expiry_date);
                     return (
                       <tr key={b.id}>
-                        <td className="py-2 text-ink">{received ? format(received, 'yyyy-MM-dd') : '—'}</td>
+                        <td className="py-2 text-ink">{received ? formatShopTime(received, 'YYYY-MM-DD') : '—'}</td>
                         <td className="py-2 text-right text-sub tabular-nums">{b.quantity_received}</td>
                         <td className="py-2 text-right text-ink font-medium tabular-nums">{b.quantity_remaining}</td>
                         <td className="py-2 text-right text-sub tabular-nums">{formatMMK(Number(b.unit_cost))}</td>
-                        <td className="py-2 text-right text-sub tabular-nums">{expiry ? format(expiry, 'yyyy-MM-dd') : '—'}</td>
+                        <td className="py-2 text-right text-sub tabular-nums">{expiry ? formatShopTime(expiry, 'YYYY-MM-DD') : '—'}</td>
                       </tr>
                     );
                   })}

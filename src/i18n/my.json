@@ -14,7 +14,8 @@
     "playground": "ကစားကွင်း",
     "pos": "POS",
     "sales": "အရောင်း",
-    "assistant": "AI Assistant"
+    "assistant": "AI Assistant",
+    "stockIn": "ပစ္စည်းသွင်း"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -27,7 +28,8 @@
     "playground": "ကစားကွင်း Rewards",
     "pos": "ရောင်းချမှု (POS)",
     "sales": "ဆိုင်တွင်း အရောင်း",
-    "assistant": "AI Assistant"
+    "assistant": "AI Assistant",
+    "stockIn": "ပစ္စည်းသွင်း"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -191,7 +193,9 @@
     "addInventory": "အစပျိုး လက်ကျန် ထည့်ရန်",
     "addStock": "လက်ကျန် မှတ်တမ်း ထည့်ရန်",
     "quantityReceived": "လက်ခံရရှိသည့် အရေအတွက်",
-    "unitCost": "တစ်ယူနစ် အရင်းအနှီး (MMK)"
+    "unitCost": "တစ်ယူနစ် အရင်းအနှီး (MMK)",
+    "image": "ပစ္စည်းပုံ",
+    "imageHelp": "ပုံ link ကို ကူးထည့်ပါ။ ဖိုင်တင်ခြင်း မရသေးပါ — backend တွင် link သာ သိမ်းပါသည်။"
   },
   "categories": {
     "name": "အမျိုးအစား အမည်",
@@ -439,7 +443,14 @@
     "errQty": "အရေအတွက် ၀ ထက် ကြီးရမည်",
     "errCost": "ကုန်ကျစရိတ် ၀ ထက် ကြီးရမည်",
     "errExpiry": "သက်တမ်းရှိ ပစ္စည်းအတွက် သက်တမ်းကုန်ဆုံးရက် လိုအပ်သည်",
-    "addStock": "Stock ဖြည့်ရန်"
+    "addStock": "Stock ဖြည့်ရန်",
+    "scanTitle": "Barcode စကင်ဖတ်ပါ",
+    "scanPlaceholder": "Barcode စကင်ဖတ်ပါ သို့မဟုတ် ရိုက်ထည့်ပါ...",
+    "scanHelp": "Barcode အတိအကျ တူညီပါက အလိုအလျောက် ရွေးပေးပါမည်။ မဟုတ်ပါက စာရင်းထဲမှ ရွေးပါ။",
+    "sessionTitle": "ဤအကြိမ်တွင် ထည့်ပြီးသည်များ",
+    "sessionEmpty": "မထည့်ရသေးပါ။ ပစ္စည်းတစ်ခု စကင်ဖတ်၍ စတင်ပါ။",
+    "sessionCount": "ပစ္စည်း {{lines}} မျိုး · အရေအတွက် {{units}}",
+    "failed": "ပစ္စည်း မထည့်နိုင်ပါ။ ချိတ်ဆက်မှုကို စစ်ပြီး ထပ်ကြိုးစားပါ။"
   },
   "quick": {
     "title": "အမြန်",

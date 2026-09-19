@@ -14,7 +14,8 @@
     "playground": "Playground",
     "pos": "POS",
     "sales": "Sales",
-    "assistant": "AI Assistant"
+    "assistant": "AI Assistant",
+    "stockIn": "Stock in"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -27,7 +28,8 @@
     "playground": "Playground Rewards",
     "pos": "Point of Sale",
     "sales": "In-store Sales",
-    "assistant": "AI Assistant"
+    "assistant": "AI Assistant",
+    "stockIn": "Stock in"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -191,7 +193,9 @@
     "addInventory": "Add Initial Stock",
     "addStock": "Add Stock Record",
     "quantityReceived": "Quantity Received",
-    "unitCost": "Unit Cost (MMK)"
+    "unitCost": "Unit Cost (MMK)",
+    "image": "Product image",
+    "imageHelp": "Paste an image link. There is no file upload yet — the backend stores a link only."
   },
   "categories": {
     "name": "Category Name",
@@ -439,7 +443,14 @@
     "errQty": "Quantity must be greater than 0",
     "errCost": "Unit cost must be greater than 0",
     "errExpiry": "Expiry date is required for perishable products",
-    "addStock": "Add stock"
+    "addStock": "Add stock",
+    "scanTitle": "Scan a barcode",
+    "scanPlaceholder": "Scan or type a barcode...",
+    "scanHelp": "An exact barcode match is selected automatically. Otherwise pick from the list.",
+    "sessionTitle": "Added in this session",
+    "sessionEmpty": "Nothing added yet. Scan a product to start.",
+    "sessionCount": "{{lines}} products · {{units}} units",
+    "failed": "Could not add stock. Check the connection and try again."
   },
   "quick": {
     "title": "Instant",

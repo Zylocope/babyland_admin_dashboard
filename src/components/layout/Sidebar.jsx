@@ -1,7 +1,7 @@
 
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
-  IconLayoutDashboard, IconPackage, IconShoppingCart, IconGift,
+  IconLayoutDashboard, IconPackage, IconPackageImport, IconShoppingCart, IconGift,
   IconUsers, IconUserCog, IconLogout, IconBabyCarriage,
   IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
   IconSparkles, IconSettings,
@@ -31,6 +31,7 @@ const NAV_ITEMS = [
   { to: '/pos', icon: IconCashRegister, key: 'pos', roles: ['SaleStaff'] },
   { to: '/sales', icon: IconChartHistogram, key: 'sales', roles: [] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
+  { to: '/stock-in', icon: IconPackageImport, key: 'stockIn', roles: [] },
   { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
   { to: '/playground', icon: IconGift, key: 'playground', roles: ['TicketStaff'] },

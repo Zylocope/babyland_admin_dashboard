@@ -12,6 +12,7 @@ import RouteFallback from './components/common/RouteFallback';
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Products = lazy(() => import('./pages/Products'));
+const StockIn = lazy(() => import('./pages/StockIn'));
 const ProductForm = lazy(() => import('./pages/ProductForm'));
 const Categories = lazy(() => import('./pages/Categories'));
 const Orders = lazy(() => import('./pages/Orders'));
@@ -70,6 +71,7 @@ function AppRoutes() {
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
         <Route path="products/new" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
         <Route path="products/:id/edit" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
+        <Route path="stock-in" element={<RoleRoute roles={[]}><StockIn /></RoleRoute>} />
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
         <Route path="customers" element={<RoleRoute roles={['SaleStaff', 'TicketStaff']}><Customers /></RoleRoute>} />
