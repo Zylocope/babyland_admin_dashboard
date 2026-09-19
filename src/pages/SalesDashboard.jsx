@@ -4,7 +4,7 @@ import {
   IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage,
   IconDatabase, IconDownload, IconChartHistogram, IconCalendarStats, IconTrophy,
 } from '@tabler/icons-react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
 import { formatMMK, formatMMKShort } from '../utils/currency';
@@ -20,7 +20,20 @@ import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/s
 const PERIODS = ['today', 'week', 'month'];
 const PERIOD_DAYS = { today: 1, week: 7, month: 30 };
 const RECEIPT_PAGE = 100;
-const tip = { borderRadius: 12, border: '1px solid var(--border)', background: 'var(--s-menu-bg, var(--bg-card))', fontSize: 12, color: 'var(--text-primary)' };
+function SalesTooltip({ active, payload, label, inStoreLabel, onlineLabel, totalLabel }) {
+  if (!active || !payload?.length) return null;
+  const row = payload[0]?.payload ?? {};
+  return (
+    <div className="chart-tooltip min-w-48">
+      <p className="text-xs font-semibold text-ink mb-2">{label}</p>
+      <div className="space-y-1.5 text-xs">
+        <p className="flex justify-between gap-5 text-sub"><span>{inStoreLabel}</span><strong className="text-ink tabular-nums">{formatMMK(row[inStoreLabel])}</strong></p>
+        <p className="flex justify-between gap-5 text-sub"><span>{onlineLabel}</span><strong className="text-ink tabular-nums">{formatMMK(row[onlineLabel])}</strong></p>
+        <p className="flex justify-between gap-5 pt-1.5 border-t border-app text-sub"><span>{totalLabel}</span><strong className="text-brand tabular-nums">{formatMMK(row.total)}</strong></p>
+      </div>
+    </div>
+  );
+}
 
 function periodToDates(period) {
   const end = shopToday();
@@ -118,6 +131,7 @@ export default function SalesDashboard() {
         day: formatShopTime(shopDayStart(date), 'MMM D'),
         [inStoreLabel]: row?.in_store_mmk ?? 0,
         [onlineLabel]: row?.online_mmk ?? 0,
+        total: row?.revenue_mmk ?? 0,
       };
     });
   }, [s, period, end, inStoreLabel, onlineLabel]);
@@ -140,6 +154,9 @@ export default function SalesDashboard() {
   const worst = ranked.slice(-3).reverse();
 
   const posPct = totals.revenue_mmk ? Math.round((ch.in_store.revenue_mmk / totals.revenue_mmk) * 100) : 0;
+  // Seeded at 0, not -1: with no sales at all every total ties, and the old
+  // seed made the first day of the range read as the peak.
+  const peakDay = chart.reduce((best, row) => (row.total > (best?.total ?? 0) ? row : best), null);
   const show = (v) => (loading ? '...' : v);
 
   const VIEWS = [
@@ -227,16 +244,22 @@ export default function SalesDashboard() {
       {view === 'channel' && (
         <>
           <Panel title={t('posDash.compareTrend')}>
+            <div className="chart-summary-grid mb-4">
+              <div><span>{t('table.total')}</span><strong>{show(formatMMK(totals.revenue_mmk))}</strong></div>
+              <div><span>{t('aiChart.peak')}</span><strong>{peakDay?.day ?? '—'}</strong></div>
+              <div><span>{inStoreLabel}</span><strong>{posPct}%</strong></div>
+            </div>
             <ResponsiveContainer width="100%" height={260}>
-              <BarChart data={chart} margin={{ top: 5, right: 10, left: 0, bottom: 0 }}>
+              <ComposedChart data={chart} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 12, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} minTickGap={28} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
-                <Tooltip formatter={v => formatMMK(v)} contentStyle={tip} />
+                <Tooltip content={<SalesTooltip inStoreLabel={inStoreLabel} onlineLabel={onlineLabel} totalLabel={t('table.total')} />} cursor={{ fill: 'var(--orange-light)', opacity: 0.45 }} />
                 <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey={inStoreLabel} stackId="rev" fill={seriesColor(darkMode)} />
-                <Bar dataKey={onlineLabel} stackId="rev" fill={colorAt(1, darkMode)} radius={[3, 3, 0, 0]} />
-              </BarChart>
+                <Bar dataKey={inStoreLabel} stackId="rev" fill={seriesColor(darkMode)} maxBarSize={44} />
+                <Bar dataKey={onlineLabel} stackId="rev" fill={colorAt(1, darkMode)} maxBarSize={44} radius={[4, 4, 0, 0]} />
+                <Line type="monotone" dataKey="total" name={t('table.total')} stroke="var(--text-primary)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--orange-primary)', stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
+              </ComposedChart>
             </ResponsiveContainer>
           </Panel>
 

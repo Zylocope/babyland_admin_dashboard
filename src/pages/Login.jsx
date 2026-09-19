@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../context/AuthContext';
 import { IconBabyCarriage, IconEye, IconEyeOff, IconLoader2 } from '@tabler/icons-react';
+import InformationLinks from '../components/common/InformationLinks';
 
 export default function Login() {
   const [username, setUsername] = useState('');
@@ -104,6 +105,9 @@ export default function Login() {
             {t('login.note')}
           </p>
         </div>
+        <footer className="mt-5">
+          <InformationLinks />
+        </footer>
       </div>
     </div>
   );

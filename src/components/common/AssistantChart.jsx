@@ -34,6 +34,28 @@ export default function AssistantChart({ spec }) {
     ? [period(row), row.revenue, row.inStore, row.online]
     : spec.kind === 'compare' ? [t(`posDash.${row.metric}`), row.previous, row.current]
       : [row.name ?? row.fullLabel ?? row.label, row.stock ?? row.value]);
+  // Summary tiles read allRows, never spec.data. spec.data is capped for the
+  // chart (8 bars), so summing it produced a "Total" covering a third of the
+  // rows while "Entries" beside it counted all of them.
+  const value = row => Number(row.revenue ?? row.stock ?? row.value ?? row.current ?? 0);
+  const summaryTotal = allRows.reduce((sum, row) => sum + value(row), 0);
+  const peakRow = allRows.reduce((best, row) => (best && value(best) >= value(row) ? best : row), null) ?? {};
+  const comparePrevious = Number(spec.data[0]?.previous ?? 0);
+  const compareCurrent = Number(spec.data[0]?.current ?? 0);
+  const compareChange = comparePrevious ? `${(((compareCurrent - comparePrevious) / comparePrevious) * 100).toFixed(1)}%` : '—';
+  const summary = spec.kind === 'compare'
+    ? [
+        [previous, valueLabel(comparePrevious)],
+        [current, valueLabel(compareCurrent)],
+        [t('aiChart.change'), compareChange],
+      ]
+    : spec.kind === 'stock'
+      ? [[t('aiChart.items'), Number(spec.totalCount ?? allRows.length).toLocaleString()], [t('aiChart.critical'), allRows.filter(row => Number(row.stock) <= 5).length.toLocaleString()], [t('table.threshold'), Number(spec.threshold ?? 0).toLocaleString()]]
+      : [
+          [t('table.total'), valueLabel(summaryTotal)],
+          [t('aiChart.peak'), peakRow.name ?? peakRow.fullLabel ?? peakRow.label ?? (peakRow.date ? dateLabel(peakRow.date) : '—')],
+          [t('aiChart.entries'), Number(spec.totalCount ?? allRows.length).toLocaleString()],
+        ];
 
   return (
     <figure className="surface-card is-sheet no-lens mt-3 p-3 sm:p-4 min-w-0" aria-labelledby={`${id}-title`}>
@@ -47,6 +69,10 @@ export default function AssistantChart({ spec }) {
         {spec.bucketDays > 1 && <p className="text-[11px] text-mute">{t('aiChart.groupedDays', { days: spec.bucketDays })}</p>}
         {spec.totalCount > spec.data.length && <p className="text-[11px] text-mute">{t('aiChart.showing', { count: spec.data.length, total: spec.totalCount })}</p>}
       </figcaption>
+
+      <div className="chart-summary-grid mb-4">
+        {summary.map(([label, value]) => <div key={label}><span>{label}</span><strong>{value}</strong></div>)}
+      </div>
 
       {horizontal ? (
         <div className="space-y-3">
@@ -68,14 +94,14 @@ export default function AssistantChart({ spec }) {
         </div>
       ) : (
         <div className="w-full min-w-0" role="img" aria-label={t('aiChart.chartDescription', { title })}>
-          <ResponsiveContainer width="100%" height={240} minWidth={0}>
+          <ResponsiveContainer width="100%" height={250} minWidth={0}>
             {spec.kind === 'sales' ? (
               <AreaChart data={spec.data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
                 <defs><linearGradient id={`${id}-revenue`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={brand} stopOpacity={0.2} /><stop offset="100%" stopColor={brand} stopOpacity={0.02} /></linearGradient></defs>
                 <CartesianGrid strokeDasharray="3 4" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="date" tick={axis} tickFormatter={v => dateLabel(v).replace(/ \d{4}$/, '')} axisLine={false} tickLine={false} minTickGap={28} />
                 <YAxis tick={axis} tickFormatter={short} axisLine={false} tickLine={false} width={48} />
-                <Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? period(payload[0].payload) : ''} formatter={valueLabel} contentStyle={tip} />
+                <Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? period(payload[0].payload) : ''} formatter={valueLabel} contentStyle={tip} wrapperStyle={{ outline: 'none' }} />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
                 <Area type="linear" dataKey="revenue" name={revenue} stroke={brand} strokeWidth={2} fill={`url(#${id}-revenue)`} isAnimationActive={false} />
                 {spec.hasOnline && <Area type="linear" dataKey="inStore" name={t('posDash.chInstore')} stroke={referenceColor(darkMode)} strokeWidth={1.5} fill="none" isAnimationActive={false} />}
@@ -86,7 +112,7 @@ export default function AssistantChart({ spec }) {
                 <CartesianGrid strokeDasharray="3 4" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="label" tick={axis} axisLine={false} tickLine={false} minTickGap={10} />
                 <YAxis tick={axis} tickFormatter={short} axisLine={false} tickLine={false} width={48} />
-                <Tooltip formatter={valueLabel} contentStyle={tip} cursor={{ fill: 'var(--orange-light)' }} />
+                <Tooltip formatter={valueLabel} contentStyle={tip} wrapperStyle={{ outline: 'none' }} cursor={{ fill: 'var(--orange-light)', opacity: 0.45 }} />
                 {spec.kind === 'compare' && <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />}
                 {spec.kind === 'compare' && <Bar dataKey="previous" name={previous} fill={referenceColor(darkMode)} maxBarSize={42} radius={[4, 4, 0, 0]} isAnimationActive={false} />}
                 <Bar dataKey={spec.kind === 'compare' ? 'current' : 'value'} name={spec.kind === 'compare' ? current : metric} fill={brand} maxBarSize={42} radius={[4, 4, 0, 0]} isAnimationActive={false} />

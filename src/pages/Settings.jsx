@@ -40,7 +40,6 @@ export default function Settings() {
 
   return (
     <div className="max-w-3xl space-y-5">
-      <InformationLinks />
       {/* Language */}
       <Section title={t('settings.language')} desc={t('settings.languageDesc')}>
         <div className="flex items-center gap-2">
@@ -91,6 +90,9 @@ export default function Settings() {
           })}
         </div>
       </Section>
+      <footer className="pt-2 pb-3 border-t border-app">
+        <InformationLinks />
+      </footer>
     </div>
   );
 }

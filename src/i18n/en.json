@@ -461,6 +461,11 @@
     "returned": "The report returned {{count}} of {{total}} matching entries.",
     "chartDescription": "{{title}} chart. Exact values are available in the table below.",
     "previous": "Previous",
-    "current": "Current"
+    "current": "Current",
+    "peak": "Highest point",
+    "change": "Change",
+    "entries": "Entries",
+    "items": "Items",
+    "critical": "Critical"
   }
 }

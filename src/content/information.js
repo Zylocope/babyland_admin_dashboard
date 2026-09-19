@@ -11,10 +11,11 @@ export const informationPages = {
     ],
   },
   about: {
-    title: 'About Appleland', intro: 'A workspace for the people managing Appleland’s store and playground.',
+    title: 'About Appleland', intro: 'About Appleland, this admin workspace, and the team building it.',
     sections: [
       ['About this dashboard', 'The dashboard brings staff tools for products, stock, sales, and playground operations into one place. Available features depend on your role and which services are connected.'],
       ['Our business', 'To be added: Appleland’s story, services, location, opening hours, and official contact details.'],
+      ['Development team', 'To be added: the developers’ names, roles, project responsibilities, school or organization, and preferred professional links.'],
       ['Who this workspace is for', 'This is the staff and management dashboard. Customer enquiries should use Appleland’s official customer contact channel, once listed here.'],
     ],
   },
