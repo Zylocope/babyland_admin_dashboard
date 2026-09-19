@@ -1,4 +1,8 @@
-{"navigation": {"menu": "Open navigation", "skip": "Skip to content"},
+{
+  "navigation": {
+    "menu": "Open navigation",
+    "skip": "Skip to content"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "products": "Products",
@@ -60,8 +64,7 @@
   "header": {
     "search": "Search anything...",
     "todayRevenue": "Today's Revenue",
-    "lowStockAlert": "{{count}} low-stock items"
-,
+    "lowStockAlert": "{{count}} low-stock items",
     "revenueUnavailable": "Unavailable"
   },
   "login": {
@@ -133,8 +136,7 @@
     "saveChanges": "Save Changes",
     "allCategories": "All Categories",
     "allStatuses": "All Statuses",
-    "export": "Export"
-,
+    "export": "Export",
     "notConnected": "This screen is not connected to the backend yet — nothing shown here is live data."
   },
   "badge": {
@@ -204,7 +206,10 @@
     "deleteTitle": "Delete category",
     "deleteMsg": "Delete \"{{name}}\"? Products already in it keep their category id."
   },
-  "pos": {"decrease": "Decrease quantity for {{name}}", "increase": "Increase quantity for {{name}}", "remove": "Remove {{name}} from cart",
+  "pos": {
+    "decrease": "Decrease quantity for {{name}}",
+    "increase": "Increase quantity for {{name}}",
+    "remove": "Remove {{name}} from cart",
     "searchPlaceholder": "Scan barcode or search product...",
     "startTyping": "Scan or type to find products",
     "noResults": "No products found.",
@@ -273,8 +278,7 @@
     "createAccount": "Create Account",
     "deleteTitle": "Delete Account",
     "deleteMsg": "Delete {{name}}'s account? They will lose all access.",
-    "noData": "No staff — no backend endpoint yet"
-,
+    "noData": "No staff — no backend endpoint yet",
     "actionsDisabled": "Staff accounts are not connected to the backend yet. Creating, editing and deleting are disabled so nothing looks saved when it is not."
   },
   "playground": {
@@ -316,7 +320,25 @@
       "d7": "7 days",
       "d30": "30 days",
       "all": "All"
-    }
+    },
+    "tabSell": "Sell",
+    "sellTitle": "Sell playground tickets",
+    "sellDesc": "Enter the tickets and price, then show the code to the customer. They scan it in the Appleland app to complete the purchase.",
+    "quantity": "Tickets",
+    "unitPrice": "Price per ticket",
+    "totalDue": "Total",
+    "createToken": "Create code",
+    "creating": "Creating...",
+    "tokenReady": "Show this code to the customer",
+    "tokenDesc": "The customer opens the Appleland app and enters this code. Free tickets from their reward coupons are applied on their side, so the amount they pay may be lower than the total above.",
+    "copyCode": "Copy code",
+    "copied": "Copied",
+    "newSale": "New sale",
+    "tokenFailed": "Could not create the code. Check the connection and try again.",
+    "quantityInvalid": "Enter at least 1 ticket.",
+    "priceInvalid": "Enter a price of 0 or more.",
+    "claimUnknown": "This app cannot yet confirm whether the customer completed the purchase — the backend has no staff read endpoint. Confirm with the customer's own screen.",
+    "prototypeNote": "Reward cards and check-ins below are a local prototype stored only in this browser. They are not customer accounts and are not confirmed by the server."
   },
   "posDash": {
     "noData": "No sales in this period",

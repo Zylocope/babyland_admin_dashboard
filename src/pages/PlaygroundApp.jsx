@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  IconGift, IconUserPlus, IconCheck, IconAlertTriangle, IconSearch,
+  IconGift, IconCheck, IconSearch, IconTicket,
   IconLayoutDashboard, IconUsers, IconBabyCarriage, IconLogout,
 } from '@tabler/icons-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../context/AuthContext';
 import { usePlaygroundVisitors, PLAYGROUND_FREE_AT } from '../hooks/usePlaygroundVisitors';
+import { createPlaygroundToken } from '../services/playgroundService';
+import { formatMMK } from '../utils/currency';
+import NotConnected from '../components/common/NotConnected';
 import Gauge from '../components/common/Gauge';
 
 
@@ -17,9 +21,46 @@ export default function PlaygroundApp() {
   const [tab, setTab] = useState('today');
   const [search, setSearch] = useState('');
 
+  // Selling a ticket is the ONE thing the backend supports for staff: mint a
+  // claim token. The customer scans it with their own Appleland account, so
+  // nothing here identifies the customer and there is no phone lookup.
+  const [qty, setQty] = useState('1');
+  const [price, setPrice] = useState('');
+  const [token, setToken] = useState(null);
+  const [selling, setSelling] = useState(false);
+  const [sellError, setSellError] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  const total = (Number(qty) || 0) * (Number(price) || 0);
+
+  const sell = async (e) => {
+    e.preventDefault();
+    const quantity = Number(qty);
+    const unit = Number(price);
+    if (!Number.isInteger(quantity) || quantity < 1) return setSellError(t('playground.quantityInvalid'));
+    if (!Number.isFinite(unit) || unit < 0) return setSellError(t('playground.priceInvalid'));
+    setSellError(''); setSelling(true);
+    try {
+      // unit_price is a string on the wire — the backend stores it as a Decimal.
+      const id = await createPlaygroundToken({ total_quantity: quantity, unit_price: String(unit) });
+      setToken(String(id).replace(/^"|"$/g, ''));
+      setCopied(false);
+    } catch (err) {
+      setSellError(err?.message || t('playground.tokenFailed'));
+    } finally {
+      setSelling(false);
+    }
+  };
+
+  const resetSale = () => { setToken(null); setQty('1'); setPrice(''); setCopied(false); };
+  const copyToken = async () => {
+    // Insecure contexts and older webviews have no clipboard API. The code is
+    // select-all, so failing here still leaves it copyable by hand.
+    try { await navigator.clipboard.writeText(token); setCopied(true); } catch { setCopied(false); }
+  };
+
   const {
-    visitors, log, phone, setPhone, name, setName,
-    result, conflict, setConflict, checkIn, award,
+    visitors, log,
     freeToday, readyForFree, totalVisits,
   } = usePlaygroundVisitors();
 
@@ -28,7 +69,7 @@ export default function PlaygroundApp() {
   );
 
   const TABS = [
-    { key: 'checkin', icon: IconUserPlus, label: t('playground.tabCheckIn') },
+    { key: 'sell', icon: IconTicket, label: t('playground.tabSell') },
     { key: 'visitors', icon: IconUsers, label: t('playground.tabVisitors') },
     { key: 'today', icon: IconLayoutDashboard, label: t('playground.tabToday') },
   ];
@@ -54,73 +95,72 @@ export default function PlaygroundApp() {
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 pt-1 pb-28 space-y-4">
-          {tab === 'checkin' && (
+          {tab === 'sell' && (
             <>
-              <div className="surface-card p-5">
-                <p className="text-[13px] text-sub">{t('playground.checkInTitle')}</p>
-                <p className="text-[13px] text-sub mt-1">{t('playground.checkInDesc', { n: PLAYGROUND_FREE_AT })}</p>
-
-                <form onSubmit={checkIn} className="space-y-3 mt-4">
-                  <input value={phone} onChange={e => { setPhone(e.target.value); setConflict(null); }} required
-                    placeholder="09-xxx-xxx-xxx" inputMode="tel"
-                    className="w-full px-4 py-3.5 text-[17px] bg-card border border-app rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand" />
-                  <input value={name} onChange={e => { setName(e.target.value); setConflict(null); }} required
-                    placeholder={t('playground.customerName')}
-                    className="w-full px-4 py-3.5 text-[17px] bg-card border border-app rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand" />
-
-                  {conflict && (
-                    <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3 space-y-2">
-                      <p className="text-sm text-amber-800 flex items-start gap-2">
-                        <IconAlertTriangle size={16} stroke={1.8} className="mt-0.5 flex-shrink-0" />
-                        {t('playground.nameMismatch', { name: conflict.visitor.name })}
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        <button type="button" onClick={() => { setName(conflict.visitor.name); award(conflict.visitor, conflict.visitor.name); }}
-                          className="px-3 py-2 text-xs rounded-xl bg-brand text-white font-medium cursor-pointer">
-                          {t('playground.useExisting', { name: conflict.visitor.name })}
-                        </button>
-                        <button type="button" onClick={() => award({ ...conflict.visitor, name: conflict.typedName }, conflict.typedName)}
-                          className="px-3 py-2 text-xs rounded-xl border border-app text-sub cursor-pointer">
-                          {t('playground.updateName', { name: conflict.typedName })}
-                        </button>
+              {token ? (
+                <>
+                  <div className="surface-card p-5 space-y-4">
+                    <p className="text-[13px] font-semibold text-ink">{t('playground.tokenReady')}</p>
+                    {/* The customer scans this in the Appleland app. White
+                        quiet zone is not decoration — a scanner needs the
+                        border, and on a dark theme the card behind it is not
+                        white. */}
+                    <div className="flex justify-center">
+                      <div className="bg-white p-3 rounded-2xl">
+                        <QRCodeSVG value={token} size={196} level="M" marginSize={0} />
                       </div>
                     </div>
-                  )}
+                    {/* Fallback for a camera that will not focus. select-all so
+                        it can be copied by hand where the clipboard API is
+                        unavailable. */}
+                    <p className="font-mono text-[13px] leading-relaxed text-sub break-all select-all text-center">
+                      {token}
+                    </p>
+                    <p className="text-[12px] text-sub leading-relaxed">{t('playground.tokenDesc')}</p>
+                    <div className="flex gap-2">
+                      <button type="button" onClick={copyToken}
+                        className="press-spring flex-1 py-3 rounded-2xl border border-app text-sub text-sm font-medium cursor-pointer">
+                        {copied ? t('playground.copied') : t('playground.copyCode')}
+                      </button>
+                      <button type="button" onClick={resetSale} className="btn-primary flex-1 justify-center py-3 rounded-2xl">
+                        {t('playground.newSale')}
+                      </button>
+                    </div>
+                  </div>
+                  <NotConnected>{t('playground.claimUnknown')}</NotConnected>
+                </>
+              ) : (
+                <div className="surface-card p-5">
+                  <p className="text-[13px] font-semibold text-ink">{t('playground.sellTitle')}</p>
+                  <p className="text-[13px] text-sub mt-1">{t('playground.sellDesc')}</p>
 
-                  {/* Thumb-sized: this is the one control staff press all day. */}
-                  <button type="submit" className="btn-primary w-full justify-center py-4 text-[17px] rounded-2xl">
-                    <IconUserPlus size={19} stroke={1.8} /> {t('playground.checkIn')}
-                  </button>
-                </form>
-              </div>
+                  <form onSubmit={sell} className="space-y-3 mt-4">
+                    <label className="block">
+                      <span className="text-[12px] text-sub">{t('playground.quantity')}</span>
+                      <input value={qty} onChange={e => { setQty(e.target.value); setSellError(''); }}
+                        type="number" min="1" step="1" inputMode="numeric" required
+                        className="w-full mt-1 px-4 py-3.5 text-[17px] bg-card border border-app rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand" />
+                    </label>
+                    <label className="block">
+                      <span className="text-[12px] text-sub">{t('playground.unitPrice')}</span>
+                      <input value={price} onChange={e => { setPrice(e.target.value); setSellError(''); }}
+                        type="number" min="0" step="any" inputMode="decimal" required placeholder="0"
+                        className="w-full mt-1 px-4 py-3.5 text-[17px] bg-card border border-app rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand" />
+                    </label>
 
-              {result && (
-                <div className={`rounded-2xl p-5 border ${result.kind === 'free'
-                  ? 'border-green-300 bg-green-50' : 'border-app bg-brand-light'}`}>
-                  {result.kind === 'free' ? (
-                    <>
-                      <p className="font-bold text-green-700 flex items-center gap-2 text-[17px]">
-                        <IconGift size={20} stroke={1.8} /> {t('playground.freeVisit')}
-                      </p>
-                      <p className="text-sm text-green-800 mt-1">
-                        {t('playground.freeVisitDesc', { name: result.visitor.name })}
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <p className="font-semibold text-ink text-[17px]">{result.visitor.name}</p>
-                      <p className="text-sm text-sub mt-1">
-                        {t('playground.pointAdded', { points: result.visitor.points, n: PLAYGROUND_FREE_AT })}
-                      </p>
-                      <div className="h-2 rounded-full bg-app overflow-hidden mt-3">
-                        <div className="h-full rounded-full bg-brand transition-all"
-                          style={{ width: `${Math.min(100, (result.visitor.points / PLAYGROUND_FREE_AT) * 100)}%` }} />
-                      </div>
-                      {result.visitor.points >= PLAYGROUND_FREE_AT && (
-                        <p className="mt-2 font-semibold text-green-700 text-sm">{t('playground.nextIsFree')}</p>
-                      )}
-                    </>
-                  )}
+                    <div className="flex items-baseline justify-between pt-1">
+                      <span className="text-[13px] text-sub">{t('playground.totalDue')}</span>
+                      <span className="text-[22px] font-bold text-ink tabular-nums">{formatMMK(total)}</span>
+                    </div>
+
+                    {sellError && <p role="alert" className="text-sm text-red-500">{sellError}</p>}
+
+                    {/* Thumb-sized: this is the one control staff press all day. */}
+                    <button type="submit" disabled={selling}
+                      className="btn-primary w-full justify-center py-4 text-[17px] rounded-2xl">
+                      <IconTicket size={19} stroke={1.8} /> {selling ? t('playground.creating') : t('playground.createToken')}
+                    </button>
+                  </form>
                 </div>
               )}
             </>
@@ -128,6 +168,7 @@ export default function PlaygroundApp() {
 
           {tab === 'visitors' && (
             <>
+              <NotConnected>{t('playground.prototypeNote')}</NotConnected>
               <div className="relative">
                 <IconSearch size={17} stroke={1.6} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
                 <input value={search} onChange={e => setSearch(e.target.value)}
@@ -175,6 +216,7 @@ export default function PlaygroundApp() {
 
           {tab === 'today' && (
             <>
+              <NotConnected>{t('playground.prototypeNote')}</NotConnected>
               {/* Today's Increase — the reference's home card: gauge on the left,
                   legend rows down the right with a coloured rule per series. */}
               <div className="surface-card p-5">
@@ -209,7 +251,7 @@ export default function PlaygroundApp() {
               {/* Tile row, as in the reference. Each one goes somewhere real. */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { key: 'checkin', icon: IconUserPlus, label: t('playground.tabCheckIn') },
+                  { key: 'sell', icon: IconTicket, label: t('playground.tabSell') },
                   { key: 'visitors', icon: IconUsers, label: t('playground.cardsTitle') },
                   { key: 'visitors', icon: IconGift, label: t('playground.readyForFree') },
                 ].map(({ key, icon: Icon, label }, i) => (

@@ -80,8 +80,8 @@ export type CreateCategoryPayload = {
 };
 
 export type CreateClaimTokenPayload = {
-    free_quantity: number;
-    purchased_quantity: number;
+    total_quantity: number;
+    unit_price: string;
 };
 
 export type CreateProductPayload = {
