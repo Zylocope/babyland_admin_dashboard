@@ -10,7 +10,6 @@ import { usePlaygroundVisitors, PLAYGROUND_FREE_AT } from '../hooks/usePlaygroun
 import { createPlaygroundToken } from '../services/playgroundService';
 import { formatMMK } from '../utils/currency';
 import NotConnected from '../components/common/NotConnected';
-import DemoBanner from '../components/common/DemoBanner';
 import Gauge from '../components/common/Gauge';
 
 
@@ -94,8 +93,6 @@ export default function PlaygroundApp() {
             <IconLogout size={17} stroke={1.6} />
           </button>
         </header>
-
-        <div className="px-5 pb-2"><DemoBanner /></div>
 
         <main className="flex-1 overflow-y-auto px-5 pt-1 pb-28 space-y-4">
           {tab === 'sell' && (
