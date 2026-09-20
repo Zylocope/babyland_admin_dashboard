@@ -66,3 +66,25 @@ export const summarizeSales = (rows) => {
       })),
   };
 };
+
+// Best and worst days, as two disjoint lists.
+//
+// The page used to do `ranked.slice(0, 3)` and `ranked.slice(-3)`, which
+// overlap whenever there are fewer than six days with sales. With four days
+// the middle two appeared in BOTH panels, so the shop's best day was also
+// listed as one of its worst — visible on real data, since there are only
+// four days of sales.
+//
+// Worst starts after whatever best already took. Under four days that leaves
+// it empty, which is the honest answer: you cannot name a worst day distinct
+// from the best when there are three.
+export const rankDays = (byDay, size = 3) => {
+  const ranked = [...byDay]
+    .filter(d => d.revenue_mmk > 0)
+    .sort((a, b) => b.revenue_mmk - a.revenue_mmk);
+  return {
+    ranked,
+    best: ranked.slice(0, size),
+    worst: ranked.slice(Math.max(size, ranked.length - size)).reverse(),
+  };
+};

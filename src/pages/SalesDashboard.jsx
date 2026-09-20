@@ -14,7 +14,7 @@ import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
-import { summarizeSales } from '../services/salesRollup';
+import { summarizeSales, rankDays } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 
 const PERIODS = ['today', 'week', 'month'];
@@ -146,12 +146,7 @@ export default function SalesDashboard() {
       .sort((a, b) => b._at - a._at);
   }, [receipts, start, end]);
 
-  const ranked = useMemo(
-    () => [...s.by_day].filter(d => d.revenue_mmk > 0).sort((a, b) => b.revenue_mmk - a.revenue_mmk),
-    [s]
-  );
-  const best = ranked.slice(0, 3);
-  const worst = ranked.slice(-3).reverse();
+  const { ranked, best, worst } = useMemo(() => rankDays(s.by_day), [s]);
 
   const posPct = totals.revenue_mmk ? Math.round((ch.in_store.revenue_mmk / totals.revenue_mmk) * 100) : 0;
   // Seeded at 0, not -1: with no sales at all every total ties, and the old
