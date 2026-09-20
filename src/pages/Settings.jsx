@@ -2,6 +2,7 @@ import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock } from '@tabler/ic
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import InformationLinks from '../components/common/InformationLinks';
+import { setDemoMode, useDemoMode } from '../utils/demoMode';
 
 const STYLE_OPTIONS = [
   { id: 'glass',        labelKey: 'settings.styleGlass' },
@@ -37,6 +38,8 @@ export default function Settings() {
   const { t, i18n } = useTranslation();
   const { darkMode, toggleDark, styleTheme, setStyle, activeStyles } = useTheme();
   const isMy = i18n.resolvedLanguage === 'my';
+
+  const demoOn = useDemoMode();
 
   return (
     <div className="max-w-3xl space-y-5">
@@ -90,6 +93,13 @@ export default function Settings() {
           })}
         </div>
       </Section>
+      <Section title={t('demo.settingsTitle')} desc={t('demo.settingsDesc')}>
+        <div className="flex items-center gap-2">
+          <Toggle active={!demoOn} onClick={() => setDemoMode(false)}>{t('demo.off')}</Toggle>
+          <Toggle active={demoOn} onClick={() => setDemoMode(true)}>{t('demo.on')}</Toggle>
+        </div>
+      </Section>
+
       <footer className="pt-2 pb-3 border-t border-app">
         <InformationLinks />
       </footer>

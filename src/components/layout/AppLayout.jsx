@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import RouteFallback from '../common/RouteFallback';
+import DemoBanner from '../common/DemoBanner';
 
 const TITLE_KEYS = {
   '/': 'dashboard', '/pos': 'pos', '/sales': 'sales', '/products': 'products',
@@ -36,6 +37,7 @@ export default function AppLayout() {
       </div>
       <div className="flex flex-col flex-1 min-w-0 min-h-0 gap-3 lg:gap-4">
         <Header titleKey={titleKey} />
+        <DemoBanner />
         <main id="main-content" tabIndex={-1} key={pathname}
           className={`page-enter workspace-main flex-1 min-h-0 overflow-y-auto p-1 ${pathname === '/pos' ? 'workspace-pos' : ''}`}>
           <Suspense fallback={<RouteFallback />}>

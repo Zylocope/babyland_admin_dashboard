@@ -500,5 +500,14 @@
     "entries": "Entries",
     "items": "Items",
     "critical": "Critical"
+  },
+  "demo": {
+    "title": "Demo data",
+    "body": "Sales figures on this screen are generated, not real. Products and stock are real.",
+    "turnOff": "Turn off",
+    "settingsTitle": "Demo data",
+    "settingsDesc": "Replaces sales figures with generated data so charts and reports can be reviewed. Products, categories and stock stay real. A banner shows on every screen while this is on.",
+    "on": "On",
+    "off": "Off"
   }
 }
