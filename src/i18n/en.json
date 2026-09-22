@@ -200,7 +200,13 @@
     "quantityReceived": "Quantity Received",
     "unitCost": "Unit Cost (MMK)",
     "image": "Product image",
-    "imageHelp": "Paste an image link. There is no file upload yet — the backend stores a link only."
+    "imageHelp": "Upload a JPEG, PNG, WebP or GIF, or paste an image link. Current upload limit: 1 MB.",
+    "imageChoose": "Choose image",
+    "imageUploading": "Uploading...",
+    "imageUploaded": "Image uploaded.",
+    "imageUploadFailed": "Unable to upload the image.",
+    "imageTypeError": "Choose a JPEG, PNG, WebP or GIF image.",
+    "imageSizeError": "The image must be 1 MB or smaller."
   },
   "categories": {
     "name": "Category Name",
@@ -307,6 +313,7 @@
     "pointVisits": "Point Visits",
     "appTitle": "Playground",
     "openStaffApp": "Staff app",
+    "backToAdmin": "Back to admin",
     "tabVisitors": "Visitors",
     "tabToday": "Today",
     "period": {
@@ -342,6 +349,33 @@
     "step3Title": "Rewards build on their account",
     "step3Body": "Every paid ticket counts towards a free one. The customer claims it in the app and the coupon lasts 30 days. None of this is stored per shop or per phone number.",
     "reportingBlocked": "There is no manager reporting for the playground yet. The backend exposes only one admin route — creating a ticket code — so nothing can report tickets sold, who claimed them, or the final amount charged. This screen will stay informational until a staff read endpoint exists."
+  },
+  "playgroundAnalytics": {
+    "title": "Playground sales",
+    "subtitle": "Ticket revenue, redemptions and activity in Myanmar shop time.",
+    "revenue": "Playground revenue",
+    "paid": "Paid tickets",
+    "free": "Free tickets",
+    "trend": "Revenue and tickets",
+    "recent": "Recent playground purchases",
+    "staff": "Staff",
+    "noPurchases": "No playground purchases in this period.",
+    "unavailable": "Playground reporting is not connected yet",
+    "backendNeeded": "The dashboard is ready, but the backend summary and purchase endpoints are still required.",
+    "loadFailed": "Unable to load playground reporting.",
+    "combinedRevenue": "Combined revenue",
+    "retailRevenue": "Retail revenue",
+    "playgroundRevenue": "Playground revenue",
+    "playgroundTickets": "Playground tickets",
+    "combinedTrend": "Retail and playground revenue",
+    "retail": "Retail",
+    "playground": "Playground"
+  },
+  "salesSource": {
+    "label": "Sales source",
+    "retail": "Retail",
+    "playground": "Playground",
+    "combined": "Combined"
   },
   "posDash": {
     "noData": "No sales in this period",

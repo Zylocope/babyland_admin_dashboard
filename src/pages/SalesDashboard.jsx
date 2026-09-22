@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage,
-  IconDatabase, IconDownload, IconChartHistogram, IconCalendarStats, IconTrophy,
+  IconDatabase, IconDownload, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket,
 } from '@tabler/icons-react';
 import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
@@ -16,6 +16,7 @@ import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
 import { summarizeSales, rankDays } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
+import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
 
 const PERIODS = ['today', 'week', 'month'];
 const PERIOD_DAYS = { today: 1, week: 7, month: 30 };
@@ -91,6 +92,7 @@ export default function SalesDashboard() {
   const { t } = useTranslation();
   const { isManager } = useAuth();
   const { darkMode } = useTheme();
+  const [source, setSource] = useState('retail');
   const [view, setView] = useState('channel');
   const [period, setPeriod] = useState('week');
   const [records, setRecords] = useState([]);
@@ -208,6 +210,21 @@ export default function SalesDashboard() {
 
   return (
     <div className="space-y-4">
+      <div className="inline-flex rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
+        {[
+          { key: 'retail', label: t('salesSource.retail'), icon: IconShoppingBag },
+          { key: 'playground', label: t('salesSource.playground'), icon: IconTicket },
+          { key: 'combined', label: t('salesSource.combined'), icon: IconChartHistogram },
+        ].map(({ key, label, icon: Icon }) => (
+          <button key={key} type="button" onClick={() => setSource(key)}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${source === key ? 'bg-brand text-white shadow-sm' : 'text-sub hover:text-brand hover:bg-brand-light'}`}>
+            <Icon size={15} stroke={1.8} /> {label}
+          </button>
+        ))}
+      </div>
+
+      {source === 'retail' ? (
+        <>
       <SubBar views={VIEWS} view={view} onView={setView}>
         <div className="inline-flex rounded-lg border border-app overflow-hidden">
           {PERIODS.map(p => (
@@ -297,6 +314,29 @@ export default function SalesDashboard() {
             <DataTable columns={dailyCols.slice(0, 3)} rows={worst} empty={t('posDash.noData')} />
           </Panel>
         </div>
+      )}
+        </>
+      ) : (
+        <>
+          <div className="flex justify-end">
+            <div className="inline-flex rounded-lg border border-app overflow-hidden">
+              {PERIODS.map(p => (
+                <button key={p} onClick={() => setPeriod(p)}
+                  className={`px-3 py-1.5 text-xs cursor-pointer transition-colors ${period === p ? 'bg-brand text-white' : 'bg-card text-sub hover:bg-brand-light'}`}>
+                  {t(`posDash.period_${p}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+          <PlaygroundAnalytics
+            start={start}
+            end={end}
+            days={PERIOD_DAYS[period]}
+            mode={source}
+            retailTotals={totals}
+            retailDays={s.by_day}
+          />
+        </>
       )}
     </div>
   );

@@ -1,8 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IconGift, IconCheck, IconSearch, IconTicket,
-  IconLayoutDashboard, IconUsers, IconBabyCarriage, IconLogout,
+  IconLayoutDashboard, IconUsers, IconBabyCarriage, IconLogout, IconArrowLeft,
 } from '@tabler/icons-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../context/AuthContext';
@@ -17,7 +18,8 @@ import Gauge from '../components/common/Gauge';
 // there is no desktop sidebar or header. Staff hold a phone at the door.
 export default function PlaygroundApp() {
   const { t } = useTranslation();
-  const { user, logout } = useAuth();
+  const { user, logout, isManager } = useAuth();
+  const navigate = useNavigate();
   const [tab, setTab] = useState('today');
   const [search, setSearch] = useState('');
 
@@ -25,7 +27,7 @@ export default function PlaygroundApp() {
   // claim token. The customer scans it with their own Appleland account, so
   // nothing here identifies the customer and there is no phone lookup.
   const [qty, setQty] = useState('1');
-  const [price, setPrice] = useState('');
+  const [price, setPrice] = useState('2000');
   const [token, setToken] = useState(null);
   const [selling, setSelling] = useState(false);
   const [sellError, setSellError] = useState('');
@@ -52,7 +54,7 @@ export default function PlaygroundApp() {
     }
   };
 
-  const resetSale = () => { setToken(null); setQty('1'); setPrice(''); setCopied(false); };
+  const resetSale = () => { setToken(null); setQty('1'); setPrice('2000'); setCopied(false); };
   const copyToken = async () => {
     // Insecure contexts and older webviews have no clipboard API. The code is
     // select-all, so failing here still leaves it copyable by hand.
@@ -88,6 +90,13 @@ export default function PlaygroundApp() {
             <p className="font-bold text-ink text-[15px] leading-tight truncate">{t('playground.appTitle')}</p>
             <p className="text-[11px] text-mute truncate">{user?.name}</p>
           </div>
+          {isManager && (
+            <button onClick={() => navigate('/playground')} title={t('playground.backToAdmin')}
+              aria-label={t('playground.backToAdmin')}
+              className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-brand cursor-pointer">
+              <IconArrowLeft size={17} stroke={1.8} />
+            </button>
+          )}
           <button onClick={logout} title={t('sidebar.logout')}
             className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-[#EF4444] cursor-pointer">
             <IconLogout size={17} stroke={1.6} />

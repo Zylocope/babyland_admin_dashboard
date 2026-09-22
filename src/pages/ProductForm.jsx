@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { IconLoader2, IconArrowLeft, IconPhoto } from '@tabler/icons-react';
+import { IconLoader2, IconArrowLeft, IconPhoto, IconUpload } from '@tabler/icons-react';
 import { getCategories } from '../services/categoryService';
 import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
+import { uploadProductImage, validateProductImage } from '../services/uploadService';
+import { useAuth } from '../context/AuthContext';
 
 const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, is_perishable: false, description: '', image_url: '' };
 
@@ -12,11 +14,14 @@ export default function ProductForm() {
   const isEdit = Boolean(id);
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { isManager } = useAuth();
 
   const [form, setForm] = useState(EMPTY);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageMessage, setImageMessage] = useState('');
   const [error, setError] = useState('');
   const [addInventory, setAddInventory] = useState(false);
   const [quantityReceived, setQuantityReceived] = useState('');
@@ -47,6 +52,7 @@ export default function ProductForm() {
               is_active: found.is_active ?? true,
               is_perishable: found.is_perishable ?? false,
               description: found.description ?? '',
+              image_url: found.image_url ?? '',
             });
           } else {
             setError(t('productForm.notFound'));
@@ -63,6 +69,28 @@ export default function ProductForm() {
   }, [id, isEdit, t]);
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }));
+
+  const selectImage = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const validation = validateProductImage(file);
+    if (validation === 'type') return setImageMessage(t('productForm.imageTypeError'));
+    if (validation === 'size') return setImageMessage(t('productForm.imageSizeError'));
+
+    setImageMessage('');
+    setUploadingImage(true);
+    try {
+      const fileUrl = await uploadProductImage(file);
+      set('image_url', fileUrl);
+      setImageMessage(t('productForm.imageUploaded'));
+    } catch (err) {
+      setImageMessage(err?.message || t('productForm.imageUploadFailed'));
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -171,16 +199,11 @@ export default function ProductForm() {
               className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
 
-          {/* The backend stores image_url as a plain string and has no upload
-              route, so this takes a link rather than a file — a file picker
-              would have nowhere to send the bytes. Swap the input for a
-              Supabase Storage upload when that is wired; the field it fills
-              does not change. */}
           <div>
             <label className="block text-xs font-medium text-ink mb-1">{t('productForm.image')}</label>
             <div className="flex items-start gap-3">
               <div className="w-20 h-20 flex-shrink-0 rounded-lg border border-app bg-card overflow-hidden flex items-center justify-center">
-                {form.image_url.trim() ? (
+                {form.image_url?.trim() ? (
                   <img src={form.image_url.trim()} alt="" className="w-full h-full object-cover"
                     onError={e => { e.currentTarget.style.display = 'none'; }}
                     onLoad={e => { e.currentTarget.style.display = ''; }} />
@@ -189,10 +212,21 @@ export default function ProductForm() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
+                {isManager && (
+                  <label className={`inline-flex items-center gap-2 w-fit px-3 py-2 rounded-lg border border-app text-sm font-medium text-ink hover:border-brand hover:text-brand transition-colors cursor-pointer ${uploadingImage ? 'pointer-events-none opacity-60' : ''}`}>
+                    {uploadingImage
+                      ? <IconLoader2 size={16} className="animate-spin" />
+                      : <IconUpload size={16} stroke={1.8} />}
+                    {uploadingImage ? t('productForm.imageUploading') : t('productForm.imageChoose')}
+                    <input type="file" accept="image/jpeg,image/png,image/webp,image/gif"
+                      onChange={selectImage} disabled={uploadingImage} className="sr-only" />
+                  </label>
+                )}
                 <input value={form.image_url} onChange={e => set('image_url', e.target.value)}
                   type="url" inputMode="url" placeholder="https://..."
-                  className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+                  className="w-full mt-2 px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
                 <p className="text-[11px] text-mute mt-1.5">{t('productForm.imageHelp')}</p>
+                {imageMessage && <p role="status" className="text-[11px] text-sub mt-1.5">{imageMessage}</p>}
               </div>
             </div>
           </div>
@@ -244,7 +278,7 @@ export default function ProductForm() {
 
           <div className="flex justify-end gap-3 pt-2">
             <button type="button" onClick={() => navigate('/products')} className="px-4 py-2 text-sm border border-app rounded-lg text-sub hover:bg-brand-light cursor-pointer">{t('common.cancel')}</button>
-            <button type="submit" disabled={saving} className="btn-primary">
+            <button type="submit" disabled={saving || uploadingImage} className="btn-primary">
               {saving && <IconLoader2 size={16} className="animate-spin" />}
               {isEdit ? t('common.saveChanges') : t('productForm.create')}
             </button>

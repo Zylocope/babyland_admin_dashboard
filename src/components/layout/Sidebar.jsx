@@ -34,7 +34,7 @@ const NAV_ITEMS = [
   { to: '/stock-in', icon: IconPackageImport, key: 'stockIn', roles: [] },
   { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
-  { to: '/playground', icon: IconGift, key: 'playground', roles: ['TicketStaff'] },
+  { to: '/playground', icon: IconGift, key: 'playground', roles: [] },
   { to: '/customers', icon: IconUsers, key: 'customers', roles: ['SaleStaff', 'TicketStaff'] },
   { to: '/staff', icon: IconUserCog, key: 'staff', roles: [] },
   { to: '/assistant', icon: IconSparkles, key: 'assistant', roles: [] },

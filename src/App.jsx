@@ -65,7 +65,7 @@ function AppRoutes() {
             : user?.role === 'SaleStaff' ? <Navigate to="/pos" replace />
               : <Dashboard />
         } />
-        <Route path="playground" element={<RoleRoute roles={['TicketStaff']}><Playground /></RoleRoute>} />
+        <Route path="playground" element={<RoleRoute roles={[]}><Playground /></RoleRoute>} />
         <Route path="pos" element={<RoleRoute roles={['SaleStaff']}><POS /></RoleRoute>} />
         <Route path="sales" element={<RoleRoute roles={[]}><SalesDashboard /></RoleRoute>} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
