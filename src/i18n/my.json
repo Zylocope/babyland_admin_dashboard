@@ -200,13 +200,13 @@
     "quantityReceived": "လက်ခံရရှိသည့် အရေအတွက်",
     "unitCost": "တစ်ယူနစ် အရင်းအနှီး (MMK)",
     "image": "ပစ္စည်းပုံ",
-    "imageHelp": "JPEG, PNG, WebP သို့မဟုတ် GIF ပုံတင်ပါ၊ သို့မဟုတ် ပုံ link ထည့်ပါ။ လက်ရှိ အများဆုံး 1 MB ဖြစ်သည်။",
+    "imageHelp": "JPEG, PNG, WebP သို့မဟုတ် GIF ပုံတင်ပါ၊ သို့မဟုတ် ပုံ link ထည့်ပါ။ ပုံကြီးများကို မတင်မီ အလိုအလျောက် ချုံ့ပေးပါသည်။",
     "imageChoose": "ပုံရွေးရန်",
     "imageUploading": "ပုံတင်နေသည်...",
     "imageUploaded": "ပုံတင်ပြီးပါပြီ။",
     "imageUploadFailed": "ပုံတင်၍ မရပါ။",
     "imageTypeError": "JPEG, PNG, WebP သို့မဟုတ် GIF ပုံကို ရွေးပါ။",
-    "imageSizeError": "ပုံသည် 1 MB သို့မဟုတ် ထိုထက်သေးရမည်။"
+    "imageSizeError": "ပုံသည် 5 MB သို့မဟုတ် ထိုထက်သေးရမည်။"
   },
   "categories": {
     "name": "အမျိုးအစား အမည်",

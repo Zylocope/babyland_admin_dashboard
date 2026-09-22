@@ -200,13 +200,13 @@
     "quantityReceived": "Quantity Received",
     "unitCost": "Unit Cost (MMK)",
     "image": "Product image",
-    "imageHelp": "Upload a JPEG, PNG, WebP or GIF, or paste an image link. Current upload limit: 1 MB.",
+    "imageHelp": "Upload a JPEG, PNG, WebP or GIF, or paste an image link. Large photos are resized automatically before upload.",
     "imageChoose": "Choose image",
     "imageUploading": "Uploading...",
     "imageUploaded": "Image uploaded.",
     "imageUploadFailed": "Unable to upload the image.",
     "imageTypeError": "Choose a JPEG, PNG, WebP or GIF image.",
-    "imageSizeError": "The image must be 1 MB or smaller."
+    "imageSizeError": "The image must be 5 MB or smaller."
   },
   "categories": {
     "name": "Category Name",
