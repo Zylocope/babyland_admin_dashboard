@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage,
-  IconDatabase, IconDownload, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket,
+  IconDatabase, IconDownload, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket, IconFileSpreadsheet
 } from '@tabler/icons-react';
 import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
 import { formatMMK, formatMMKShort } from '../utils/currency';
 import { downloadCsv } from '../utils/csv';
+import { downloadExcel } from '../utils/excel';
 import { colorAt, seriesColor } from '../utils/chartPalette';
 import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
@@ -164,7 +165,8 @@ export default function SalesDashboard() {
   ];
 
   const receiptCols = [
-    { key: 'id', label: t('salesTable.receipt'), value: r => r.id, cell: r => <span className="font-mono text-xs text-brand">{r.id.slice(0, 8)}</span> },
+    // text: a receipt id is an identifier, not a number.
+    { key: 'id', label: t('salesTable.receipt'), value: r => r.id, text: true, cell: r => <span className="font-mono text-xs text-brand">{r.id.slice(0, 8)}</span> },
     { key: 'date', label: t('salesTable.date'), value: r => formatShopTime(r._at, 'YYYY-MM-DD') },
     { key: 'time', label: t('salesTable.time'), value: r => formatShopTime(r._at, 'HH:mm') },
     { key: 'amount', label: t('salesTable.amount'), align: 'right', value: r => Number(r.total_amount), cell: r => formatMMK(Number(r.total_amount)) },
@@ -203,9 +205,14 @@ export default function SalesDashboard() {
     bestworst: { cols: dailyCols, rows: ranked },
   }[view];
 
-  const onExport = () => {
+  const onExport = (kind) => {
     if (!exportable.rows.length) return;
-    downloadCsv(`appleland-${view}-${start}_${end}.csv`, exportable.cols, exportable.rows);
+    const name = `appleland-${view}-${start}_${end}`;
+    if (kind === 'xlsx') {
+      downloadExcel(`${name}.xlsx`, exportable.cols, exportable.rows, t(`salesViews.${view}`));
+      return;
+    }
+    downloadCsv(`${name}.csv`, exportable.cols, exportable.rows);
   };
 
   return (
@@ -237,11 +244,18 @@ export default function SalesDashboard() {
         {/* Manager only. Export runs in the browser, so this is a UI gate, not a
             permission boundary — a server-side export would need a role check too. */}
         {isManager && (
-          <button onClick={onExport} disabled={loading || !exportable.rows.length}
-            title={exportable.rows.length ? t('subbar.export') : t('subbar.noRows')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
-            <IconDownload size={14} stroke={1.7} /> {t('subbar.export')}
-          </button>
+          <>
+            <button onClick={() => onExport('xlsx')} disabled={loading || !exportable.rows.length}
+              title={exportable.rows.length ? t('subbar.exportExcel') : t('subbar.noRows')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <IconFileSpreadsheet size={14} stroke={1.7} /> {t('subbar.exportExcel')}
+            </button>
+            <button onClick={() => onExport('csv')} disabled={loading || !exportable.rows.length}
+              title={exportable.rows.length ? t('subbar.exportCsv') : t('subbar.noRows')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+              <IconDownload size={14} stroke={1.7} /> {t('subbar.exportCsv')}
+            </button>
+          </>
         )}
       </SubBar>
 

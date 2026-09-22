@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight,
-  IconDownload, IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport,
-} from '@tabler/icons-react';
+  IconDownload, IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconFileSpreadsheet } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import { downloadCsv } from '../utils/csv';
+import { downloadExcel } from '../utils/excel';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
@@ -98,7 +98,9 @@ export default function Products() {
 
   const exportCols = [
     { key: 'name', label: t('table.item'), value: p => p.name },
-    { key: 'barcode', label: t('table.barcode'), value: p => p.barcode },
+    // text: a barcode is digits, not a quantity — Excel would render a long one
+    // in scientific notation and drop any leading zero.
+    { key: 'barcode', label: t('table.barcode'), value: p => p.barcode, text: true },
     { key: 'category', label: t('table.category'), value: p => p.category },
     { key: 'stock', label: t('table.stock'), value: p => p.quantity_in_stock },
     { key: 'price', label: t('table.price'), value: p => p.selling_price },
@@ -124,14 +126,24 @@ export default function Products() {
         {/* Manager only. Runs in the browser, so it is a UI gate — a server-side
             export would need the same role check that restock has. */}
         {isManager && (
-          <button
-            onClick={() => filtered.length && downloadCsv(`appleland-products-${view}.csv`, exportCols, filtered)}
-            disabled={loading || !filtered.length}
-            title={filtered.length ? t('subbar.export') : t('subbar.noRows')}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-          >
-            <IconDownload size={14} stroke={1.7} /> {t('subbar.export')}
-          </button>
+          <>
+            <button
+              onClick={() => filtered.length && downloadExcel(`appleland-products-${view}.xlsx`, exportCols, filtered, t(`products.view_${view}`))}
+              disabled={loading || !filtered.length}
+              title={filtered.length ? t('subbar.exportExcel') : t('subbar.noRows')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <IconFileSpreadsheet size={14} stroke={1.7} /> {t('subbar.exportExcel')}
+            </button>
+            <button
+              onClick={() => filtered.length && downloadCsv(`appleland-products-${view}.csv`, exportCols, filtered)}
+              disabled={loading || !filtered.length}
+              title={filtered.length ? t('subbar.exportCsv') : t('subbar.noRows')}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              <IconDownload size={14} stroke={1.7} /> {t('subbar.exportCsv')}
+            </button>
+          </>
         )}
         {isManager && (
           <button onClick={() => navigate('/products/new')} className="btn-primary">
