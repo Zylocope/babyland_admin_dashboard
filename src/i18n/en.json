@@ -220,7 +220,14 @@
     "updateFailed": "Could not rename the category.",
     "deleteFailed": "Could not delete the category.",
     "deleteTitle": "Delete category",
-    "deleteMsg": "Delete \"{{name}}\"? Products already in it keep their category id."
+    "deleteMsg": "Delete \"{{name}}\"? Products already in it keep their category id.",
+    "archivedTitle": "Archived categories",
+    "archivedHelp": "Deleted categories are hidden from filters and dropdowns, but products already in them keep their category. Move those products before the category is forgotten.",
+    "stillUsed": "{{count}} product still uses this",
+    "stillUsed_plural": "{{count}} products still use this",
+    "noProducts": "No products",
+    "reviewProducts": "Review products",
+    "deleteMsgInUse": "Delete \"{{name}}\"? {{count}} product(s) still use it. They keep the category but it will disappear from every filter, so they become hard to find. Move them first if you can."
   },
   "pos": {
     "decrease": "Decrease quantity for {{name}}",

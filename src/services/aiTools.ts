@@ -3,6 +3,7 @@
 // existing admin session. Tool results then pass through /api/chat to Gemini.
 import { parseISO, getDay } from "date-fns";
 import { shopToday, shopDaysAgo } from "../utils/shopDay";
+import { LOW_STOCK_AT } from "../utils/stock";
 import { getSaleSummary } from "./salesService";
 import { getAllProducts, searchProductsSimple } from "./productService";
 import { getCategories } from "./categoryService";
@@ -32,7 +33,10 @@ const salesSummary = async ({ start_date, end_date }: { start_date?: string; end
   return { range: { start, end }, ...summarizeSales(rows) };
 };
 
-const lowStock = async ({ threshold = 5 }: { threshold?: number }) => {
+// Defaults to the same number the Products and Dashboard screens use. It was 5
+// here and 10 there, so the assistant answered "how many are low" with a
+// different count than the screen beside it.
+const lowStock = async ({ threshold = LOW_STOCK_AT }: { threshold?: number }) => {
   const products = await getAllProducts();
   const low = products
     .filter((p) => p.quantity_in_stock <= threshold)
@@ -174,7 +178,7 @@ export const toolDeclarations = [
     parameters: {
       type: "object",
       properties: {
-        threshold: { type: "number", description: "Stock level to flag at or below. Default 5." },
+        threshold: { type: "number", description: `Stock level to flag at or below. Default ${LOW_STOCK_AT}.` },
       },
     },
   },

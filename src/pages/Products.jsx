@@ -14,9 +14,9 @@ import SubBar from '../components/common/SubBar';
 import StockInModal from '../components/common/StockInModal';
 import { getAllProducts } from '../services/productService';
 import { getCategories } from '../services/categoryService';
+import { isLowStock, isOutOfStock, needsRestock } from '../utils/stock';
 
 const PAGE_SIZE = 10;
-const LOW_STOCK_AT = 10;
 
 // ponytail: the whole catalogue is fetched once and filtered in the browser.
 // Fine into the low thousands; move filtering server-side if it ever gets slow.
@@ -35,8 +35,8 @@ const normalizeProduct = (product) => ({
 
 const VIEW_FILTERS = {
   all: () => true,
-  low: p => p.quantity_in_stock > 0 && p.quantity_in_stock <= LOW_STOCK_AT,
-  out: p => p.quantity_in_stock === 0,
+  low: isLowStock,
+  out: isOutOfStock,
   hidden: p => !p.is_active,
   perishable: p => p.is_perishable,
 };
@@ -106,7 +106,7 @@ export default function Products() {
     { key: 'perishable', label: t('table.expiry'), value: p => (p.is_perishable ? 'yes' : 'no') },
   ];
 
-  const isLow = (p) => p.quantity_in_stock <= LOW_STOCK_AT;
+  const isLow = needsRestock;
 
   return (
     <div className="space-y-4">

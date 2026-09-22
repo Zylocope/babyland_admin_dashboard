@@ -11,8 +11,8 @@ import { shopToday, shopDaysAgo, shopDayStart, formatShopTime } from '../utils/s
 import { summarizeSales } from '../services/salesRollup';
 import { getSaleSummary } from '../services/salesService';
 import { getAllProducts } from '../services/productService';
+import { needsRestock } from '../utils/stock';
 
-const LOW_STOCK_AT = 10;
 const DAYS = 7;
 
 // Orders have no read endpoint at all — the backend's order routes are
@@ -49,7 +49,7 @@ export default function Dashboard() {
   const todayRow = s.by_day.find(d => d.date === today);
 
   const lowStock = products
-    .filter(p => Number(p.quantity_in_stock ?? 0) <= LOW_STOCK_AT)
+    .filter(needsRestock)
     .sort((a, b) => Number(a.quantity_in_stock ?? 0) - Number(b.quantity_in_stock ?? 0));
 
   // A dash while loading and a word on failure — never a number that could be
