@@ -305,11 +305,6 @@
     "actionsDisabled": "Staff accounts are not connected to the backend yet. Creating, editing and deleting are disabled so nothing looks saved when it is not."
   },
   "playground": {
-    "checkIn": "Check In",
-    "free": "FREE",
-    "visits": "Visits",
-    "readyForFree": "Ready for Free",
-    "totalVisits": "Total Visits",
     "appTitle": "Playground",
     "openStaffApp": "Staff app",
     "backToAdmin": "Back to admin",
