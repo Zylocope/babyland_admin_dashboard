@@ -2,16 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  IconGift, IconCheck, IconSearch, IconTicket,
-  IconLayoutDashboard, IconUsers, IconBabyCarriage, IconLogout, IconArrowLeft,
+  IconTicket, IconLayoutDashboard, IconBabyCarriage, IconLogout, IconArrowLeft,
 } from '@tabler/icons-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../context/AuthContext';
-import { usePlaygroundVisitors, PLAYGROUND_FREE_AT } from '../hooks/usePlaygroundVisitors';
 import { createPlaygroundToken } from '../services/playgroundService';
 import { formatMMK } from '../utils/currency';
 import NotConnected from '../components/common/NotConnected';
-import Gauge from '../components/common/Gauge';
 
 
 // Full-bleed phone layout: this route sits OUTSIDE AppLayout on purpose, so
@@ -20,8 +17,7 @@ export default function PlaygroundApp() {
   const { t } = useTranslation();
   const { user, logout, isManager } = useAuth();
   const navigate = useNavigate();
-  const [tab, setTab] = useState('today');
-  const [search, setSearch] = useState('');
+  const [tab, setTab] = useState('sell');
 
   // Selling a ticket is the ONE thing the backend supports for staff: mint a
   // claim token. The customer scans it with their own Appleland account, so
@@ -45,7 +41,9 @@ export default function PlaygroundApp() {
     try {
       // unit_price is a string on the wire — the backend stores it as a Decimal.
       const id = await createPlaygroundToken({ total_quantity: quantity, unit_price: String(unit) });
-      setToken(String(id).replace(/^"|"$/g, ''));
+      const clean = String(id).replace(/^"|"$/g, '');
+      setToken(clean);
+      setSold(list => [{ id: clean, token: clean, qty: quantity, total: quantity * unit }, ...list]);
       setCopied(false);
     } catch (err) {
       setSellError(err?.message || t('playground.tokenFailed'));
@@ -61,18 +59,13 @@ export default function PlaygroundApp() {
     try { await navigator.clipboard.writeText(token); setCopied(true); } catch { setCopied(false); }
   };
 
-  const {
-    visitors, log,
-    freeToday, readyForFree, totalVisits,
-  } = usePlaygroundVisitors();
-
-  const filtered = visitors.filter(v =>
-    v.phone.includes(search) || v.name.toLowerCase().includes(search.toLowerCase())
-  );
+  // Codes made on this phone since the app was opened. Not a server report:
+  // route_admin() exposes only token creation, so there is nothing to read back.
+  const [sold, setSold] = useState([]);
+  const soldTickets = sold.reduce((sum, entry) => sum + entry.qty, 0);
 
   const TABS = [
     { key: 'sell', icon: IconTicket, label: t('playground.tabSell') },
-    { key: 'visitors', icon: IconUsers, label: t('playground.tabVisitors') },
     { key: 'today', icon: IconLayoutDashboard, label: t('playground.tabToday') },
   ];
 
@@ -175,137 +168,51 @@ export default function PlaygroundApp() {
             </>
           )}
 
-          {tab === 'visitors' && (
-            <>
-              <NotConnected>{t('playground.prototypeNote')}</NotConnected>
-              <div className="relative">
-                <IconSearch size={17} stroke={1.6} className="absolute left-4 top-1/2 -translate-y-1/2 text-mute" />
-                <input value={search} onChange={e => setSearch(e.target.value)}
-                  placeholder={t('playground.searchVisitor')}
-                  className="w-full pl-11 pr-4 py-3 text-[15px] bg-card border border-app rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand" />
-              </div>
-
-              {filtered.length === 0 ? (
-                <p className="text-center text-sm text-mute py-16">{t('playground.noVisitors')}</p>
-              ) : filtered.map(v => {
-                const ready = v.points >= PLAYGROUND_FREE_AT;
-                return (
-                  <div key={v.id} className="surface-card p-4">
-                    <div className="flex items-center gap-3">
-                      <span className="w-11 h-11 rounded-2xl flex items-center justify-center text-white flex-shrink-0 font-bold"
-                        style={{ background: ready ? 'var(--series-2)' : 'var(--orange-primary)' }}>
-                        {v.name.slice(0, 1).toUpperCase()}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-ink truncate">{v.name}</p>
-                        <p className="text-xs text-mute font-mono">{v.phone}</p>
-                      </div>
-                      <div className="text-right flex-shrink-0">
-                        <p className="text-[19px] font-bold text-ink tabular-nums leading-none">
-                          {v.points}<span className="text-sub text-[13px]">/{PLAYGROUND_FREE_AT}</span>
-                        </p>
-                        <p className="text-[11px] text-mute mt-1">{t('playground.visits')} {v.visits}</p>
-                      </div>
-                    </div>
-                    <div className="h-2 rounded-full bg-app overflow-hidden mt-3">
-                      <div className="h-full rounded-full transition-all"
-                        style={{
-                          width: `${Math.min(100, (v.points / PLAYGROUND_FREE_AT) * 100)}%`,
-                          background: ready ? 'var(--series-2-ink)' : 'var(--orange-primary)',
-                        }} />
-                    </div>
-                    {ready && (
-                      <p className="mt-2 text-xs font-semibold text-green-700">{t('playground.nextIsFree')}</p>
-                    )}
-                  </div>
-                );
-              })}
-            </>
-          )}
-
           {tab === 'today' && (
             <>
-              <NotConnected>{t('playground.prototypeNote')}</NotConnected>
-              {/* Today's Increase — the reference's home card: gauge on the left,
-                  legend rows down the right with a coloured rule per series. */}
               <div className="surface-card p-5">
-                <p className="text-[13px] font-semibold text-ink">{t('playground.todayBreakdown')}</p>
-                <div className="flex items-center gap-3 mt-1">
-                  <div className="relative flex-shrink-0">
-                    <Gauge width={168} segments={[
-                      { value: log.length - freeToday, color: 'var(--orange-primary)' },
-                      { value: freeToday, color: 'var(--series-2-ink)' },
-                    ]} />
-                    <div className="absolute inset-x-0 bottom-0 text-center">
-                      <p className="text-[28px] font-extrabold text-ink tabular-nums leading-none">{log.length}</p>
-                      <p className="text-[10px] text-sub mt-1">{t('playground.checkInsToday')}</p>
+                <p className="text-[13px] font-semibold text-ink">{t('playground.soldToday')}</p>
+                <p className="text-[12px] text-sub mt-1">{t('playground.soldTodayHelp')}</p>
+                {sold.length > 0 && (
+                  <div className="flex items-baseline gap-4 mt-4">
+                    <div>
+                      <p className="text-[28px] font-bold text-ink tabular-nums leading-none">{sold.length}</p>
+                      <p className="text-[11px] text-sub mt-1">{t('playground.codesMade')}</p>
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0 space-y-3">
-                    {[
-                      { label: t('playground.pointVisits'), value: log.length - freeToday, color: 'var(--orange-primary)' },
-                      { label: t('playground.free'), value: freeToday, color: 'var(--series-2-ink)' },
-                      { label: t('playground.readyForFree'), value: readyForFree, color: null },
-                    ].map(s => (
-                      <div key={s.label} className="border-l-2 pl-2.5"
-                        style={{ borderColor: s.color ?? 'var(--border)' }}>
-                        <p className="text-[10px] text-sub leading-tight truncate">{s.label}</p>
-                        <p className="text-[17px] font-bold text-ink tabular-nums leading-tight">{s.value}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-
-              {/* Tile row, as in the reference. Each one goes somewhere real. */}
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { key: 'sell', icon: IconTicket, label: t('playground.tabSell') },
-                  { key: 'visitors', icon: IconUsers, label: t('playground.cardsTitle') },
-                  { key: 'visitors', icon: IconGift, label: t('playground.readyForFree') },
-                ].map(({ key, icon: Icon, label }, i) => (
-                  <button key={i} onClick={() => setTab(key)}
-                    className="press-spring surface-card p-3 flex flex-col items-center gap-2 cursor-pointer">
-                    <span className="w-9 h-9 rounded-full border-2 flex items-center justify-center"
-                      style={{ borderColor: 'var(--series-2-ink)', color: 'var(--series-2-ink)' }}>
-                      <Icon size={16} stroke={1.8} />
-                    </span>
-                    <span className="text-[11px] font-medium text-ink text-center leading-tight">{label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="surface-card p-5">
-                <p className="text-[13px] text-sub">{t('playground.totalVisits')}</p>
-                <p className="text-[40px] font-extrabold text-ink tabular-nums leading-none tracking-tight mt-1">
-                  {totalVisits.toLocaleString()}
-                </p>
-              </div>
-
-              <div className="surface-card p-5">
-                <p className="text-[13px] font-semibold text-ink mb-3">{t('playground.todayLog')}</p>
-                {log.length === 0 ? (
-                  <p className="text-sm text-mute py-6 text-center">{t('playground.noCheckIns')}</p>
-                ) : (
-                  <div className="space-y-2.5">
-                    {log.slice(0, 8).map((l, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white"
-                          style={{ background: l.free ? 'var(--series-2)' : 'var(--orange-primary)' }}>
-                          {l.free ? <IconGift size={16} stroke={1.8} /> : <IconCheck size={16} stroke={2} />}
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-ink truncate text-sm">{l.name}</p>
-                          <p className="text-xs text-mute font-mono">{l.phone}</p>
-                        </div>
-                        <span className="text-xs text-mute tabular-nums flex-shrink-0">{l.at}</span>
-                      </div>
-                    ))}
+                    <div>
+                      <p className="text-[28px] font-bold text-ink tabular-nums leading-none">{soldTickets}</p>
+                      <p className="text-[11px] text-sub mt-1">{t('playground.ticketsSold')}</p>
+                    </div>
                   </div>
                 )}
               </div>
+
+              {sold.length === 0 ? (
+                <p className="text-sm text-mute py-10 text-center">{t('playground.soldNone')}</p>
+              ) : (
+                <div className="surface-card p-5 space-y-3">
+                  {sold.map(entry => (
+                    <div key={entry.id} className="flex items-center gap-3">
+                      <span className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 text-white bg-brand">
+                        <IconTicket size={16} stroke={1.8} />
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-medium text-ink">{t('playground.ticketCount', { count: entry.qty })}</p>
+                        <p className="text-[11px] text-mute font-mono truncate">{entry.token}</p>
+                      </div>
+                      <span className="text-sm font-semibold text-ink tabular-nums flex-shrink-0">{formatMMK(entry.total)}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Honest about its own limit: these are the codes this phone
+                  made since the app was opened, not a server report. There is
+                  no staff read endpoint to build one from. */}
+              <NotConnected>{t('playground.soldLocalOnly')}</NotConnected>
             </>
           )}
+
         </main>
 
         {/* Bottom tab bar, like the reference. Fixed so it stays under the thumb
