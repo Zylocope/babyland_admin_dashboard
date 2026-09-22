@@ -206,7 +206,8 @@
     "imageUploaded": "ပုံတင်ပြီးပါပြီ။",
     "imageUploadFailed": "ပုံတင်၍ မရပါ။",
     "imageTypeError": "JPEG, PNG, WebP သို့မဟုတ် GIF ပုံကို ရွေးပါ။",
-    "imageSizeError": "ပုံသည် 5 MB သို့မဟုတ် ထိုထက်သေးရမည်။"
+    "imageSizeError": "ပုံသည် 5 MB သို့မဟုတ် ထိုထက်သေးရမည်။",
+    "imageServerLimit": "ဤပုံသည် ချုံ့ပြီးသော်လည်း server လက်ခံနိုင်သည်ထက် ကြီးနေပါသည်။ ပိုသေးသော ပုံ သို့မဟုတ် GIF အစား JPEG ကို စမ်းကြည့်ပါ။"
   },
   "categories": {
     "name": "အမျိုးအစား အမည်",

@@ -206,7 +206,8 @@
     "imageUploaded": "Image uploaded.",
     "imageUploadFailed": "Unable to upload the image.",
     "imageTypeError": "Choose a JPEG, PNG, WebP or GIF image.",
-    "imageSizeError": "The image must be 5 MB or smaller."
+    "imageSizeError": "The image must be 5 MB or smaller.",
+    "imageServerLimit": "This image is too large for the server to accept, even after resizing. Try a smaller photo, or a JPEG instead of a GIF."
   },
   "categories": {
     "name": "Category Name",

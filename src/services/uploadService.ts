@@ -18,6 +18,13 @@ const ACCEPTED_IMAGE_TYPES = new Set([
 // claims bearer; the code does not. request() already sends credentials.
 export const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
+// axum's Multipart extractor carries a 2 MB default body limit and the backend
+// never raises it, so anything larger fails inside next_field() — which the
+// handler reports as a bare 500. Shrinking normally lands far below this, but a
+// GIF is passed through untouched and createImageBitmap can fail outright, so
+// the ceiling is enforced on whatever is actually about to be sent.
+const SERVER_BODY_LIMIT = 2 * 1024 * 1024;
+
 // The server validates nothing. It reads whatever content_type the browser
 // sends and streams it straight to Supabase — no format allowlist, no size cap.
 // These checks are the only ones there are.
@@ -64,11 +71,19 @@ interface UploadResponse {
   file_url: string;
 }
 
+export class ImageTooLargeError extends Error {}
+
 export const uploadProductImage = async (file: File): Promise<string> => {
+  const prepared = await shrink(file);
+  if (prepared.size > SERVER_BODY_LIMIT) {
+    // Better a clear message than the server's generic 500.
+    throw new ImageTooLargeError("image exceeds the server upload limit");
+  }
+
   const body = new FormData();
   // The field name must be exactly "file": the handler reads the first
   // multipart field and requires a filename on it.
-  body.append("file", await shrink(file));
+  body.append("file", prepared);
 
   // No Content-Type header — only the browser knows the multipart boundary it
   // generated. baseService leaves it alone when the body is FormData.

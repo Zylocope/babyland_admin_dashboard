@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { IconLoader2, IconArrowLeft, IconPhoto, IconUpload } from '@tabler/icons-react';
 import { getCategories } from '../services/categoryService';
 import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
-import { uploadProductImage, validateProductImage } from '../services/uploadService';
+import { uploadProductImage, validateProductImage, ImageTooLargeError } from '../services/uploadService';
 import { useAuth } from '../context/AuthContext';
 
 const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, is_perishable: false, description: '', image_url: '' };
@@ -86,7 +86,9 @@ export default function ProductForm() {
       set('image_url', fileUrl);
       setImageMessage(t('productForm.imageUploaded'));
     } catch (err) {
-      setImageMessage(err?.message || t('productForm.imageUploadFailed'));
+      setImageMessage(err instanceof ImageTooLargeError
+        ? t('productForm.imageServerLimit')
+        : err?.message || t('productForm.imageUploadFailed'));
     } finally {
       setUploadingImage(false);
     }
