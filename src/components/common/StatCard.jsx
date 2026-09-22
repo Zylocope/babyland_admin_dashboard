@@ -10,9 +10,19 @@ const TONES = {
   low:       '#EF4444',
 };
 
+// "2.2M MMK" set as one 36px extrabold run reads as a wall — the unit competes
+// with the number for the same weight and size. Both currency helpers always
+// end in " MMK", so the trailing word is split off and set smaller and lighter.
+// Anything without a trailing word ("23", "—", "Unavailable") renders whole.
+const splitUnit = (value) => {
+  const match = /^(.*\S)\s+([A-Za-z]+)$/.exec(String(value ?? ''));
+  return match ? { amount: match[1], unit: match[2] } : { amount: value, unit: null };
+};
+
 export default function StatCard({ icon: Icon, label, value, tone = 'store', trend, onClick }) {
   const c = TONES[tone] ?? TONES.store;
   const up = trend?.dir === 'up';
+  const { amount, unit } = splitUnit(value);
 
   return (
     <div
@@ -42,8 +52,14 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
         )}
       </div>
 
-      <p className="text-[36px] font-extrabold text-ink mt-3 leading-none break-words tracking-tight">{value}</p>
-      <p className="text-[13px] text-sub mt-1.5">{label}</p>
+      {/* Down from 36px/extrabold/tracking-tight: at that weight "17.3M MMK"
+          wrapped onto two lines in a narrow card. tabular-nums keeps the digits
+          aligned as the figure changes. */}
+      <p className="mt-3 leading-[1.1] text-ink font-bold tracking-[-0.01em] tabular-nums text-[26px] sm:text-[30px]">
+        {amount}
+        {unit && <span className="ml-1.5 text-[0.55em] font-semibold text-sub tracking-normal align-baseline">{unit}</span>}
+      </p>
+      <p className="text-[13px] text-sub mt-2">{label}</p>
     </div>
   );
 }
