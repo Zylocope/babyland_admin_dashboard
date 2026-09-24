@@ -69,12 +69,15 @@ function Panel({ title, children }) {
 function DataTable({ columns, rows, empty, onRowClick }) {
   if (!rows.length) return <Empty label={empty} />;
   return (
-    <div className="overflow-x-auto">
+    // Same header as Products, Customers, Staff and Orders. This was the only
+    // table in the app wearing a plain grey head, which made the Sales views
+    // read as a different product from every other screen.
+    <div className="overflow-x-auto rounded-xl border border-app">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-mute text-xs">
+          <tr className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
             {columns.map(c => (
-              <th key={c.key} className={`py-2 font-medium ${c.align === 'right' ? 'text-right' : 'text-left'}`}>{c.label}</th>
+              <th key={c.key} className={`px-4 py-3 font-medium ${c.align === 'right' ? 'text-right' : 'text-left'}`}>{c.label}</th>
             ))}
           </tr>
         </thead>
@@ -84,7 +87,7 @@ function DataTable({ columns, rows, empty, onRowClick }) {
               onClick={onRowClick ? () => onRowClick(row) : undefined}
               className={`hover:bg-brand-light transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}>
               {columns.map(c => (
-                <td key={c.key} className={`py-2.5 text-ink tabular-nums ${c.align === 'right' ? 'text-right' : 'text-left'}`}>
+                <td key={c.key} className={`px-4 py-3 text-ink tabular-nums ${c.align === 'right' ? 'text-right' : 'text-left'}`}>
                   {c.cell ? c.cell(row) : c.value(row)}
                 </td>
               ))}

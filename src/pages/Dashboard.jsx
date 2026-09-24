@@ -12,9 +12,17 @@ import { summarizeSales } from '../services/salesRollup';
 import { getSaleSummary } from '../services/salesService';
 import { getAllProducts } from '../services/productService';
 import { needsRestock } from '../utils/stock';
+import { getOrders } from '../services/orderService';
 import Skeleton from '../components/common/Skeleton';
 
 const DAYS = 7;
+
+// Same tones the Orders page uses, so a status means one thing everywhere.
+const ORDER_TONE = {
+  pending: 'var(--status-pending)',
+  on_delivery: 'var(--status-processing)',
+  received: 'var(--status-delivered)',
+};
 
 // Orders have no read endpoint at all — the backend's order routes are
 // write-only — so that section stays disconnected no matter what is in the
@@ -22,6 +30,9 @@ const DAYS = 7;
 export default function Dashboard() {
   const { t } = useTranslation();
   const [state, setState] = useState({ status: 'loading', rows: [], products: [] });
+  // Orders load on their own: they are the bottom of the page and the slowest
+  // call, and blocking the revenue figures on them would be the wrong trade.
+  const [orders, setOrders] = useState({ status: 'loading', rows: [] });
 
   useEffect(() => {
     let active = true;
@@ -41,6 +52,14 @@ export default function Dashboard() {
       })
       // No fallback numbers. A failed load says so; it never borrows a zero.
       .catch(() => { if (active) setState({ status: 'error', rows: [], products: [] }); });
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+    getOrders({ page: 1, page_size: 5 })
+      .then(res => { if (active) setOrders({ status: 'ok', rows: Array.isArray(res?.data) ? res.data : [] }); })
+      .catch(() => { if (active) setOrders({ status: 'error', rows: [] }); });
     return () => { active = false; };
   }, []);
 
@@ -251,9 +270,50 @@ export default function Dashboard() {
         <div className="px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink">{t('dashboard.recentOrders')}</h3>
         </div>
-        <div className="p-6">
-          <NotConnected>{t('dashboard.ordersNotConnected')}</NotConnected>
-        </div>
+        {orders.status === 'loading' && (
+          <div className="p-6 space-y-3 skeleton-row">
+            {Array.from({ length: 4 }, (_, i) => (
+              <div key={i} className="flex items-center gap-4" style={{ '--i': i }}>
+                <Skeleton w={70} h={12} />
+                <Skeleton style={{ flex: 1, height: 12 }} />
+                <Skeleton w={80} h={12} />
+              </div>
+            ))}
+          </div>
+        )}
+        {orders.status === 'error' && (
+          <div className="p-6"><NotConnected>{t('dashboard.loadFailed')}</NotConnected></div>
+        )}
+        {orders.status === 'ok' && orders.rows.length === 0 && (
+          <p className="py-10 text-center text-sm text-mute">{t('orders.none')}</p>
+        )}
+        {orders.status === 'ok' && orders.rows.length > 0 && (
+          <>
+            <div className="divide-y divide-app">
+              {orders.rows.map(o => (
+                <Link key={o.id} to="/orders"
+                  className="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-light transition-colors">
+                  <span className="font-mono text-xs text-brand flex-shrink-0">{o.id.slice(0, 8)}</span>
+                  <span className="flex-1 min-w-0 truncate text-sm text-ink">
+                    {o.customer || t('orders.noCustomer')}
+                  </span>
+                  <span className="text-[11px] flex-shrink-0 whitespace-nowrap"
+                    style={{ color: ORDER_TONE[o.delivery_status] ?? 'var(--text-secondary)' }}>
+                    {t(`orderStatus.${o.delivery_status}`, o.delivery_status)}
+                  </span>
+                  <span className="text-sm text-ink font-medium tabular-nums flex-shrink-0 w-24 text-right">
+                    {formatMMK(Number(o.total_amount))}
+                  </span>
+                </Link>
+              ))}
+            </div>
+            <div className="px-6 py-3 border-t border-app">
+              <Link to="/orders" className="inline-flex items-center gap-1.5 text-xs text-brand hover:underline">
+                {t('dashboard.viewAllOrders')} <IconArrowRight size={14} stroke={1.8} />
+              </Link>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
