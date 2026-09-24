@@ -2,23 +2,31 @@
 // chart with several series must not be six shades of it — every slot below is a
 // distinct hue.
 //
-// Validated with the dataviz palette checker against both surfaces:
-// lightness band, chroma floor, colourblind separation (protan/deutan/tritan),
-// normal-vision floor, and contrast. Two results worth keeping in mind:
+// Both sets were validated with the dataviz palette checker against this app's
+// real chart surfaces (#FCF8FF light, #1E1B26 dark) and pass every check:
+// lightness band, chroma floor, adjacent-pair CVD separation, normal-vision
+// floor, and contrast.
 //
-//   • Brand orange is 2.73:1 on the light surface — under the 3:1 bar. That is
-//     allowed only because every chart here ships a legend and axis labels, so
-//     colour is never the sole carrier of identity. Don't drop those.
-//   • Pink↔olive sits at ΔE 6.4 under tritanopia, inside the "floor" band. Same
-//     relief applies: they are only ever adjacent with labels present.
+// What changed from the first attempt, and why:
+//
+//   • Orange is one step deeper. #F97316 measured 2.73:1 on the light surface —
+//     under the 3:1 bar — and was only legal because every chart ships a legend.
+//     It now passes on its own.
+//   • Olive is gone, replaced by gold. Olive↔pink sat at ΔE 6.4 under
+//     tritanopia, inside the "floor" band that needs secondary encoding to be
+//     allowed at all. The worst adjacent pair is now 8.8, above the floor.
+//   • Dark is genuinely re-stepped rather than copied. It previously shared five
+//     of six values with light, and violet measured 2.97:1 on the dark surface.
+//     Indigo, pink and green now have their own steps.
 //
 // Order is FIXED. Assign by slot index and never cycle or re-sort — a filter
 // that drops a series must not repaint the survivors.
-const LIGHT = ['#F97316', '#2563EB', '#0D9488', '#7C3AED', '#DB2777', '#65A30D'];
+const LIGHT = ['#EA580C', '#0D9488', '#4F46E5', '#A16207', '#DB2777', '#15803D'];
 
-// Dark keeps the same hues; only the orange steps down, because #F97316 sits
-// above the dark lightness band. These are chosen steps, not an auto-flip.
-const DARK = ['#E8690F', '#2563EB', '#0D9488', '#7C3AED', '#DB2777', '#65A30D'];
+// Dark is selected against the dark surface, not flipped from light. The band
+// there is narrower and lower (L 0.48–0.67), so these sit mid rather than pale —
+// a very light saturated fill glares on a dark card.
+const DARK = ['#EA580C', '#0D9488', '#6366F1', '#B27407', '#EC4899', '#16A34A'];
 
 export const chartColors = (dark) => (dark ? DARK : LIGHT);
 

@@ -7,6 +7,7 @@ import {
 import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
+import ChartLegend from '../components/common/ChartLegend';
 import { formatMMK, formatMMKShort } from '../utils/currency';
 import { downloadCsv } from '../utils/csv';
 import { downloadExcel } from '../utils/excel';
@@ -275,16 +276,30 @@ export default function SalesDashboard() {
               <div><span>{t('aiChart.peak')}</span><strong>{peakDay?.day ?? '—'}</strong></div>
               <div><span>{inStoreLabel}</span><strong>{posPct}%</strong></div>
             </div>
-            <ResponsiveContainer width="100%" height={260}>
-              <ComposedChart data={chart} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
-                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} minTickGap={28} />
-                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
-                <Tooltip content={<SalesTooltip inStoreLabel={inStoreLabel} onlineLabel={onlineLabel} totalLabel={t('table.total')} />} cursor={{ fill: 'var(--orange-light)', opacity: 0.45 }} />
-                <Legend wrapperStyle={{ fontSize: 12 }} />
-                <Bar dataKey={inStoreLabel} stackId="rev" fill={seriesColor(darkMode)} maxBarSize={44} />
-                <Bar dataKey={onlineLabel} stackId="rev" fill={colorAt(1, darkMode)} maxBarSize={44} radius={[4, 4, 0, 0]} />
-                <Line type="monotone" dataKey="total" name={t('table.total')} stroke="var(--text-primary)" strokeWidth={2} dot={false} activeDot={{ r: 4, fill: 'var(--orange-primary)', stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
+            <ResponsiveContainer width="100%" height={280}>
+              <ComposedChart data={chart} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
+                {/* Dashed, horizontal only, and recessive: the grid is a reading
+                    aid, not a subject. */}
+                <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
+                <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
+                  axisLine={false} tickLine={false} minTickGap={28} dy={6} />
+                <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false}
+                  width={44} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
+                <Tooltip content={<SalesTooltip inStoreLabel={inStoreLabel} onlineLabel={onlineLabel} totalLabel={t('table.total')} />}
+                  cursor={{ fill: 'var(--orange-light)', opacity: 0.35 }} />
+                <Legend content={<ChartLegend />} verticalAlign="top" align="right" height={30} />
+                {/* The 2px surface-coloured stroke is the gap between stacked
+                    segments. Without it the two channels read as one solid block
+                    and the split is only visible where the hue changes. */}
+                <Bar dataKey={inStoreLabel} stackId="rev" fill={seriesColor(darkMode)} maxBarSize={40}
+                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[0, 0, 3, 3]} />
+                <Bar dataKey={onlineLabel} stackId="rev" fill={colorAt(1, darkMode)} maxBarSize={40}
+                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[5, 5, 0, 0]} />
+                {/* The total is an annotation over the stack, not a third
+                    category, so it wears ink rather than a palette slot. */}
+                <Line type="monotone" dataKey="total" name={t('table.total')} stroke="var(--text-primary)"
+                  strokeWidth={2} dot={false} strokeOpacity={0.55}
+                  activeDot={{ r: 5, fill: 'var(--text-primary)', stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </Panel>
