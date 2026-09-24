@@ -29,13 +29,18 @@ export const request = async <T = unknown>(
   // the browser knows the boundary string it generated. Forcing
   // application/json here makes the server read the body as one opaque blob and
   // find no file field.
-  const isMultipart = options.body instanceof FormData;
+  //
+  // A body-less GET gets no Content-Type either: that header makes a
+  // cross-origin request "non-simple", so the browser sends an OPTIONS
+  // preflight first — and the backend sets no Access-Control-Max-Age, so
+  // nearly every call paid two round trips to Render instead of one.
+  const isJson = typeof options.body === "string";
 
   const response = await fetch(`${baseURL}${path}`, {
     ...options,
     credentials: "include",
     headers: {
-      ...(isMultipart ? {} : { "Content-Type": "application/json" }),
+      ...(isJson ? { "Content-Type": "application/json" } : {}),
       ...(options.headers ?? {}),
     },
   });
