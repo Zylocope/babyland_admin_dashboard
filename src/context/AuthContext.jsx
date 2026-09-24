@@ -1,15 +1,8 @@
 import { createContext, useContext, useState } from 'react';
 import { loginAdmin, logoutAdmin } from '../services/authService';
+import { toUiRole } from '../utils/roles';
 
 export const AuthContext = createContext(null);
-
-const ROLE_MAP = {
-  "sale_admin": 'SaleStaff',
-  "playground_admin": 'TicketStaff',
-  "super_admin": 'Manager',
-};
-
-const toUiRole = (role) => ROLE_MAP[role] ?? role ?? 'Staff';
 
 const hydrateUser = (value) => {
   if (!value) return null;

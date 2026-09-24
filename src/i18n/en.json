@@ -123,10 +123,8 @@
     "rewardPoints": "Reward Points",
     "orders": "Orders",
     "joined": "Joined",
-    "staffMember": "Staff Member",
     "username": "Username",
     "role": "Role",
-    "created": "Created",
     "qty": "Qty",
     "product": "Product",
     "threshold": "Threshold",
@@ -292,20 +290,9 @@
   "staff": {
     "search": "Search staff...",
     "count": "{{count}} accounts",
-    "add": "Add Staff",
     "none": "No staff accounts found.",
-    "fullName": "Full Name",
-    "password": "Password",
-    "newPassword": "New Password (leave blank to keep)",
-    "setPassword": "Set a password",
-    "keepPassword": "Leave blank to keep current",
-    "addTitle": "Add Staff Account",
-    "editTitle": "Edit — {{name}}",
-    "createAccount": "Create Account",
-    "deleteTitle": "Delete Account",
-    "deleteMsg": "Delete {{name}}'s account? They will lose all access.",
-    "noData": "No staff — no backend endpoint yet",
-    "actionsDisabled": "Staff accounts are not connected to the backend yet. Creating, editing and deleting are disabled so nothing looks saved when it is not."
+    "loading": "Loading staff...",
+    "loadFailed": "Unable to load staff accounts."
   },
   "playground": {
     "appTitle": "Playground",

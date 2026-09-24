@@ -1,161 +1,85 @@
-import { useState } from 'react';
-import { IconPlus, IconPencil, IconTrash, IconUserCog, IconDatabase } from '@tabler/icons-react';
+import { useEffect, useState } from 'react';
+import { IconUserCog, IconDatabase, IconRefresh } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
-import Modal from '../components/common/Modal';
-import ConfirmDialog from '../components/common/ConfirmDialog';
-import NotConnected from '../components/common/NotConnected';
+import { getStaff } from '../services/staffService';
+import { toUiRole } from '../utils/roles';
 
-const EMPTY_FORM = { username: '', name: '', role: 'SaleStaff', email: '', phone: '', password: '' };
-
-function StaffForm({ t, form, setForm, onSave, onCancel, isCreate }) {
-return (
-  <div className="space-y-4">
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      {[['staff.fullName', 'name', 'text'], ['table.username', 'username', 'text'], ['table.email', 'email', 'email'], ['table.phone', 'phone', 'text']].map(([lk, k, type]) => (
-        <div key={k}>
-          <label className="block text-xs font-medium text-ink mb-1">{t(lk)}</label>
-          <input type={type} value={form[k]} onChange={e => setForm(f => ({ ...f, [k]: e.target.value }))}
-            className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
-        </div>
-      ))}
-    </div>
-    <div>
-      <label className="block text-xs font-medium text-ink mb-1">{t('table.role')}</label>
-      <select value={form.role} onChange={e => setForm(f => ({ ...f, role: e.target.value }))}
-        className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
-        <option value="SaleStaff">{t('roles.SaleStaff')}</option>
-        <option value="TicketStaff">{t('roles.TicketStaff')}</option>
-        <option value="Manager">{t('roles.Manager')}</option>
-      </select>
-    </div>
-    <div>
-      <label className="block text-xs font-medium text-ink mb-1">{isCreate ? t('staff.password') : t('staff.newPassword')}</label>
-      <input type="password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-        placeholder={isCreate ? t('staff.setPassword') : t('staff.keepPassword')}
-        className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
-    </div>
-    <div className="flex justify-end gap-3 pt-2">
-      <button onClick={onCancel} className="px-4 py-2 text-sm border border-app rounded-lg text-sub hover:bg-brand-light">{t('common.cancel')}</button>
-      <button onClick={onSave} className="px-4 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover font-medium">
-        {isCreate ? t('staff.createAccount') : t('common.saveChanges')}
-      </button>
-    </div>
-  </div>
-);
-}
-
+// Read-only: the admins table holds only username and role, and the backend has
+// no create/edit/delete route for staff. Columns and actions come back when the
+// data and endpoints exist — not before.
 export default function Staff() {
   const { t } = useTranslation();
   const [staff, setStaff] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [reloadKey, setReloadKey] = useState(0);
   const [search, setSearch] = useState('');
-  const [showCreate, setShowCreate] = useState(false);
-  const [editStaff, setEditStaff] = useState(null);
-  const [form, setForm] = useState(EMPTY_FORM);
-  const [confirmDelete, setConfirmDelete] = useState(null);
 
-  const filtered = staff.filter(s =>
-    s.name.toLowerCase().includes(search.toLowerCase()) || s.username.includes(search) || s.email.includes(search)
-  );
+  useEffect(() => {
+    let active = true;
+    getStaff()
+      .then(rows => { if (active) { setStaff(Array.isArray(rows) ? rows : []); setError(''); } })
+      .catch(err => { if (active) { setStaff([]); setError(err?.message || t('staff.loadFailed')); } })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [reloadKey, t]);
 
-  const openCreate = () => { setForm(EMPTY_FORM); setShowCreate(true); };
-  const openEdit = (s) => { setEditStaff(s); setForm({ username: s.username, name: s.name, role: s.role, email: s.email, phone: s.phone, password: '' }); };
+  const retry = () => { setLoading(true); setReloadKey(k => k + 1); };
 
-  const saveCreate = () => {
-    setStaff(prev => [...prev, { id: `S${Date.now()}`, ...form, createdAt: new Date().toISOString().slice(0, 10) }]);
-    setShowCreate(false);
-  };
-
-  const saveEdit = () => {
-    setStaff(prev => prev.map(s => s.id === editStaff.id ? { ...s, ...form } : s));
-    setEditStaff(null);
-  };
-
-  const deleteStaff = (id) => setStaff(prev => prev.filter(s => s.id !== id));
-
+  const term = search.trim().toLowerCase();
+  const filtered = staff.filter(s => !term || s.username.toLowerCase().includes(term));
 
   return (
-    <div className="space-y-5">
-      <NotConnected>{t('staff.actionsDisabled')}</NotConnected>
-
+    <div className="space-y-5 max-w-2xl">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('staff.search')} />
         </div>
         <span className="text-sm text-sub">{t('staff.count', { count: filtered.length })}</span>
-        <button onClick={openCreate} disabled title={t('staff.actionsDisabled')}
-          className="px-3 py-2 text-sm bg-brand text-white rounded-lg flex items-center gap-2 font-medium transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-          <IconPlus stroke={1.5} size={14} /> {t('staff.add')}
-        </button>
       </div>
+
+      {error && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 flex items-center gap-3">
+          <span className="flex-1">{error}</span>
+          <button type="button" onClick={retry} className="inline-flex items-center gap-1.5 font-medium cursor-pointer">
+            <IconRefresh size={15} /> {t('assistant.retry')}
+          </button>
+        </div>
+      )}
 
       <div className="surface-card is-sheet overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-[15px]">
-            <thead>
-              <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
-                <th className="px-5 py-3 font-medium">{t('table.staffMember')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.username')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.role')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.email')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.phone')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.created')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.actions')}</th>
+        <table className="w-full text-[15px]">
+          <thead>
+            <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
+              <th className="px-5 py-3 font-medium">{t('table.username')}</th>
+              <th className="px-4 py-3 font-medium">{t('table.role')}</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-app">
+            {filtered.map(s => (
+              <tr key={s.id} className="hover:bg-brand-light transition-colors">
+                <td className="px-5 py-3.5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 rounded-full bg-brand-light flex items-center justify-center text-brand flex-shrink-0">
+                      <IconUserCog stroke={1.5} size={16} />
+                    </div>
+                    <span className="font-medium text-ink">{s.username}</span>
+                  </div>
+                </td>
+                <td className="px-4 py-3.5"><Badge label={toUiRole(s.role)} /></td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-app">
-              {filtered.map(s => (
-                <tr key={s.id} className="hover:bg-brand-light transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-brand-light flex items-center justify-center text-brand flex-shrink-0">
-                        <IconUserCog stroke={1.5} size={16} />
-                      </div>
-                      <p className="font-medium text-ink">{s.name}</p>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-sub">{s.username}</td>
-                  <td className="px-4 py-3.5"><Badge label={s.role} /></td>
-                  <td className="px-4 py-3.5 text-sub text-xs">{s.email}</td>
-                  <td className="px-4 py-3.5 text-sub">{s.phone}</td>
-                  <td className="px-4 py-3.5 text-sub">{s.createdAt}</td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => openEdit(s)} disabled title={t('staff.actionsDisabled')} className="p-1.5 rounded-lg text-mute transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                        <IconPencil stroke={1.5} size={15} />
-                      </button>
-                      <button onClick={() => setConfirmDelete(s)} disabled title={t('staff.actionsDisabled')} className="p-1.5 rounded-lg text-mute transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
-                        <IconTrash stroke={1.5} size={15} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          {filtered.length === 0 && (
-            <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
-              <IconDatabase size={28} stroke={1.2} />
-              {t('staff.noData')}
-            </div>
-          )}
-        </div>
+            ))}
+          </tbody>
+        </table>
+        {!filtered.length && (
+          <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+            <IconDatabase size={28} stroke={1.2} />
+            {loading ? t('staff.loading') : t('staff.none')}
+          </div>
+        )}
       </div>
-
-      <Modal open={showCreate} onClose={() => setShowCreate(false)} title={t('staff.addTitle')}>
-        <StaffForm t={t} form={form} setForm={setForm} onSave={saveCreate} onCancel={() => setShowCreate(false)} isCreate />
-      </Modal>
-
-      <Modal open={!!editStaff} onClose={() => setEditStaff(null)} title={t('staff.editTitle', { name: editStaff?.name })}>
-        <StaffForm t={t} form={form} setForm={setForm} onSave={saveEdit} onCancel={() => setEditStaff(null)} isCreate={false} />
-      </Modal>
-
-      <ConfirmDialog open={!!confirmDelete} onClose={() => setConfirmDelete(null)}
-        onConfirm={() => deleteStaff(confirmDelete.id)}
-        title={t('staff.deleteTitle')} message={t('staff.deleteMsg', { name: confirmDelete?.name })}
-        confirmLabel={t('common.delete')} danger />
     </div>
   );
 }
-
