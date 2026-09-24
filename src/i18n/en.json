@@ -139,7 +139,6 @@
     "allCategories": "All Categories",
     "allStatuses": "All Statuses",
     "export": "Export",
-    "notConnected": "This screen is not connected to the backend yet — nothing shown here is live data.",
     "confirm": "Confirm",
     "all": "All"
   },
@@ -337,7 +336,6 @@
     "soldNone": "No codes yet. Sell a ticket to start.",
     "ticketCount": "{{count}} ticket",
     "ticketCount_plural": "{{count}} tickets",
-    "soldLocalOnly": "This list is only what this phone created since the app was opened — it clears if you reload, and it does not say whether the customer completed the purchase. A proper shift report needs a staff read endpoint from the backend.",
     "amountToCollect": "Amount to collect",
     "waitingScan": "waiting for scan",
     "scanned": "Scanned",

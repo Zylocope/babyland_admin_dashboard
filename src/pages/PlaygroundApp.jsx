@@ -14,7 +14,6 @@ import Modal from '../components/common/Modal';
 import { createPlaygroundToken, getPlaygroundCheckout } from '../services/playgroundService';
 import { checkoutStatus, amountDue, freeTickets, isSettled } from '../services/playgroundCheckout';
 import { formatMMK } from '../utils/currency';
-import NotConnected from '../components/common/NotConnected';
 
 // The ticket price barely changes, but staff were retyping it on every single
 // sale because the form resets after each one. Remembered on the device, so a
@@ -337,10 +336,6 @@ export default function PlaygroundApp() {
                 </div>
               )}
 
-              {/* Honest about its own limit: these are the codes this phone
-                  made since the app was opened, not a server report. There is
-                  no staff read endpoint to build one from. */}
-              <NotConnected>{t('playground.soldLocalOnly')}</NotConnected>
             </>
           )}
 
