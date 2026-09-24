@@ -8,6 +8,8 @@ import { formatMMK } from '../utils/currency';
 import { downloadCsvSections } from '../utils/csv';
 import { downloadExcelWorkbook } from '../utils/excel';
 import ReportDialog from '../components/common/ReportDialog';
+import PrintSheet from '../components/common/PrintSheet';
+import { formatShopTime } from '../utils/shopDay';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
@@ -27,6 +29,7 @@ const normalizeProduct = (product) => ({
   name: product.name ?? '',
   category: product.category ?? '',
   category_id: product.category_id,
+  sub_category_id: product.sub_category_id,
   quantity_in_stock: Number(product.quantity_in_stock ?? 0),
   selling_price: Number(product.selling_price ?? 0),
   image_url: product.image_url ?? null,
@@ -135,48 +138,19 @@ export default function Products() {
   ]);
 
   const stamp = `appleland-products-${new Date().toISOString().slice(0, 10)}`;
-  const printSheet = (chosen) => {
-    setPrinting(chosen);
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      window.print();
-      setPrinting(null);
-    }));
-  };
-
   return (
     <div className="space-y-4">
-      <ReportDialog
-        open={reportOpen} onClose={() => setReportOpen(false)} sections={reportSections}
-        onPrint={printSheet}
-        onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen)}
-        onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
-      />
-
-      {printing && (
-        <div className="print-sheet">
-          <header className="print-sheet-head">
-            <h1>Appleland</h1>
-            <p>{t('titles.products')} · {t('report.generated', { at: new Date().toISOString().slice(0, 16).replace('T', ' ') })}</p>
-          </header>
-          {printing.map(section => (
-            <section key={section.key}>
-              <h2>{section.name}</h2>
-              <table>
-                <thead>
-                  <tr>{section.columns.map(c => <th key={c.key}>{c.label}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {section.rows.map(row => (
-                    <tr key={row.id}>
-                      {section.columns.map(c => <td key={c.key}>{String(c.value(row) ?? '')}</td>)}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          ))}
-        </div>
+      {reportOpen && (
+        <ReportDialog
+          open intro={t('report.introNow')}
+          onClose={() => setReportOpen(false)} sections={reportSections}
+          onPrint={setPrinting}
+          onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen)}
+          onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
+        />
       )}
+      <PrintSheet sections={printing} onDone={setPrinting}
+        subtitle={`${t('titles.products')} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
       <SubBar views={VIEWS} view={view} onView={pickView}>
         <div className="w-48"><SearchInput value={search} onChange={pickSearch} placeholder={t('products.search')} /></div>
         <select

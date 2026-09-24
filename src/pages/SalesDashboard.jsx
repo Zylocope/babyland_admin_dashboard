@@ -9,6 +9,7 @@ import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
 import ChartLegend from '../components/common/ChartLegend';
 import ReportDialog from '../components/common/ReportDialog';
+import PrintSheet from '../components/common/PrintSheet';
 import { formatMMK, formatMMKShort } from '../utils/currency';
 import { downloadCsvSections } from '../utils/csv';
 import { downloadExcelWorkbook } from '../utils/excel';
@@ -270,57 +271,19 @@ export default function SalesDashboard() {
   ];
 
   const stamp = `appleland-${start}_${end}`;
-  const printSheet = (chosen) => {
-    // Rendered, then printed on the next frame — the browser needs the print
-    // block laid out before it can paginate it.
-    setPrinting(chosen);
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      window.print();
-      setPrinting(null);
-    }));
-  };
-
   return (
     <div className="space-y-4">
-      <ReportDialog
-        open={reportOpen} onClose={() => setReportOpen(false)} sections={reportSections}
-        onPrint={printSheet}
-        onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen.map(c => ({ name: c.name, columns: c.columns, rows: c.rows })))}
-        onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
-      />
-
-      {/* Only present while printing. Everything else on the page is hidden by
-          the print stylesheet, so this is the whole sheet: a header saying what
-          the numbers are and when they were taken, then the chosen tables. */}
-      {printing && (
-        <div className="print-sheet">
-          <header className="print-sheet-head">
-            <h1>Appleland</h1>
-            <p>{t('report.range', { start, end })} · {t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}</p>
-          </header>
-          {printing.map(section => (
-            <section key={section.key}>
-              <h2>{section.name}</h2>
-              <table>
-                <thead>
-                  <tr>{section.columns.map(c => <th key={c.key} style={{ textAlign: c.align === 'right' ? 'right' : 'left' }}>{c.label}</th>)}</tr>
-                </thead>
-                <tbody>
-                  {section.rows.map((row, i) => (
-                    <tr key={row._key ?? row.id ?? row.date ?? i}>
-                      {section.columns.map(c => (
-                        <td key={c.key} style={{ textAlign: c.align === 'right' ? 'right' : 'left' }}>
-                          {String(c.value(row) ?? '')}
-                        </td>
-                      ))}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </section>
-          ))}
-        </div>
+      {reportOpen && (
+        <ReportDialog
+          open onClose={() => setReportOpen(false)} sections={reportSections}
+          onPrint={setPrinting}
+          onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen.map(c => ({ name: c.name, columns: c.columns, rows: c.rows })))}
+          onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
+        />
       )}
+
+      <PrintSheet sections={printing} onDone={setPrinting}
+        subtitle={`${t('report.range', { start, end })} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
       <div className="inline-flex rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
         {[
           { key: 'retail', label: t('salesSource.retail'), icon: IconShoppingBag },

@@ -9,7 +9,7 @@ import Modal from './Modal';
 // on the channel view got a five-row metric table and nothing else — with no way
 // to ask for the daily breakdown without navigating there first. Every dataset is
 // already in memory regardless of view; this just lets you choose.
-export default function ReportDialog({ open, onClose, sections, onPrint, onExcel, onCsv }) {
+export default function ReportDialog({ open, onClose, sections, onPrint, onExcel, onCsv, intro }) {
   const { t } = useTranslation();
   // A section either carries its rows already, or knows how to fetch them. The
   // second kind reports a count up front so the list is honest about size
@@ -44,7 +44,7 @@ export default function ReportDialog({ open, onClose, sections, onPrint, onExcel
 
   return (
     <Modal open={open} onClose={onClose} title={t('report.title')} size="md">
-      <p className="text-[13px] text-sub mb-4">{t('report.intro')}</p>
+      <p className="text-[13px] text-sub mb-4">{intro ?? t('report.intro')}</p>
 
       <div className="space-y-1">
         {available.map(section => (

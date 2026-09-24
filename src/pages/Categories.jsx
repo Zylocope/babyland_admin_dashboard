@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { IconLoader2, IconPlus, IconTag, IconPencil, IconTrash, IconCheck, IconX, IconArchive, IconAlertTriangle } from '@tabler/icons-react';
+import { IconLoader2, IconPlus, IconTag, IconPencil, IconTrash, IconCheck, IconX, IconArchive, IconAlertTriangle, IconPrinter } from '@tabler/icons-react';
 import { Link } from 'react-router-dom';
 import { getAllCategoriesIncludingDeleted, createCategory, updateCategory, deleteCategory } from '../services/categoryService';
 import { getAllProducts } from '../services/productService';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import ReportDialog from '../components/common/ReportDialog';
+import PrintSheet from '../components/common/PrintSheet';
+import { downloadCsvSections } from '../utils/csv';
+import { downloadExcelWorkbook } from '../utils/excel';
+import { formatShopTime } from '../utils/shopDay';
 
 export default function Categories() {
   const { t } = useTranslation();
@@ -17,10 +22,13 @@ export default function Categories() {
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [busyId, setBusyId] = useState(null);
   const [products, setProducts] = useState([]);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [printing, setPrinting] = useState(null);
 
-  const countIn = (categoryId) => products.filter(
+  const productsIn = (categoryId) => products.filter(
     p => p.category_id === categoryId || p.sub_category_id === categoryId
-  ).length;
+  );
+  const countIn = (categoryId) => productsIn(categoryId).length;
 
   // Products are loaded alongside the categories because a soft delete does not
   // cascade: the row is flagged, every product keeps pointing at it, and the
@@ -99,8 +107,48 @@ export default function Categories() {
     .map(c => ({ ...c, stranded: countIn(c.id) }));
   const strandedTotal = archived.reduce((sum, c) => sum + c.stranded, 0);
 
+  const stock = (categoryId) => productsIn(categoryId).reduce((acc, p) => {
+    const qty = Number(p.quantity_in_stock ?? 0) || 0;
+    return { units: acc.units + qty, value: acc.value + qty * (Number(p.selling_price ?? 0) || 0) };
+  }, { units: 0, value: 0 });
+  const stamp = `appleland-categories-${new Date().toISOString().slice(0, 10)}`;
+  const reportSections = [
+    {
+      key: 'active', name: t('categories.reportActive'), rows: live.map(c => ({ ...c, ...stock(c.id), count: countIn(c.id) })),
+      columns: [
+        { key: 'name', label: t('table.category'), value: c => c.name },
+        { key: 'products', label: t('titles.products'), align: 'right', value: c => c.count },
+        { key: 'units', label: t('table.stock'), align: 'right', value: c => c.units },
+        { key: 'value', label: t('categories.stockValue'), align: 'right', value: c => c.value },
+      ],
+    },
+    {
+      key: 'archived', name: t('categories.archivedTitle'), rows: archived,
+      columns: [
+        { key: 'name', label: t('table.category'), value: c => c.name },
+        { key: 'products', label: t('categories.productsStillIn'), align: 'right', value: c => c.stranded },
+      ],
+    },
+  ];
+
   return (
     <div className="max-w-2xl space-y-5">
+      {reportOpen && (
+        <ReportDialog open onClose={() => setReportOpen(false)} sections={reportSections}
+          intro={t('report.introNow')}
+          onPrint={setPrinting}
+          onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen)}
+          onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)} />
+      )}
+      <PrintSheet sections={printing} onDone={setPrinting}
+        subtitle={`${t('titles.categories')} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
+
+      <div className="flex justify-end">
+        <button type="button" onClick={() => setReportOpen(true)} disabled={loading}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+          <IconPrinter size={14} stroke={1.7} /> {t('report.button')}
+        </button>
+      </div>
       <form onSubmit={add} className="surface-card is-sheet p-5">
         <label className="block text-xs font-medium text-ink mb-1">{t('categories.name')}</label>
         <div className="flex gap-3">

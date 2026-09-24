@@ -5,6 +5,7 @@ export type ClientOptions = {
 };
 
 export type Admin = {
+    delivery_status_values: Array<string>;
     id: string;
     role: AdminRole;
     username: string;
@@ -69,10 +70,22 @@ export type AdminSale = {
 };
 
 export type AdminSaleDetails = {
+    by_admin?: null | SaleAdminDetail;
     created_at: string;
     id: string;
+    is_instore_sale: boolean;
     sale_items: Array<SaleItem>;
     total_amount: string;
+};
+
+export type AdminStaff = {
+    id: string;
+    role: AdminRole;
+    username: string;
+};
+
+export type CreateAdminSalePayload = {
+    sale_products: Array<SaleProduct>;
 };
 
 export type CreateCategoryPayload = {
@@ -97,7 +110,8 @@ export type CreateProductPayload = {
     sub_category_id?: string | null;
 };
 
-export type CreateSalePayload = {
+export type CreateUserSalePayload = {
+    payment_order_id: string;
     sale_products: Array<SaleProduct>;
 };
 
@@ -181,6 +195,18 @@ export type PaginatedResponseAdminSale = {
     total_pages: number;
 };
 
+export type PaginatedResponseUserResponse = {
+    current_page: number;
+    data: Array<{
+        address_line_1: string;
+        id: string;
+        phone_number: string;
+        username: string;
+    }>;
+    total_items: number;
+    total_pages: number;
+};
+
 export type PaginationQuery = {
     page?: number | null;
     page_size?: number | null;
@@ -204,6 +230,11 @@ export type ProductSearchParamsAdmin = ProductSearchParams & {
     is_active?: boolean | null;
 };
 
+export type SaleAdminDetail = {
+    id: string;
+    username: string;
+};
+
 export type SaleItem = {
     cost_price: string;
     created_at: string;
@@ -222,7 +253,7 @@ export type SaleProduct = {
 
 export type SaleSummary = {
     avg_basket: string;
-    is_online_sale: boolean;
+    is_instore_sale: boolean;
     items_sold: number;
     margin: string;
     margin_percentage: string;
@@ -235,6 +266,18 @@ export type SaleSummary = {
 export type SaleSummaryFilter = {
     end_date?: string | null;
     start_date?: string | null;
+};
+
+export type TicketSaleSummary = {
+    free_tickets_redeemed: number;
+    sale_date: string;
+    tickets_sold: number;
+    total_sale: string;
+};
+
+export type TicketSaleSummaryFilter = {
+    end_date: string;
+    start_date: string;
 };
 
 export type UpdateCategoryPayload = {
@@ -261,6 +304,17 @@ export type UpdateProductPayload = {
     name: string;
     selling_price: string;
     sub_category_id?: string | null;
+};
+
+export type UploadResponse = {
+    file_url: string;
+};
+
+export type UserResponse = {
+    address_line_1: string;
+    id: string;
+    phone_number: string;
+    username: string;
 };
 
 export type GetAllCategoriesData = {
@@ -596,6 +650,40 @@ export type UpdateOrderTrackingUrlHandlerResponses = {
 
 export type UpdateOrderTrackingUrlHandlerResponse = UpdateOrderTrackingUrlHandlerResponses[keyof UpdateOrderTrackingUrlHandlerResponses];
 
+export type GetTicketSaleSummaryData = {
+    body?: never;
+    path?: never;
+    query: {
+        start_date: string;
+        end_date: string;
+    };
+    url: '/admin/playground/summary';
+};
+
+export type GetTicketSaleSummaryErrors = {
+    /**
+     * Bad request - invalid or inverted date range
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetTicketSaleSummaryResponses = {
+    /**
+     * Daily ticket sales summary
+     */
+    200: Array<TicketSaleSummary>;
+};
+
+export type GetTicketSaleSummaryResponse = GetTicketSaleSummaryResponses[keyof GetTicketSaleSummaryResponses];
+
 export type CreatPlaygroundTokenData = {
     body: CreateClaimTokenPayload;
     path?: never;
@@ -927,14 +1015,14 @@ export type GetSalesPaginatedResponses = {
 
 export type GetSalesPaginatedResponse = GetSalesPaginatedResponses[keyof GetSalesPaginatedResponses];
 
-export type CreateSaleData = {
-    body: CreateSalePayload;
+export type CreateAdminSaleData = {
+    body: CreateUserSalePayload;
     path?: never;
     query?: never;
     url: '/admin/sales';
 };
 
-export type CreateSaleErrors = {
+export type CreateAdminSaleErrors = {
     /**
      * Invalid request or insufficient inventory
      */
@@ -953,14 +1041,14 @@ export type CreateSaleErrors = {
     500: unknown;
 };
 
-export type CreateSaleResponses = {
+export type CreateAdminSaleResponses = {
     /**
      * Sale created
      */
     201: string;
 };
 
-export type CreateSaleResponse = CreateSaleResponses[keyof CreateSaleResponses];
+export type CreateAdminSaleResponse = CreateAdminSaleResponses[keyof CreateAdminSaleResponses];
 
 export type SaleSummaryData = {
     body?: never;
@@ -1027,3 +1115,102 @@ export type GetSaleDetailByIdResponses = {
 };
 
 export type GetSaleDetailByIdResponse = GetSaleDetailByIdResponses[keyof GetSaleDetailByIdResponses];
+
+export type GetAllAdminStaffData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/staff';
+};
+
+export type GetAllAdminStaffErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetAllAdminStaffResponses = {
+    /**
+     * All staff
+     */
+    200: AdminStaff;
+};
+
+export type GetAllAdminStaffResponse = GetAllAdminStaffResponses[keyof GetAllAdminStaffResponses];
+
+export type UploadImageData = {
+    /**
+     * Multipart form data with 'file' field
+     */
+    body: string;
+    path?: never;
+    query?: never;
+    url: '/admin/uploads';
+};
+
+export type UploadImageErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized
+     */
+    401: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type UploadImageResponses = {
+    /**
+     * Public file URL
+     */
+    200: UploadResponse;
+};
+
+export type UploadImageResponse = UploadImageResponses[keyof UploadImageResponses];
+
+export type GetAllUsersPaginatedData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        page_size?: number;
+    };
+    url: '/admin/users';
+};
+
+export type GetAllUsersPaginatedErrors = {
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Forbidden - Insufficient privileges
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetAllUsersPaginatedResponses = {
+    /**
+     * Paginated list of users
+     */
+    200: PaginatedResponseUserResponse;
+};
+
+export type GetAllUsersPaginatedResponse = GetAllUsersPaginatedResponses[keyof GetAllUsersPaginatedResponses];

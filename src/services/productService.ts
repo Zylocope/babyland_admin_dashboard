@@ -3,7 +3,7 @@ import type {
   AdminInventory,
   AdminProduct,
   CreateProductPayload,
-  CreateSalePayload,
+  CreateAdminSalePayload,
   UpdateProductPayload,
   ProductSearchParamsAdmin,
   PaginatedResponseAdminProduct,
@@ -87,7 +87,7 @@ export const searchProductsAdvanced = (
   });
 };
 
-export const createSale = (body: CreateSalePayload): Promise<string> =>
+export const createSale = (body: CreateAdminSalePayload): Promise<string> =>
   request("/admin/sales", {
     method: "POST",
     body: JSON.stringify(body),

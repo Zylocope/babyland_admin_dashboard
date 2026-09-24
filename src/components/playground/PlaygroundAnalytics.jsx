@@ -9,7 +9,7 @@ import {
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import StatCard from '../common/StatCard';
-import { getPlaygroundPurchases, getPlaygroundSummary } from '../../services/playgroundAdminService';
+import { getPlaygroundSummary } from '../../services/playgroundAdminService';
 import { formatMMK, formatMMKShort } from '../../utils/currency';
 import { formatShopTime, shopDayStart, shopDaysAgo } from '../../utils/shopDay';
 import { colorAt, seriesColor } from '../../utils/chartPalette';
@@ -19,8 +19,8 @@ const EMPTY_TOTALS = {
   revenue_mmk: 0,
   paid_tickets: 0,
   free_tickets: 0,
-  transactions: 0,
-  avg_purchase_mmk: 0,
+  total_tickets: 0,
+  avg_ticket_mmk: 0,
 };
 
 const num = value => Number(value ?? 0) || 0;
@@ -49,28 +49,23 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
   const { t } = useTranslation();
   const { darkMode } = useTheme();
   const chartId = useId().replace(/:/g, '');
-  const [result, setResult] = useState(() => ({ key: '', summary: normalizeSummary(null), purchases: [], error: '' }));
+  const [result, setResult] = useState(() => ({ key: '', summary: normalizeSummary(null), error: '' }));
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${start}|${end}|${reloadKey}`;
   const loading = result.key !== requestKey;
   const summary = loading ? normalizeSummary(null) : result.summary;
-  const purchases = loading ? [] : result.purchases;
   const error = loading ? '' : result.error;
 
   const retry = useCallback(() => setReloadKey(key => key + 1), []);
 
   useEffect(() => {
     let active = true;
-    Promise.all([
-      getPlaygroundSummary(start, end),
-      getPlaygroundPurchases(start, end),
-    ])
-      .then(([nextSummary, nextPurchases]) => {
+    getPlaygroundSummary(start, end)
+      .then(nextSummary => {
         if (!active) return;
         setResult({
           key: requestKey,
           summary: normalizeSummary(nextSummary),
-          purchases: Array.isArray(nextPurchases?.data) ? nextPurchases.data : [],
           error: '',
         });
       })
@@ -79,7 +74,6 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
         setResult({
           key: requestKey,
           summary: normalizeSummary(null),
-          purchases: [],
           error: err?.message || t('playgroundAnalytics.loadFailed'),
         });
       });
@@ -90,7 +84,6 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
   const combined = mode === 'combined';
   const totals = combined ? {
     revenue_mmk: num(retailTotals?.revenue_mmk) + num(pg.revenue_mmk),
-    transactions: num(retailTotals?.transactions) + num(pg.transactions),
   } : pg;
 
   const chart = useMemo(() => {
@@ -110,7 +103,6 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
         playgroundRevenue,
         paid: num(playground.paid_tickets),
         free: num(playground.free_tickets),
-        transactions: combined ? num(retail.transactions) + num(playground.transactions) : num(playground.transactions),
       };
     });
   }, [summary.by_day, retailDays, days, end, combined]);
@@ -122,7 +114,7 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
       <div className="surface-card p-8 text-center">
         <IconDatabase size={30} stroke={1.3} className="mx-auto text-mute" />
         <p className="mt-3 font-semibold text-ink">{t('playgroundAnalytics.unavailable')}</p>
-        <p className="mt-1 text-sm text-sub">{t('playgroundAnalytics.backendNeeded')}</p>
+        <p className="mt-1 text-sm text-sub">{t('playgroundAnalytics.loadFailed')}</p>
         <button type="button" onClick={retry} className="btn-primary mt-4 mx-auto">
           <IconRefresh size={16} /> {t('assistant.retry')}
         </button>
@@ -140,8 +132,12 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
         {combined
           ? <StatCard icon={IconTicket} tone="ticket" label={t('playgroundAnalytics.playgroundRevenue')} value={show(formatMMKShort(pg.revenue_mmk))} />
           : <StatCard icon={IconGift} tone="completed" label={t('playgroundAnalytics.free')} value={show(pg.free_tickets)} />}
-        <StatCard icon={IconReceipt} tone="combined" label={t('posDash.txns')} value={show(totals.transactions)} />
-        <StatCard icon={IconShoppingBag} tone="pending" label={combined ? t('playgroundAnalytics.playgroundTickets') : t('posDash.basket')} value={show(combined ? num(pg.paid_tickets) + num(pg.free_tickets) : formatMMKShort(pg.avg_purchase_mmk))} />
+        <StatCard icon={IconReceipt} tone="combined"
+          label={combined ? t('playgroundAnalytics.retailTransactions') : t('playgroundAnalytics.totalTickets')}
+          value={show(combined ? num(retailTotals?.transactions) : pg.total_tickets)} />
+        <StatCard icon={IconShoppingBag} tone="pending"
+          label={combined ? t('playgroundAnalytics.playgroundTickets') : t('playgroundAnalytics.avgTicket')}
+          value={show(combined ? pg.total_tickets : formatMMKShort(pg.avg_ticket_mmk))} />
       </div>
 
       <div className="surface-card p-5">
@@ -192,23 +188,21 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
       {!combined && (
         <div className="surface-card p-5">
           <h3 className="text-[13px] font-semibold text-ink mb-3">{t('playgroundAnalytics.recent')}</h3>
-          {purchases.length ? (
+          {summary.by_day.length ? (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead><tr className="text-xs text-mute">
-                  <th className="py-2 text-left font-medium">{t('salesTable.time')}</th>
+                  <th className="py-2 text-left font-medium">{t('salesTable.date')}</th>
                   <th className="py-2 text-right font-medium">{t('playgroundAnalytics.paid')}</th>
                   <th className="py-2 text-right font-medium">{t('playgroundAnalytics.free')}</th>
-                  <th className="py-2 text-right font-medium">{t('salesTable.amount')}</th>
-                  <th className="py-2 text-right font-medium">{t('playgroundAnalytics.staff')}</th>
+                  <th className="py-2 text-right font-medium">{t('playgroundAnalytics.revenue')}</th>
                 </tr></thead>
-                <tbody className="divide-y divide-app">{purchases.map(row => (
-                  <tr key={row.id} className="hover:bg-brand-light transition-colors">
-                    <td className="py-2.5 text-ink">{formatShopTime(row.created_at, 'MMM D, HH:mm')}</td>
-                    <td className="py-2.5 text-right text-ink tabular-nums">{row.paid_quantity}</td>
-                    <td className="py-2.5 text-right text-ink tabular-nums">{row.free_quantity}</td>
-                    <td className="py-2.5 text-right text-ink tabular-nums">{formatMMK(num(row.total_amount))}</td>
-                    <td className="py-2.5 text-right text-sub">{row.staff_name || '—'}</td>
+                <tbody className="divide-y divide-app">{summary.by_day.map(row => (
+                  <tr key={row.date} className="hover:bg-brand-light transition-colors">
+                    <td className="py-2.5 text-ink">{formatShopTime(shopDayStart(row.date), 'MMM D, YYYY')}</td>
+                    <td className="py-2.5 text-right text-ink tabular-nums">{row.paid_tickets}</td>
+                    <td className="py-2.5 text-right text-ink tabular-nums">{row.free_tickets}</td>
+                    <td className="py-2.5 text-right text-ink tabular-nums">{formatMMK(num(row.revenue_mmk))}</td>
                   </tr>
                 ))}</tbody>
               </table>

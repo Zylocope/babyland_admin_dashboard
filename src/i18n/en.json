@@ -210,6 +210,9 @@
     "imageServerLimit": "This image is too large for the server to accept, even after resizing. Try a smaller photo, or a JPEG instead of a GIF."
   },
   "categories": {
+    "productsStillIn": "Products still in it",
+    "stockValue": "Stock value (MMK)",
+    "reportActive": "Active categories",
     "name": "Category Name",
     "namePlaceholder": "e.g. Toys, Accessories",
     "add": "Add",
@@ -348,16 +351,18 @@
     "paid": "Paid tickets",
     "free": "Free tickets",
     "trend": "Revenue and tickets",
-    "recent": "Recent playground purchases",
+    "recent": "Daily playground sales",
     "staff": "Staff",
     "noPurchases": "No playground purchases in this period.",
     "unavailable": "Playground reporting is not connected yet",
-    "backendNeeded": "The dashboard is ready, but the backend summary and purchase endpoints are still required.",
     "loadFailed": "Unable to load playground reporting.",
     "combinedRevenue": "Combined revenue",
     "retailRevenue": "Retail revenue",
     "playgroundRevenue": "Playground revenue",
     "playgroundTickets": "Playground tickets",
+    "totalTickets": "Total tickets",
+    "avgTicket": "Average paid ticket",
+    "retailTransactions": "Retail transactions",
     "combinedTrend": "Retail and playground revenue",
     "retail": "Retail",
     "playground": "Playground"
@@ -533,6 +538,7 @@
     "critical": "Critical"
   },
   "report": {
+    "introNow": "Choose what to include. Figures are as of right now.",
     "title": "Print or export a report",
     "button": "Report",
     "intro": "Choose what to include. Everything below is from the selected date range.",
