@@ -37,6 +37,13 @@ export default function POS() {
   const [cameraOpen, setCameraOpen] = useState(false);
   const inputRef = useRef(null);
 
+  // A scanned code arrives whole — the scanner types it in one burst and an
+  // exact barcode match is added to the cart and cleared straight away. Showing
+  // placeholders for that flashes them up and pulls them away inside half a
+  // second, which reads as a glitch rather than progress. A typed product name
+  // is the case that genuinely waits, and that is the case that keeps them.
+  const looksScanned = (q) => /^\d{6,}$/.test(q);
+
   const addToCart = useCallback((p) => {
     const stock = num(p.quantity_in_stock);
     setCart(prev => {
@@ -157,6 +164,15 @@ export default function POS() {
 
         <div className="flex-1 overflow-y-auto pr-1">
           {results.length === 0 && query.trim() && searchedFor !== query.trim() && !searchError ? (
+            // Mid-scan the panel does not change at all: the next thing that
+            // happens is the product landing in the cart, and anything drawn in
+            // between is a flicker between two states nobody asked to see.
+            looksScanned(query.trim()) ? (
+              <div className="pos-empty h-full flex flex-col items-center justify-center text-mute text-sm gap-2">
+                <IconBarcode size={40} stroke={1.2} />
+                {t('pos.startTyping')}
+              </div>
+            ) : (
             // Cards the shape of the results, so the grid does not jump when
             // they arrive. Nothing spins and nothing says "loading": the
             // placeholders are already saying it.
@@ -169,6 +185,7 @@ export default function POS() {
                 </div>
               ))}
             </div>
+            )
           ) : results.length === 0 ? (
             <div className="pos-empty h-full flex flex-col items-center justify-center text-mute text-sm gap-2">
               <IconBarcode size={40} stroke={1.2} />
