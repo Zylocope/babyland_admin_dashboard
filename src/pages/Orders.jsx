@@ -18,9 +18,9 @@ const PAGE_SIZE = 20;
 // Status colours borrowed from the shared tokens rather than invented here, so
 // an order badge means the same thing as every other status badge in the app.
 const STATUS_TONE = {
-  Pending: 'var(--status-pending)',
-  OnDelivery: 'var(--status-processing)',
-  Received: 'var(--status-delivered)',
+  pending: 'var(--status-pending)',
+  on_delivery: 'var(--status-processing)',
+  received: 'var(--status-delivered)',
 };
 
 function StatusBadge({ status, t }) {

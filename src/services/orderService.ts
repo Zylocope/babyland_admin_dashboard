@@ -5,11 +5,16 @@ import type {
   PaginatedResponseAdminOrderRow,
 } from "../types";
 
-// Delivery status as the wire spells it. The database stores lowercase but
-// serde serialises the Rust variants, so these are the strings that travel —
-// an earlier version of the Orders screen invented Processing/Shipped/Delivered
-// and matched none of them.
-export const ORDER_STATUSES = ["Pending", "OnDelivery", "Received"] as const;
+// Delivery status exactly as the wire spells it: the list and detail carry the
+// database strings, not the Rust variant names. Verified against live orders —
+// they came back "pending", not "Pending", so the first version of this screen
+// rendered a raw untranslated value.
+//
+// Careful: PATCH /admin/orders/update_status/{id} answers with the serialised
+// enum instead ("Pending"/"OnDelivery"/"Received"), so the two spellings are
+// not interchangeable. Nothing here reads that response — the list is refetched
+// after a change — which is why the mismatch does not reach the screen.
+export const ORDER_STATUSES = ["pending", "on_delivery", "received"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 // The next status in the chain, or null at the end. Advancing past Received is

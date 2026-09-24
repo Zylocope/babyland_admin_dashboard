@@ -582,8 +582,8 @@
     "loadFailed": "Could not load the full data for one of the selected sections."
   },
   "orderStatus": {
-    "Pending": "Pending",
-    "OnDelivery": "On delivery",
-    "Received": "Received"
+    "pending": "Pending",
+    "on_delivery": "On delivery",
+    "received": "Received"
   }
 }
