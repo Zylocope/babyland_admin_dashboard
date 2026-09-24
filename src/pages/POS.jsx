@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Skeleton from '../components/common/Skeleton';
-import { IconSearch, IconPlus, IconMinus, IconTrash, IconShoppingCart, IconCircleCheck, IconBarcode, IconLoader2, IconAlertTriangle, IconCamera } from '@tabler/icons-react';
+import { IconSearch, IconPlus, IconMinus, IconTrash, IconShoppingCart, IconCircleCheck, IconBarcode, IconLoader2, IconAlertTriangle, IconCamera, IconReceipt } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import Modal from '../components/common/Modal';
@@ -275,7 +275,7 @@ export default function POS() {
           <div className="space-y-4">
             <div className="flex items-start gap-2.5 text-sm">
               {receipt.recorded
-                ? <IconCircleCheck size={18} stroke={1.8} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--status-delivered)' }} />
+                ? <IconReceipt size={18} stroke={1.6} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--status-delivered)' }} />
                 : <IconAlertTriangle size={18} stroke={1.8} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--status-cancelled)' }} />}
               <p className="leading-relaxed"
                 style={{ color: receipt.recorded ? 'var(--status-delivered)' : 'var(--status-cancelled)' }}>
