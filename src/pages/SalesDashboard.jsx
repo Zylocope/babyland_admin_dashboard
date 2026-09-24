@@ -19,6 +19,7 @@ import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
+import ReceiptDialog from '../components/common/ReceiptDialog';
 import { summarizeSales, rankDays, byWeekday } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
@@ -65,7 +66,7 @@ function Panel({ title, children }) {
 }
 
 // One table renderer for every view — columns carry both the cell and the CSV value.
-function DataTable({ columns, rows, empty }) {
+function DataTable({ columns, rows, empty, onRowClick }) {
   if (!rows.length) return <Empty label={empty} />;
   return (
     <div className="overflow-x-auto">
@@ -79,7 +80,9 @@ function DataTable({ columns, rows, empty }) {
         </thead>
         <tbody className="divide-y divide-app">
           {rows.map((row, i) => (
-            <tr key={row._key ?? i} className="hover:bg-brand-light transition-colors">
+            <tr key={row._key ?? i}
+              onClick={onRowClick ? () => onRowClick(row) : undefined}
+              className={`hover:bg-brand-light transition-colors ${onRowClick ? 'cursor-pointer' : ''}`}>
               {columns.map(c => (
                 <td key={c.key} className={`py-2.5 text-ink tabular-nums ${c.align === 'right' ? 'text-right' : 'text-left'}`}>
                   {c.cell ? c.cell(row) : c.value(row)}
@@ -102,6 +105,7 @@ export default function SalesDashboard() {
   const [period, setPeriod] = useState('week');
   const [records, setRecords] = useState([]);
   const [receipts, setReceipts] = useState({ data: [], total: 0 });
+  const [openReceipt, setOpenReceipt] = useState(null);
   const [loading, setLoading] = useState(true);
 
   const { start, end } = useMemo(() => periodToDates(period), [period]);
@@ -301,6 +305,7 @@ export default function SalesDashboard() {
 
       {source === 'retail' ? (
         <>
+      <ReceiptDialog saleId={openReceipt?.id ?? null} onClose={() => setOpenReceipt(null)} />
       <SubBar views={VIEWS} view={view} onView={setView}>
         <div className="inline-flex rounded-lg border border-app overflow-hidden">
           {PERIODS.map(p => (
@@ -416,7 +421,8 @@ export default function SalesDashboard() {
 
       {view === 'receipts' && (
         <Panel title={t('salesViews.receipts')}>
-          <DataTable columns={receiptCols} rows={periodReceipts} empty={t('salesTable.noReceipts')} />
+          <DataTable columns={receiptCols} rows={periodReceipts} empty={t('salesTable.noReceipts')}
+            onRowClick={setOpenReceipt} />
           {receipts.total > RECEIPT_PAGE && (
             <p className="mt-3 text-[11px] text-mute">{t('salesTable.showing', { count: receipts.data.length, total: receipts.total })}</p>
           )}

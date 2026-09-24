@@ -450,7 +450,10 @@
     "weekdayHelp": "Average takings for each weekday in this range, so a range with more Saturdays than Sundays does not flatter Saturday.",
     "weekdayThin": "Only one of each weekday in this range — pick a longer period before reading these as a pattern.",
     "weekdayCount": "{{count}} day",
-    "weekdayCount_plural": "{{count}} days"
+    "weekdayCount_plural": "{{count}} days",
+    "receiptTitle": "Receipt",
+    "receiptFailed": "Could not load this receipt.",
+    "noCashier": "No cashier (online)"
   },
   "productViews": {
     "all": "All products",
