@@ -4,11 +4,13 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import AppLayout from './components/layout/AppLayout';
 import RouteFallback from './components/common/RouteFallback';
+import Settings from './pages/Settings';
 
 // The shell (layout, sidebar, header) stays eager -- it is on screen for every
 // route, so deferring it would only add a round trip before anything renders.
-// Pages are split: nobody loads all thirteen, and the two chart screens drag in
-// recharts, which is the single heaviest dependency in the build.
+// Most pages are split: nobody loads all thirteen, and the two chart screens
+// drag in recharts, the single heaviest dependency. Settings stays eager: it is
+// tiny, frequently opened, and should not wait on its own first-use request.
 const Login = lazy(() => import('./pages/Login'));
 const Dashboard = lazy(() => import('./pages/Dashboard'));
 const Products = lazy(() => import('./pages/Products'));
@@ -22,7 +24,6 @@ const Playground = lazy(() => import('./pages/Playground'));
 const PlaygroundApp = lazy(() => import('./pages/PlaygroundApp'));
 const Customers = lazy(() => import('./pages/Customers'));
 const Staff = lazy(() => import('./pages/Staff'));
-const Settings = lazy(() => import('./pages/Settings'));
 const Information = lazy(() => import('./pages/Information'));
 const Assistant = lazy(() => import('./pages/Assistant'));
 

@@ -207,18 +207,20 @@ export default function Products() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      <div className="surface-card is-sheet overflow-hidden">
+      {/* Desktop catalogue: neutral headings keep the orange for decisions and
+          warnings. Barcode belongs to product identity, while quantities and
+          money align on the right so they can be compared down the column. */}
+      <div className="surface-card is-sheet overflow-hidden hidden lg:block">
         <div className="overflow-x-auto">
-          <table className="w-full text-[15px]">
+          <table className="w-full min-w-[760px] text-sm">
             <thead>
-              <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
-                <th className="px-5 py-3 font-medium">{t('table.item')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.barcode')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.category')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.stock')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.price')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.visibility')}</th>
-                {isManager && <th className="px-4 py-3 font-medium">{t('table.actions')}</th>}
+              <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
+                <th className="px-5 py-3.5 font-semibold">{t('table.item')}</th>
+                <th className="px-4 py-3.5 font-semibold">{t('table.category')}</th>
+                <th className="px-4 py-3.5 text-right font-semibold">{t('table.stock')}</th>
+                <th className="px-4 py-3.5 text-right font-semibold">{t('table.price')}</th>
+                <th className="px-4 py-3.5 text-center font-semibold">{t('table.visibility')}</th>
+                {isManager && <th className="px-5 py-3.5 text-right font-semibold">{t('table.actions')}</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
@@ -227,54 +229,49 @@ export default function Products() {
                 // the table does not resize when the data lands.
                 <SkeletonRows rows={PAGE_SIZE}
                   cols={isManager
-                    ? ['70%', '60%', '55%', '40%', '50%', '45%', '30%']
-                    : ['70%', '60%', '55%', '40%', '50%', '45%']} />
+                    ? ['70%', '55%', '35%', '55%', '45%', '75%']
+                    : ['70%', '55%', '35%', '55%', '45%']} />
               ) : pageItems.map(p => (
-                <tr key={p.id} className="hover:bg-brand-light transition-colors">
-                  <td className="px-5 py-3.5">
+                <tr key={p.id} className="group hover:bg-brand-light/60 transition-colors">
+                  <td className="px-5 py-3">
                     <div className="flex items-center gap-3">
                       {p.image_url ? (
-                        <img src={p.image_url} alt={p.name} className="w-12 h-12 rounded-lg object-cover flex-shrink-0" />
+                        <img src={p.image_url} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-app" />
                       ) : (
-                        <div className="w-12 h-12 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
-                          <IconPackage stroke={1.5} size={20} className="text-brand" />
+                        <div className="w-10 h-10 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
+                          <IconPackage stroke={1.5} size={18} className="text-brand" />
                         </div>
                       )}
                       <div className="min-w-0">
-                        <p className="font-medium text-ink flex items-center gap-1.5">
+                        <p className="font-semibold text-ink flex items-center gap-1.5 leading-tight">
                           {p.name}
                           {p.is_perishable && <IconClockHour4 size={14} stroke={1.7} className="text-amber-600" title={t('table.expiry')} />}
                         </p>
-                        {/* No subtitle. This line used to print the row's UUID,
-                            which told a shop manager nothing; the category read
-                            better but repeats its own column one cell over.
-                            Barcode, category and price all have columns, so
-                            there is nothing left for it to say. */}
+                        <p className="mt-1 font-mono text-[11px] leading-none text-mute">{p.barcode || '—'}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 font-mono text-xs text-sub">{p.barcode}</td>
-                  <td className="px-4 py-3.5 text-sub">{p.category}</td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <span className={`font-semibold ${isLow(p) ? 'text-red-600' : 'text-ink'}`}>{p.quantity_in_stock}</span>
+                  <td className="px-4 py-3 text-sub">{p.category || '—'}</td>
+                  <td className="px-4 py-3 text-right tabular-nums">
+                    <div className="inline-flex items-center justify-end gap-2">
                       {isLow(p) && <Badge label="Low" />}
+                      <span className={`font-semibold ${isLow(p) ? 'text-red-600' : 'text-ink'}`}>{p.quantity_in_stock}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 font-medium text-ink">{formatMMK(p.selling_price)}</td>
-                  <td className="px-4 py-3.5"><Badge label={p.is_shown_online ? 'Active' : 'Hidden'} /></td>
+                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-ink whitespace-nowrap">{formatMMK(p.selling_price)}</td>
+                  <td className="px-4 py-3 text-center"><Badge label={p.is_shown_online ? 'Active' : 'Hidden'} /></td>
                   {isManager && (
-                    <td className="px-4 py-3.5">
-                      <div className="flex items-center gap-1.5">
-                        <button onClick={() => setStockFor(p)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer" title={t('stockIn.addStock')}>
-                          <IconPackageImport stroke={1.5} size={15} />
+                    <td className="px-5 py-3">
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => setStockFor(p)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-app text-xs font-medium text-sub hover:text-brand hover:border-brand hover:bg-brand-light transition-colors cursor-pointer">
+                          <IconPackageImport stroke={1.6} size={14} /> {t('stockIn.addStock')}
                         </button>
-                        <button onClick={() => navigate(`/products/${p.id}/edit`)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer" title={t('common.edit')}>
-                          <IconPencil stroke={1.5} size={15} />
+                        <button aria-label={`${t('common.edit')} ${p.name}`} onClick={() => navigate(`/products/${p.id}/edit`)} className="control-icon text-mute hover:text-brand hover:bg-brand-light cursor-pointer" title={t('common.edit')}>
+                          <IconPencil stroke={1.5} size={16} />
                         </button>
-                        <button onClick={() => setDeleting(p)} title={t('products.delete')}
-                          className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors cursor-pointer">
-                          <IconTrash stroke={1.5} size={15} />
+                        <button aria-label={`${t('products.delete')} ${p.name}`} onClick={() => setDeleting(p)} title={t('products.delete')}
+                          className="control-icon text-mute hover:text-red-600 hover:bg-red-50 cursor-pointer">
+                          <IconTrash stroke={1.5} size={16} />
                         </button>
                       </div>
                     </td>
@@ -287,6 +284,70 @@ export default function Products() {
             <div className="text-center py-12 text-mute text-sm">{t('products.none')}</div>
           )}
         </div>
+      </div>
+
+      {/* Mobile records show the same hierarchy without a horizontally
+          scrolling miniature table. The primary stock action remains named. */}
+      <div className="lg:hidden space-y-2.5">
+        {loading ? Array.from({ length: 5 }, (_, i) => (
+          <div key={i} className="surface-card is-sheet p-4 space-y-3">
+            <div className="skeleton h-4 w-2/3 rounded" />
+            <div className="skeleton h-3 w-1/3 rounded" />
+            <div className="skeleton h-10 w-full rounded-lg" />
+          </div>
+        )) : pageItems.map(p => (
+          <article key={p.id} className="surface-card is-sheet p-4">
+            <div className="flex items-start gap-3">
+              {p.image_url ? (
+                <img src={p.image_url} alt="" className="w-11 h-11 rounded-lg object-cover flex-shrink-0 border border-app" />
+              ) : (
+                <div className="w-11 h-11 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
+                  <IconPackage stroke={1.5} size={19} className="text-brand" />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-sm text-ink flex items-center gap-1.5">
+                  <span className="truncate">{p.name}</span>
+                  {p.is_perishable && <IconClockHour4 size={14} stroke={1.7} className="text-amber-600 flex-shrink-0" />}
+                </p>
+                <p className="mt-1 font-mono text-[11px] text-mute">{p.barcode || '—'}</p>
+              </div>
+              <Badge label={p.is_shown_online ? 'Active' : 'Hidden'} />
+            </div>
+
+            <dl className="grid grid-cols-3 gap-3 py-3.5 mt-3 border-y border-app">
+              <div className="min-w-0">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.category')}</dt>
+                <dd className="mt-1 text-xs font-medium text-ink truncate">{p.category || '—'}</dd>
+              </div>
+              <div className="text-center">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.stock')}</dt>
+                <dd className={`mt-1 text-sm font-semibold tabular-nums ${isLow(p) ? 'text-red-600' : 'text-ink'}`}>{p.quantity_in_stock}</dd>
+              </div>
+              <div className="text-right">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.price')}</dt>
+                <dd className="mt-1 text-xs font-semibold tabular-nums text-ink whitespace-nowrap">{formatMMK(p.selling_price)}</dd>
+              </div>
+            </dl>
+
+            {isManager && (
+              <div className="flex items-center gap-2 pt-3">
+                <button onClick={() => setStockFor(p)} className="btn-primary flex-1 justify-center py-2 text-xs">
+                  <IconPackageImport stroke={1.6} size={15} /> {t('stockIn.addStock')}
+                </button>
+                <button aria-label={`${t('common.edit')} ${p.name}`} onClick={() => navigate(`/products/${p.id}/edit`)} className="control-icon border border-app text-sub hover:text-brand hover:bg-brand-light cursor-pointer">
+                  <IconPencil stroke={1.5} size={16} />
+                </button>
+                <button aria-label={`${t('products.delete')} ${p.name}`} onClick={() => setDeleting(p)} className="control-icon border border-app text-sub hover:text-red-600 hover:bg-red-50 cursor-pointer">
+                  <IconTrash stroke={1.5} size={16} />
+                </button>
+              </div>
+            )}
+          </article>
+        ))}
+        {!loading && filtered.length === 0 && (
+          <div className="surface-card is-sheet text-center py-12 text-mute text-sm">{t('products.none')}</div>
+        )}
       </div>
 
       <StockInModal
