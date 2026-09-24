@@ -265,54 +265,54 @@ export default function POS() {
       </div>
 
       {/* Sale result dialog */}
-      <Modal open={!!receipt} onClose={() => setReceipt(null)} title="" size="sm">
+      <Modal
+        open={!!receipt}
+        onClose={() => setReceipt(null)}
+        title={receipt?.recorded ? t('pos.receiptTitle') : t('pos.saleFailed')}
+        size="sm"
+      >
         {receipt && (
-          // The amount is the hero, not the tick. What the cashier turns to the
-          // customer and says is the total; the status is one quiet line
-          // confirming it went through. The old layout had it the other way
-          // round — a 56px filled badge and a bold coloured heading above a
-          // small total — which is the look of a template rather than a till.
-          //
-          // Colour comes from the status tokens, so it follows the theme. The
-          // hardcoded green-100/green-800 pair it replaces stayed the same
-          // washed-out green in every theme and in dark mode.
-          <div className="space-y-5 py-1">
-            <div className="flex items-center gap-2">
+          <div className="space-y-4">
+            <div className="flex items-start gap-2.5 text-sm">
               {receipt.recorded
-                ? <IconCircleCheck size={16} stroke={1.8} style={{ color: 'var(--status-delivered)' }} />
-                : <IconAlertTriangle size={16} stroke={1.8} style={{ color: 'var(--status-cancelled)' }} />}
-              <span className="text-[13px] font-medium"
+                ? <IconCircleCheck size={18} stroke={1.8} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--status-delivered)' }} />
+                : <IconAlertTriangle size={18} stroke={1.8} className="mt-0.5 flex-shrink-0" style={{ color: 'var(--status-cancelled)' }} />}
+              <p className="leading-relaxed"
                 style={{ color: receipt.recorded ? 'var(--status-delivered)' : 'var(--status-cancelled)' }}>
-                {receipt.recorded ? t('pos.saleSuccess') : t('pos.saleFailed')}
-              </span>
-            </div>
-
-            <div>
-              <p className="text-[12px] text-sub">{t('pos.total')}</p>
-              <p className="text-[34px] font-bold text-ink tabular-nums leading-none mt-1">
-                {formatMMK(receipt.total)}
-              </p>
-              <p className="text-[12px] text-sub mt-2 leading-relaxed">
-                {receipt.recorded ? t('pos.saleSuccessDesc') : (receipt.reason || t('pos.saleFailedDesc'))}
+                {receipt.recorded ? t('pos.recorded') : (receipt.reason || t('pos.saleFailedDesc'))}
               </p>
             </div>
 
-            {/* A recessed panel rather than rules across the dialog: on a glass
-                surface a hairline border reads as a seam, a tint reads as depth. */}
-            <div className="rounded-2xl px-4 py-3 space-y-2"
-              style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)' }}>
-              {receipt.lines.map((l, i) => (
-                <div key={i} className="flex justify-between gap-4 text-[13px]">
-                  <span className="text-sub min-w-0 truncate">
-                    {l.name} <span className="text-mute tabular-nums">×{l.qty}</span>
-                  </span>
-                  <span className="tabular-nums text-ink flex-shrink-0">{formatMMK(l.lineTotal)}</span>
-                </div>
-              ))}
+            <div className="overflow-hidden border-y border-app">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-[10px] uppercase tracking-[0.08em] text-mute">
+                    <th className="py-2 text-left font-semibold">{t('table.item')}</th>
+                    <th className="w-12 py-2 text-center font-semibold">{t('table.qty')}</th>
+                    <th className="py-2 text-right font-semibold">{t('table.amount')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-app">
+                  {receipt.lines.map((line, index) => (
+                    <tr key={index}>
+                      <td className="py-3 pr-3 text-ink">{line.name}</td>
+                      <td className="py-3 text-center tabular-nums text-sub">{line.qty}</td>
+                      <td className="py-3 pl-3 text-right tabular-nums text-ink whitespace-nowrap">
+                        {formatMMK(line.lineTotal)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex items-baseline justify-between gap-4">
+              <span className="text-sm font-semibold text-sub">{t('pos.total')}</span>
+              <span className="text-xl font-bold tabular-nums text-ink whitespace-nowrap">{formatMMK(receipt.total)}</span>
             </div>
 
             <button onClick={() => setReceipt(null)}
-              className="press-spring w-full py-3.5 rounded-2xl bg-brand text-white font-medium hover:bg-brand-hover transition-colors cursor-pointer">
+              className="btn-primary w-full justify-center py-3">
               {receipt.recorded ? t('pos.newSale') : t('pos.backToCart')}
             </button>
           </div>
