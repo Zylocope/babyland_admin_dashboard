@@ -75,8 +75,11 @@ export default function Customers() {
                       <span className="font-medium text-ink">{c.username}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3.5 text-sub tabular-nums whitespace-nowrap">{c.phone_number}</td>
-                  <td className="px-4 py-3.5 text-sub">{c.address_line_1}</td>
+                  {/* Both are nullable since the backend started listing users
+                      who never filled in contact details. An empty cell reads
+                      as a loading bug; a dash reads as "not given". */}
+                  <td className="px-4 py-3.5 text-sub tabular-nums whitespace-nowrap">{c.phone_number || '—'}</td>
+                  <td className="px-4 py-3.5 text-sub">{c.address_line_1 || '—'}</td>
                 </tr>
               ))}
             </tbody>

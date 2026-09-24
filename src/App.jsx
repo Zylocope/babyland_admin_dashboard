@@ -69,8 +69,11 @@ function AppRoutes() {
         <Route path="pos" element={<RoleRoute roles={['SaleStaff']}><POS /></RoleRoute>} />
         <Route path="sales" element={<RoleRoute roles={[]}><SalesDashboard /></RoleRoute>} />
         <Route path="products" element={<RoleRoute roles={['SaleStaff']}><Products /></RoleRoute>} />
-        <Route path="products/new" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
-        <Route path="products/:id/edit" element={<RoleRoute roles={['SaleStaff']}><ProductForm /></RoleRoute>} />
+        {/* Manager only: create/update/delete product are all RequiresRole<SuperAdminRole>
+            on the backend, so letting sale staff open the form only gets them a 403
+            on save. The buttons are already hidden; this closes the direct URL. */}
+        <Route path="products/new" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
+        <Route path="products/:id/edit" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
         <Route path="stock-in" element={<RoleRoute roles={[]}><StockIn /></RoleRoute>} />
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />

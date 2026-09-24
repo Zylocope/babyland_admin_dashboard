@@ -23,6 +23,10 @@ export type AdminCategory = {
     updated_by: string;
 };
 
+export type AdminCheckoutQuery = {
+    user_id?: string | null;
+};
+
 export type AdminInventory = {
     created_at: string;
     created_by: string;
@@ -46,8 +50,8 @@ export type AdminProduct = {
     description?: string | null;
     id: string;
     image_url?: string | null;
-    is_active: boolean;
     is_perishable: boolean;
+    is_shown_online: boolean;
     name: string;
     quantity_in_stock: number;
     selling_price: string;
@@ -103,16 +107,11 @@ export type CreateProductPayload = {
     description?: string | null;
     image_url?: string | null;
     inventory?: null | NewInventoryPayload;
-    is_active: boolean;
     is_perishable: boolean;
+    is_shown_online: boolean;
     name: string;
     selling_price: string;
     sub_category_id?: string | null;
-};
-
-export type CreateUserSalePayload = {
-    payment_order_id: string;
-    sale_products: Array<SaleProduct>;
 };
 
 export type DeleteCategoryResponse = {
@@ -170,8 +169,8 @@ export type PaginatedResponseAdminProduct = {
         description?: string | null;
         id: string;
         image_url?: string | null;
-        is_active: boolean;
         is_perishable: boolean;
+        is_shown_online: boolean;
         name: string;
         quantity_in_stock: number;
         selling_price: string;
@@ -198,9 +197,9 @@ export type PaginatedResponseAdminSale = {
 export type PaginatedResponseUserResponse = {
     current_page: number;
     data: Array<{
-        address_line_1: string;
+        address_line_1?: string | null;
         id: string;
-        phone_number: string;
+        phone_number?: string | null;
         username: string;
     }>;
     total_items: number;
@@ -210,6 +209,14 @@ export type PaginatedResponseUserResponse = {
 export type PaginationQuery = {
     page?: number | null;
     page_size?: number | null;
+};
+
+export type PlaygroundCheckoutData = {
+    available_coupons: Array<string>;
+    total_price: string;
+    total_quantity: number;
+    unit_price: string;
+    user_id?: string | null;
 };
 
 export type ProductFilter = {
@@ -227,7 +234,7 @@ export type ProductSearchParams = {
 };
 
 export type ProductSearchParamsAdmin = ProductSearchParams & {
-    is_active?: boolean | null;
+    is_shown_online?: boolean | null;
 };
 
 export type SaleAdminDetail = {
@@ -268,6 +275,13 @@ export type SaleSummaryFilter = {
     start_date?: string | null;
 };
 
+export type StockLevel = {
+    is_low_stock: boolean;
+    product_id: string;
+    product_name: string;
+    quantity_in_stock: number;
+};
+
 export type TicketSaleSummary = {
     free_tickets_redeemed: number;
     sale_date: string;
@@ -282,7 +296,6 @@ export type TicketSaleSummaryFilter = {
 
 export type UpdateCategoryPayload = {
     name: string;
-    updated_by: string;
 };
 
 export type UpdateOrderDeliveryStatusResponse = {
@@ -299,8 +312,8 @@ export type UpdateProductPayload = {
     category_id: string;
     description?: string | null;
     image_url?: string | null;
-    is_active: boolean;
     is_perishable: boolean;
+    is_shown_online: boolean;
     name: string;
     selling_price: string;
     sub_category_id?: string | null;
@@ -311,9 +324,9 @@ export type UploadResponse = {
 };
 
 export type UserResponse = {
-    address_line_1: string;
+    address_line_1?: string | null;
     id: string;
-    phone_number: string;
+    phone_number?: string | null;
     username: string;
 };
 
@@ -446,6 +459,39 @@ export type UpdateCategoryResponses = {
 };
 
 export type UpdateCategoryResponse = UpdateCategoryResponses[keyof UpdateCategoryResponses];
+
+export type GetProductInventoryStockLevelData = {
+    body?: never;
+    path?: never;
+    query?: {
+        limit?: number;
+    };
+    url: '/admin/inventory/low-stock';
+};
+
+export type GetProductInventoryStockLevelErrors = {
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Forbidden - Insufficient privileges
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetProductInventoryStockLevelResponses = {
+    /**
+     * Products ordered by stock level
+     */
+    200: Array<StockLevel>;
+};
+
+export type GetProductInventoryStockLevelResponse = GetProductInventoryStockLevelResponses[keyof GetProductInventoryStockLevelResponses];
 
 export type GetProductInventoryRecordsData = {
     body?: never;
@@ -645,10 +691,52 @@ export type UpdateOrderTrackingUrlHandlerResponses = {
     /**
      * Order tracking url updated
      */
-    200: UpdateOrderTrackingUrlPayload;
+    200: string;
 };
 
 export type UpdateOrderTrackingUrlHandlerResponse = UpdateOrderTrackingUrlHandlerResponses[keyof UpdateOrderTrackingUrlHandlerResponses];
+
+export type GetCheckoutDataAdminData = {
+    body?: never;
+    path: {
+        /**
+         * Claim token id
+         */
+        token_id: string;
+    };
+    query?: {
+        user_id?: string;
+    };
+    url: '/admin/playground/checkout/{token_id}';
+};
+
+export type GetCheckoutDataAdminErrors = {
+    /**
+     * Bad Request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Forbidden - Insufficient privileges
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetCheckoutDataAdminResponses = {
+    /**
+     * Claimed Response
+     */
+    200: PlaygroundCheckoutData;
+};
+
+export type GetCheckoutDataAdminResponse = GetCheckoutDataAdminResponses[keyof GetCheckoutDataAdminResponses];
 
 export type GetTicketSaleSummaryData = {
     body?: never;
@@ -1016,7 +1104,7 @@ export type GetSalesPaginatedResponses = {
 export type GetSalesPaginatedResponse = GetSalesPaginatedResponses[keyof GetSalesPaginatedResponses];
 
 export type CreateAdminSaleData = {
-    body: CreateUserSalePayload;
+    body: CreateAdminSalePayload;
     path?: never;
     query?: never;
     url: '/admin/sales';
@@ -1142,7 +1230,7 @@ export type GetAllAdminStaffResponses = {
     /**
      * All staff
      */
-    200: AdminStaff;
+    200: Array<AdminStaff>;
 };
 
 export type GetAllAdminStaffResponse = GetAllAdminStaffResponses[keyof GetAllAdminStaffResponses];

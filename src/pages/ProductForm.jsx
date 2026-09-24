@@ -7,7 +7,7 @@ import { getProductById, createProduct, updateProduct, insertInventory } from '.
 import { uploadProductImage, validateProductImage, ImageTooLargeError } from '../services/uploadService';
 import { useAuth } from '../context/AuthContext';
 
-const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_active: true, is_perishable: false, description: '', image_url: '' };
+const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_shown_online: true, is_perishable: false, description: '', image_url: '' };
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -49,7 +49,7 @@ export default function ProductForm() {
               selling_price: found.selling_price ?? '',
               category_id: found.category_id ?? '',
               sub_category_id: found.sub_category_id ?? '',
-              is_active: found.is_active ?? true,
+              is_shown_online: found.is_shown_online ?? true,
               is_perishable: found.is_perishable ?? false,
               description: found.description ?? '',
               image_url: found.image_url ?? '',
@@ -107,7 +107,7 @@ export default function ProductForm() {
       category_id: form.category_id,
       sub_category_id: form.sub_category_id || null,
       selling_price: String(form.selling_price || 0),
-      is_active: form.is_active,
+      is_shown_online: form.is_shown_online,
       is_perishable: form.is_perishable,
       description: form.description.trim() || null,
       image_url: form.image_url.trim() || null,
@@ -268,9 +268,9 @@ export default function ProductForm() {
 
           <div className="flex items-center gap-3">
             <label className="text-sm font-medium text-ink">{t('products.visibleOnline')}</label>
-            <button type="button" onClick={() => set('is_active', !form.is_active)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_active ? 'bg-brand' : 'bg-app'}`}>
-              <span className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${form.is_active ? 'translate-x-6' : 'translate-x-1'}`} />
+            <button type="button" onClick={() => set('is_shown_online', !form.is_shown_online)}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_shown_online ? 'bg-brand' : 'bg-app'}`}>
+              <span className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${form.is_shown_online ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
           </div>
 

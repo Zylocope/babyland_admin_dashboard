@@ -22,7 +22,7 @@ const slim = (p: AdminProduct) => ({
   stock: p.quantity_in_stock,
   price_mmk: num(p.selling_price),
   category: p.category ?? null,
-  visible_to_customers: p.is_active,
+  visible_to_customers: p.is_shown_online,
 });
 
 const salesSummary = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {

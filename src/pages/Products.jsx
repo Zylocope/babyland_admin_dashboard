@@ -33,7 +33,7 @@ const normalizeProduct = (product) => ({
   quantity_in_stock: Number(product.quantity_in_stock ?? 0),
   selling_price: Number(product.selling_price ?? 0),
   image_url: product.image_url ?? null,
-  is_active: product.is_active ?? true,
+  is_shown_online: product.is_shown_online ?? true,
   is_perishable: product.is_perishable ?? false,
 });
 
@@ -41,7 +41,7 @@ const VIEW_FILTERS = {
   all: () => true,
   low: isLowStock,
   out: isOutOfStock,
-  hidden: p => !p.is_active,
+  hidden: p => !p.is_shown_online,
   perishable: p => p.is_perishable,
 };
 
@@ -110,7 +110,7 @@ export default function Products() {
     { key: 'category', label: t('table.category'), value: p => p.category },
     { key: 'stock', label: t('table.stock'), value: p => p.quantity_in_stock },
     { key: 'price', label: t('table.price'), value: p => p.selling_price },
-    { key: 'visibility', label: t('table.visibility'), value: p => (p.is_active ? 'Active' : 'Hidden') },
+    { key: 'visibility', label: t('table.visibility'), value: p => (p.is_shown_online ? 'Active' : 'Hidden') },
     { key: 'perishable', label: t('table.expiry'), value: p => (p.is_perishable ? 'yes' : 'no') },
   ];
 
@@ -233,7 +233,7 @@ export default function Products() {
                     </div>
                   </td>
                   <td className="px-4 py-3.5 font-medium text-ink">{formatMMK(p.selling_price)}</td>
-                  <td className="px-4 py-3.5"><Badge label={p.is_active ? 'Active' : 'Hidden'} /></td>
+                  <td className="px-4 py-3.5"><Badge label={p.is_shown_online ? 'Active' : 'Hidden'} /></td>
                   {isManager && (
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5">
