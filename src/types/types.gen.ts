@@ -23,10 +23,6 @@ export type AdminCategory = {
     updated_by: string;
 };
 
-export type AdminCheckoutQuery = {
-    user_id?: string | null;
-};
-
 export type AdminInventory = {
     created_at: string;
     created_by: string;
@@ -211,12 +207,14 @@ export type PaginationQuery = {
     page_size?: number | null;
 };
 
-export type PlaygroundCheckoutData = {
+export type PlaygroundCheckoutDataAdmin = {
     available_coupons: Array<string>;
-    total_price: string;
+    claimed_by?: string | null;
+    expired: boolean;
+    expires_at: string;
+    total_price?: string | null;
     total_quantity: number;
     unit_price: string;
-    user_id?: string | null;
 };
 
 export type ProductFilter = {
@@ -704,9 +702,7 @@ export type GetCheckoutDataAdminData = {
          */
         token_id: string;
     };
-    query?: {
-        user_id?: string;
-    };
+    query?: never;
     url: '/admin/playground/checkout/{token_id}';
 };
 
@@ -733,7 +729,7 @@ export type GetCheckoutDataAdminResponses = {
     /**
      * Claimed Response
      */
-    200: PlaygroundCheckoutData;
+    200: PlaygroundCheckoutDataAdmin;
 };
 
 export type GetCheckoutDataAdminResponse = GetCheckoutDataAdminResponses[keyof GetCheckoutDataAdminResponses];
