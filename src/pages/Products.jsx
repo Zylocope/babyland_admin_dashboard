@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight,
-  IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconPrinter } from '@tabler/icons-react';
+  IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconPrinter,
+  IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import { downloadCsvSections } from '../utils/csv';
@@ -16,7 +17,8 @@ import SearchInput from '../components/common/SearchInput';
 import SubBar from '../components/common/SubBar';
 import StockInModal from '../components/common/StockInModal';
 import { SkeletonRows } from '../components/common/Skeleton';
-import { getAllProducts } from '../services/productService';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { getAllProducts, deleteProduct } from '../services/productService';
 import { getCategories } from '../services/categoryService';
 import { isLowStock, isOutOfStock, needsRestock } from '../utils/stock';
 
@@ -62,6 +64,7 @@ export default function Products() {
   const [stockFor, setStockFor] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [printing, setPrinting] = useState(null);
+  const [deleting, setDeleting] = useState(null);
 
   // Any change to what is being filtered sends you back to page 1.
   const pickView = (v) => { setView(v); setPage(1); };
@@ -150,6 +153,26 @@ export default function Products() {
           onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
         />
       )}
+      {/* The server soft-deletes: the row is flagged, not dropped, and every
+          product query already filters it out. Sale items keep their own copy
+          of the name and price, so past receipts and reports are untouched —
+          which is what the message promises. */}
+      <ConfirmDialog
+        open={!!deleting} onClose={() => setDeleting(null)}
+        title={t('products.deleteTitle')}
+        message={t('products.deleteMsg', { name: deleting?.name ?? '' })}
+        confirmLabel={t('products.delete')} danger
+        onConfirm={async () => {
+          const target = deleting;
+          if (!target) return;
+          try {
+            await deleteProduct(target.id);
+            await reload();
+          } catch (err) {
+            setError(err?.message || t('products.deleteFailed'));
+          }
+        }}
+      />
       <PrintSheet sections={printing} onDone={setPrinting}
         subtitle={`${t('titles.products')} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
       <SubBar views={VIEWS} view={view} onView={pickView}>
@@ -222,11 +245,11 @@ export default function Products() {
                           {p.name}
                           {p.is_perishable && <IconClockHour4 size={14} stroke={1.7} className="text-amber-600" title={t('table.expiry')} />}
                         </p>
-                        {/* The category, not the row's UUID. A database id under
-                            every product name told a shop manager nothing and
-                            cost a line in every row; the barcode already has its
-                            own column. */}
-                        <p className="text-xs text-mute truncate">{p.category}</p>
+                        {/* No subtitle. This line used to print the row's UUID,
+                            which told a shop manager nothing; the category read
+                            better but repeats its own column one cell over.
+                            Barcode, category and price all have columns, so
+                            there is nothing left for it to say. */}
                       </div>
                     </div>
                   </td>
@@ -248,6 +271,10 @@ export default function Products() {
                         </button>
                         <button onClick={() => navigate(`/products/${p.id}/edit`)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors cursor-pointer" title={t('common.edit')}>
                           <IconPencil stroke={1.5} size={15} />
+                        </button>
+                        <button onClick={() => setDeleting(p)} title={t('products.delete')}
+                          className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors cursor-pointer">
+                          <IconTrash stroke={1.5} size={15} />
                         </button>
                       </div>
                     </td>

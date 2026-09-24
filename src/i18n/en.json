@@ -139,7 +139,8 @@
     "allCategories": "All Categories",
     "allStatuses": "All Statuses",
     "export": "Export",
-    "notConnected": "This screen is not connected to the backend yet — nothing shown here is live data."
+    "notConnected": "This screen is not connected to the backend yet — nothing shown here is live data.",
+    "confirm": "Confirm"
   },
   "badge": {
     "Pending": "Pending",
@@ -175,7 +176,11 @@
     "next": "Next",
     "pageOf": "Page {{page}} of {{total}}",
     "perishable": "Perishable",
-    "perishableHelp": "Stock-in will require an expiry date"
+    "perishableHelp": "Stock-in will require an expiry date",
+    "delete": "Delete product",
+    "deleteTitle": "Delete this product?",
+    "deleteMsg": "\"{{name}}\" will be removed from the catalogue and from POS search. Past sales keep their record of it, so your reports do not change.",
+    "deleteFailed": "Could not delete that product."
   },
   "productForm": {
     "addHeading": "Add Product",
