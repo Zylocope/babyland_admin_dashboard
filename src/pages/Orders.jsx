@@ -112,7 +112,7 @@ export default function Orders() {
         <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
       )}
 
-      <div className="surface-card is-sheet overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden hidden lg:block">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>
@@ -148,6 +148,54 @@ export default function Orders() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Narrow screens get records, not a horizontally scrolling miniature
+          table — the same trade the Products list makes. Five columns is where
+          a table stops being readable on a phone. */}
+      <div className="lg:hidden space-y-2.5">
+        {loading ? Array.from({ length: 5 }, (_, i) => (
+          <div key={i} className="surface-card is-sheet p-4 space-y-3">
+            <div className="skeleton h-4 w-2/3 rounded" />
+            <div className="skeleton h-3 w-1/3 rounded" />
+            <div className="skeleton h-8 w-full rounded-lg" />
+          </div>
+        )) : rows.map(o => (
+          <article key={o.id} onClick={() => setOpenId(o.id)}
+            className="surface-card is-sheet p-4 cursor-pointer">
+            <div className="flex items-start gap-3">
+              <div className="w-11 h-11 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
+                <IconTruck stroke={1.5} size={19} className="text-brand" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold text-sm text-ink truncate">{o.customer || t('orders.noCustomer')}</p>
+                <p className="mt-1 font-mono text-[11px] text-mute">{o.id.slice(0, 8)}</p>
+              </div>
+              <StatusBadge status={o.delivery_status} t={t} />
+            </div>
+
+            <dl className="grid grid-cols-2 gap-3 py-3.5 mt-3 border-t border-app">
+              <div className="min-w-0">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.date')}</dt>
+                <dd className="mt-1 text-xs font-medium text-ink tabular-nums truncate">
+                  {formatShopTime(o.created_at, 'YYYY-MM-DD HH:mm')}
+                </dd>
+              </div>
+              <div className="text-right">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.amount')}</dt>
+                <dd className="mt-1 text-sm font-semibold tabular-nums text-ink whitespace-nowrap">
+                  {formatMMK(Number(o.total_amount))}
+                </dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+        {!loading && rows.length === 0 && (
+          <div className="surface-card is-sheet flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+            <IconDatabase size={28} stroke={1.2} />
+            {t('orders.none')}
+          </div>
+        )}
       </div>
 
       {pages > 1 && (
