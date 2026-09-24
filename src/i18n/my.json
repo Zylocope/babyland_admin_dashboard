@@ -111,7 +111,6 @@
     "amount": "ပမာဏ",
     "status": "အခြေအနေ",
     "phone": "ဖုန်း",
-    "email": "Email",
     "actions": "လုပ်ဆောင်ချက်",
     "item": "ပစ္စည်း",
     "barcode": "Barcode",
@@ -120,9 +119,6 @@
     "unit": "ယူနစ်",
     "price": "ဈေးနှုန်း",
     "visibility": "မြင်နိုင်မှု",
-    "rewardPoints": "Reward Points",
-    "orders": "အော်ဒါ",
-    "joined": "ဝင်ရောက်သည့်နေ့",
     "username": "အသုံးပြုသူအမည်",
     "role": "ရာထူး",
     "qty": "အရေအတွက်",
@@ -274,18 +270,13 @@
     "noData": "အော်ဒါ မရှိပါ — backend endpoint မရှိသေးပါ"
   },
   "customers": {
-    "search": "အမည်၊ ဖုန်း၊ Email ဖြင့် ရှာရန်...",
     "count": "ဖောက်သည် {{count}} ဦး",
     "none": "ဖောက်သည် မတွေ့ပါ။",
-    "editTitle": "ပြင်ရန် — {{name}}",
-    "name": "အမည်",
     "address": "လိပ်စာ",
     "orderHistory": "အော်ဒါ မှတ်တမ်း",
     "noOrders": "အော်ဒါ မရှိသေးပါ။",
-    "items": "ပစ္စည်း {{count}} ခု",
-    "deleteTitle": "ဖောက်သည် ဖျက်ရန်",
-    "deleteMsg": "{{name}} ကို အပြီးဖျက်မှာလား။ ၎င်း၏ဒေတာအားလုံး ပျက်သွားပါမည်။",
-    "noData": "ဖောက်သည် မရှိပါ — backend endpoint မရှိသေးပါ"
+    "loading": "ဖောက်သည်စာရင်း ဖွင့်နေပါတယ်...",
+    "loadFailed": "ဖောက်သည်စာရင်းကို ဖွင့်လို့ မရပါ။"
   },
   "staff": {
     "search": "ဝန်ထမ်း ရှာရန်...",

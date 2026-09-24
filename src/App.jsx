@@ -74,7 +74,7 @@ function AppRoutes() {
         <Route path="stock-in" element={<RoleRoute roles={[]}><StockIn /></RoleRoute>} />
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
         <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
-        <Route path="customers" element={<RoleRoute roles={['SaleStaff', 'TicketStaff']}><Customers /></RoleRoute>} />
+        <Route path="customers" element={<RoleRoute roles={[]}><Customers /></RoleRoute>} />
         <Route path="staff" element={<RoleRoute roles={[]}><Staff /></RoleRoute>} />
         <Route path="assistant" element={<RoleRoute roles={[]}><Assistant /></RoleRoute>} />
         <Route path="settings" element={<Settings />} />

@@ -111,7 +111,6 @@
     "amount": "Amount",
     "status": "Status",
     "phone": "Phone",
-    "email": "Email",
     "actions": "Actions",
     "item": "Item",
     "barcode": "Barcode",
@@ -120,9 +119,6 @@
     "unit": "Unit",
     "price": "Price",
     "visibility": "Visibility",
-    "rewardPoints": "Reward Points",
-    "orders": "Orders",
-    "joined": "Joined",
     "username": "Username",
     "role": "Role",
     "qty": "Qty",
@@ -274,18 +270,13 @@
     "noData": "No orders — no backend endpoint yet"
   },
   "customers": {
-    "search": "Search by name, phone, email...",
     "count": "{{count}} customers",
     "none": "No customers found.",
-    "editTitle": "Edit — {{name}}",
-    "name": "Name",
     "address": "Address",
     "orderHistory": "Order History",
     "noOrders": "No orders yet.",
-    "items": "{{count}} item(s)",
-    "deleteTitle": "Delete Customer",
-    "deleteMsg": "Permanently delete {{name}}? All their data will be removed.",
-    "noData": "No customers — no backend endpoint yet"
+    "loading": "Loading customers...",
+    "loadFailed": "Unable to load customers."
   },
   "staff": {
     "search": "Search staff...",
