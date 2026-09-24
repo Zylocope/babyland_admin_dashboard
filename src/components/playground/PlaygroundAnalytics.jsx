@@ -23,6 +23,17 @@ const EMPTY_TOTALS = {
   avg_ticket_mmk: 0,
 };
 
+// Tickets per purchase — the figure that says whether people come alone or
+// bring the family. It needs a count of purchases, which the summary endpoint
+// does not return yet, so until it does this shows how much of the playground
+// is being given away on loyalty coupons instead. Neither number is invented:
+// whichever one is on screen is the one the data supports.
+const ticketsPerPurchase = (totals) =>
+  totals.purchases ? totals.total_tickets / totals.purchases : null;
+
+const freeShare = (totals) =>
+  totals.total_tickets ? (totals.free_tickets / totals.total_tickets) * 100 : 0;
+
 const num = value => Number(value ?? 0) || 0;
 
 const normalizeSummary = value => ({
@@ -136,8 +147,16 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
           label={combined ? t('playgroundAnalytics.retailTransactions') : t('playgroundAnalytics.totalTickets')}
           value={show(combined ? num(retailTotals?.transactions) : pg.total_tickets)} />
         <StatCard icon={IconShoppingBag} tone="pending"
-          label={combined ? t('playgroundAnalytics.playgroundTickets') : t('playgroundAnalytics.avgTicket')}
-          value={show(combined ? pg.total_tickets : formatMMKShort(pg.avg_ticket_mmk))} />
+          label={combined
+            ? t('playgroundAnalytics.playgroundTickets')
+            : ticketsPerPurchase(pg) != null
+              ? t('playgroundAnalytics.ticketsPerPurchase')
+              : t('playgroundAnalytics.freeShare')}
+          value={show(combined
+            ? pg.total_tickets
+            : ticketsPerPurchase(pg) != null
+              ? ticketsPerPurchase(pg).toFixed(1)
+              : `${freeShare(pg).toFixed(0)}%`)} />
       </div>
 
       <div className="surface-card p-5">

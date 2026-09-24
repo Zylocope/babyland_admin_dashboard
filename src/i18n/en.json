@@ -354,7 +354,9 @@
     "retailTransactions": "Retail transactions",
     "combinedTrend": "Retail and playground revenue",
     "retail": "Retail",
-    "playground": "Playground"
+    "playground": "Playground",
+    "ticketsPerPurchase": "Avg tickets per purchase",
+    "freeShare": "Free ticket share"
   },
   "salesSource": {
     "label": "Sales source",
