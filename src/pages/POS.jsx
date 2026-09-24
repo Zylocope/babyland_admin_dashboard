@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import Skeleton from '../components/common/Skeleton';
 import { IconSearch, IconPlus, IconMinus, IconTrash, IconShoppingCart, IconCircleCheck, IconBarcode, IconLoader2, IconAlertTriangle } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
@@ -23,7 +24,11 @@ export default function POS() {
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
-  const [searching, setSearching] = useState(false);
+  // The query the last completed search was FOR. Without it there is a frame
+  // between typing and the debounce firing where nothing is searching and
+  // nothing has been found, and the screen says "no products" about a search
+  // that has not happened yet.
+  const [searchedFor, setSearchedFor] = useState('');
   const [searchError, setSearchError] = useState('');
   const [cart, setCart] = useState([]);          // [{ id, name, barcode, price, stock, qty }]
   const [submitting, setSubmitting] = useState(false);
@@ -47,10 +52,9 @@ export default function POS() {
   // Debounced live product search (real backend).
   useEffect(() => {
     const q = query.trim();
-    if (!q) { setResults([]); setSearchError(''); setSearching(false); return; }
+    if (!q) { setResults([]); setSearchError(''); setSearchedFor(''); return; }
 
     let active = true;
-    setSearching(true);
     const h = setTimeout(async () => {
       try {
         const res = await searchProductsSimple(q, { page: 1, page_size: 12 });
@@ -58,13 +62,12 @@ export default function POS() {
         if (!active) return;
         setResults(items);
         setSearchError('');
+        setSearchedFor(q);
         // Scanner behaviour: an exact barcode match auto-adds and clears.
         const exact = items.find(p => p.barcode?.toLowerCase() === q.toLowerCase());
         if (exact && items.length === 1) { addToCart(exact); setQuery(''); setResults([]); }
       } catch (e) {
-        if (active) { setSearchError(e?.message || t('pos.searchFailed')); setResults([]); }
-      } finally {
-        if (active) setSearching(false);
+        if (active) { setSearchError(e?.message || t('pos.searchFailed')); setResults([]); setSearchedFor(q); }
       }
     }, 500);
 
@@ -120,7 +123,6 @@ export default function POS() {
             placeholder={t('pos.searchPlaceholder')}
             className="w-full pl-11 pr-4 py-3 text-[15px] border border-app rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-brand"
           />
-          {searching && <IconLoader2 size={18} className="animate-spin absolute right-4 top-1/2 -translate-y-1/2 text-mute" />}
         </div>
 
         {searchError && (
@@ -128,10 +130,23 @@ export default function POS() {
         )}
 
         <div className="flex-1 overflow-y-auto pr-1">
-          {results.length === 0 ? (
+          {results.length === 0 && query.trim() && searchedFor !== query.trim() && !searchError ? (
+            // Cards the shape of the results, so the grid does not jump when
+            // they arrive. Nothing spins and nothing says "loading": the
+            // placeholders are already saying it.
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="skeleton-row surface-card p-3 space-y-2" style={{ '--i': i }}>
+                  <Skeleton style={{ width: '100%', height: 64, borderRadius: 10 }} />
+                  <Skeleton w="80%" h={13} />
+                  <Skeleton w="45%" h={11} />
+                </div>
+              ))}
+            </div>
+          ) : results.length === 0 ? (
             <div className="pos-empty h-full flex flex-col items-center justify-center text-mute text-sm gap-2">
               <IconBarcode size={40} stroke={1.2} />
-              {searching ? t('common.loading') : query.trim() ? t('pos.noResults') : t('pos.startTyping')}
+              {query.trim() ? t('pos.noResults') : t('pos.startTyping')}
             </div>
           ) : (
             <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">

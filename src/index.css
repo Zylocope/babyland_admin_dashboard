@@ -625,6 +625,18 @@ html.dark[data-style="skeuomorphism"] { --field-bg: #302a23; }
   animation: chart-bar-grow 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* The column version: grows from the baseline up, the direction the value
+   reads. scaleY for the same reason — it composites, where animating height
+   would lay out every frame. */
+@keyframes chart-col-grow {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+.chart-col-grow {
+  transform-origin: bottom center;
+  animation: chart-col-grow 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 /* ---- Skeletons ----
    A block the shape of the thing that is coming, with a light sweeping across
    it. It beats a spinner because it says WHERE the content will land, so the

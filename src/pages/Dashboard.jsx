@@ -6,7 +6,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import StatCard from '../components/common/StatCard';
 import NotConnected from '../components/common/NotConnected';
-import { formatMMK, formatMMKShort } from '../utils/currency';
+import { formatMMK, formatMMKShort, formatMMKCompact } from '../utils/currency';
 import { shopToday, shopDaysAgo, shopDayStart, formatShopTime } from '../utils/shopDay';
 import { summarizeSales } from '../services/salesRollup';
 import { getSaleSummary } from '../services/salesService';
@@ -66,9 +66,21 @@ export default function Dashboard() {
   const days = Array.from({ length: DAYS }, (_, i) => {
     const date = shopDaysAgo(DAYS - 1 - i);
     const row = s.by_day.find(d => d.date === date);
-    return { date, label: formatShopTime(shopDayStart(date), 'MMM D'), revenue: row?.revenue_mmk ?? 0 };
+    return {
+      date,
+      label: formatShopTime(shopDayStart(date), 'MMM D'),
+      // The weekday is what a shopkeeper actually reasons about — "Saturday is
+      // busy" — and the date alone hides it.
+      weekday: formatShopTime(shopDayStart(date), 'ddd'),
+      revenue: row?.revenue_mmk ?? 0,
+    };
   });
   const peak = Math.max(1, ...days.map(d => d.revenue));
+  // Averaged over the days that actually traded. Including closed days would
+  // drag the line down and make an ordinary day look above average.
+  const traded = days.filter(d => d.revenue > 0);
+  const average = traded.length ? traded.reduce((sum, d) => sum + d.revenue, 0) / traded.length : 0;
+  const best = days.reduce((top, d) => (d.revenue > (top?.revenue ?? 0) ? d : top), null);
 
   return (
     <div className="space-y-6">
@@ -89,16 +101,26 @@ export default function Dashboard() {
         <div className="xl:col-span-8 surface-card is-sheet p-6">
           <h3 className="font-semibold text-ink mb-4">{t('dashboard.revenue7d')}</h3>
           {status === 'loading' ? (
-            // Seven rows the shape of the seven bars that are coming, so the
-            // panel is already its final height when they land.
-            <div className="space-y-2.5">
-              {Array.from({ length: DAYS }, (_, i) => (
-                <div key={i} className="skeleton-row flex items-center gap-3" style={{ '--i': i }}>
-                  <Skeleton w={56} h={11} />
-                  <Skeleton h={20} style={{ flex: 1, borderRadius: 6 }} />
-                  <Skeleton w={96} h={11} />
-                </div>
-              ))}
+            // Seven columns the shape of the seven that are coming, at uneven
+            // heights — a row of identical blocks reads as a table, not a
+            // chart. The panel is already its final height when they land.
+            <div className="pt-3 skeleton-row">
+              <div className="flex items-end gap-1.5 sm:gap-2.5" style={{ height: 196 }}>
+                {[62, 30, 54, 18, 22, 40, 26].map((h, i) => (
+                  <div key={i} className="flex-1 h-full flex flex-col justify-end items-center gap-1.5">
+                    <Skeleton w={34} h={9} style={{ '--i': i }} />
+                    <Skeleton style={{ width: '100%', height: `${h}%`, borderRadius: '8px 8px 0 0', '--i': i }} />
+                  </div>
+                ))}
+              </div>
+              <div className="flex gap-1.5 sm:gap-2.5 mt-2 pt-2 border-t border-app">
+                {Array.from({ length: DAYS }, (_, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                    <Skeleton w={26} h={9} style={{ '--i': i }} />
+                    <Skeleton w={34} h={8} style={{ '--i': i }} />
+                  </div>
+                ))}
+              </div>
             </div>
           ) : status === 'error' ? (
             <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
@@ -106,31 +128,70 @@ export default function Dashboard() {
               {t('header.revenueUnavailable')}
             </div>
           ) : (
-            // Plain bars rather than recharts: this is the manager's landing
-            // page, and pulling in a 355 kB chart library for seven values
-            // would undo the route splitting that keeps it off every screen
-            // except Sales and the assistant.
-            <div className="space-y-2.5">
-              {days.map((d, i) => (
-                <div key={d.date} className="flex items-center gap-3">
-                  <span className="w-14 flex-shrink-0 text-[11px] text-mute tabular-nums">{d.label}</span>
-                  <div className="flex-1 h-5 rounded-md bg-app overflow-hidden">
-                    {/* Gradient along the bar rather than a flat block, and each
-                        row grows in on mount with a small stagger so the panel
-                        reads as one movement instead of seven. The width lands
-                        from CSS, so a reduced-motion setting removes it. */}
-                    <div className="chart-bar-grow h-full rounded-md"
-                      style={{
-                        width: `${(d.revenue / peak) * 100}%`,
-                        animationDelay: `${i * 45}ms`,
-                        background: 'linear-gradient(90deg, color-mix(in srgb, var(--orange-primary) 78%, transparent) 0%, var(--orange-primary) 100%)',
-                      }} />
+            // Columns, not rows. A week is seven things side by side — that is
+            // how the shape of a week reads, and a stack of horizontal bars
+            // made it a list you compare by scanning lengths instead.
+            //
+            // Still hand-drawn rather than recharts: this is the manager's
+            // landing page, and pulling in a 355 kB chart library for seven
+            // values would undo the route splitting that keeps it off every
+            // screen except Sales and the assistant.
+            <div className="pt-3">
+              <div className="relative flex items-end gap-1.5 sm:gap-2.5" style={{ height: 196 }}>
+                {/* Average across trading days, behind the columns. The single
+                    most useful line on a weekly chart: it turns each column
+                    from a number into "better or worse than usual". */}
+                {average > 0 && (
+                  <div className="absolute inset-x-0 flex items-center pointer-events-none z-0"
+                    style={{ bottom: `${(average / peak) * 100}%` }}>
+                    <span className="flex-1 border-t border-dashed" style={{ borderColor: 'var(--text-muted)', opacity: 0.45 }} />
+                    <span className="pl-1.5 text-[10px] tabular-nums text-mute">
+                      {t('dashboard.avg', { value: formatMMKShort(average) })}
+                    </span>
                   </div>
-                  <span className="w-24 flex-shrink-0 text-right text-[12px] text-ink font-medium tabular-nums">
-                    {d.revenue ? formatMMK(d.revenue) : '—'}
-                  </span>
-                </div>
-              ))}
+                )}
+
+                {days.map((d, i) => {
+                  const isBest = best && d.revenue > 0 && d.date === best.date;
+                  return (
+                    <div key={d.date} className="relative z-10 flex-1 h-full flex flex-col justify-end items-center gap-1.5 group">
+                      {/* Always drawn, never hover-only: this is used on a phone
+                          at the counter, where there is no hover. */}
+                      <span className={`text-[10px] tabular-nums leading-none transition-colors ${isBest ? 'font-bold text-ink' : 'text-mute'}`}>
+                        {d.revenue ? formatMMKCompact(d.revenue) : '—'}
+                      </span>
+                      <div className="w-full flex-1 flex items-end rounded-t-lg"
+                        style={{ background: 'color-mix(in srgb, var(--text-muted) 9%, transparent)' }}>
+                        <div
+                          className="chart-col-grow w-full rounded-t-lg"
+                          title={`${d.label} · ${formatMMK(d.revenue)}`}
+                          style={{
+                            // A trading day never collapses to an invisible
+                            // sliver — 3% keeps a quiet day distinguishable
+                            // from a closed one, which is a different fact.
+                            height: d.revenue ? `${Math.max(3, (d.revenue / peak) * 100)}%` : 0,
+                            animationDelay: `${i * 55}ms`,
+                            background: isBest
+                              ? 'linear-gradient(180deg, var(--orange-primary) 0%, color-mix(in srgb, var(--orange-primary) 70%, transparent) 100%)'
+                              : 'linear-gradient(180deg, color-mix(in srgb, var(--orange-primary) 62%, transparent) 0%, color-mix(in srgb, var(--orange-primary) 34%, transparent) 100%)',
+                          }} />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="flex gap-1.5 sm:gap-2.5 mt-2 pt-2 border-t border-app">
+                {days.map(d => {
+                  const isBest = best && d.revenue > 0 && d.date === best.date;
+                  return (
+                    <div key={d.date} className="flex-1 text-center leading-tight">
+                      <p className={`text-[11px] ${isBest ? 'font-semibold text-brand' : 'text-sub'}`}>{d.weekday}</p>
+                      <p className="text-[10px] text-mute tabular-nums">{d.label}</p>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>

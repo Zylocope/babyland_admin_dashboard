@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import Skeleton from '../components/common/Skeleton';
 import { IconLoader2, IconArrowLeft, IconPhoto, IconUpload } from '@tabler/icons-react';
 import { getCategories } from '../services/categoryService';
 import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
@@ -141,7 +142,19 @@ export default function ProductForm() {
   };
 
   if (loading) {
-    return <div className="py-12 text-center text-sm text-mute">{t('products.loading')}</div>;
+    // The form's own shape — label, field, repeated — rather than a line of
+    // text where the form is about to be.
+    return (
+      <div className="max-w-2xl surface-card is-sheet p-6 space-y-5 skeleton-row">
+        <Skeleton w={160} h={20} />
+        {Array.from({ length: 5 }, (_, i) => (
+          <div key={i} className="space-y-2">
+            <Skeleton w={90} h={11} style={{ '--i': i }} />
+            <Skeleton style={{ width: '100%', height: 44, borderRadius: 12, '--i': i }} />
+          </div>
+        ))}
+      </div>
+    );
   }
 
   return (

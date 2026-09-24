@@ -102,7 +102,8 @@
     "txns7d": "Transactions — 7 Days",
     "loadFailed": "Could not load dashboard data. The figures below are unavailable, not zero.",
     "ordersNotConnected": "Orders are not connected yet. The backend has no endpoint that lists orders, so nothing can be shown here.",
-    "viewAllLow": "View all {{count}} low-stock products"
+    "viewAllLow": "View all {{count}} low-stock products",
+    "avg": "avg {{value}}"
   },
   "table": {
     "orderId": "Order ID",
