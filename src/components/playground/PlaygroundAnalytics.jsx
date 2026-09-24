@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconCash, IconTicket, IconGift, IconReceipt, IconShoppingBag,
@@ -48,6 +48,7 @@ function ChartTooltip({ active, payload, label, t }) {
 export default function PlaygroundAnalytics({ start, end, days, mode = 'playground', retailTotals, retailDays = [] }) {
   const { t } = useTranslation();
   const { darkMode } = useTheme();
+  const chartId = useId().replace(/:/g, '');
   const [result, setResult] = useState(() => ({ key: '', summary: normalizeSummary(null), purchases: [], error: '' }));
   const [reloadKey, setReloadKey] = useState(0);
   const requestKey = `${start}|${end}|${reloadKey}`;
@@ -147,23 +148,41 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
         <h3 className="text-[13px] font-semibold text-ink mb-4">{combined ? t('playgroundAnalytics.combinedTrend') : t('playgroundAnalytics.trend')}</h3>
         <ResponsiveContainer width="100%" height={280}>
           <ComposedChart data={chart} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
-            <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" vertical={false} />
+            <defs>
+              <linearGradient id={`${chartId}-primary`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={seriesColor(darkMode)} stopOpacity="1" />
+                <stop offset="55%" stopColor={seriesColor(darkMode)} stopOpacity="0.78" />
+                <stop offset="100%" stopColor={seriesColor(darkMode)} stopOpacity="0.42" />
+              </linearGradient>
+              <linearGradient id={`${chartId}-secondary`} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor={colorAt(1, darkMode)} stopOpacity="1" />
+                <stop offset="55%" stopColor={colorAt(1, darkMode)} stopOpacity="0.78" />
+                <stop offset="100%" stopColor={colorAt(1, darkMode)} stopOpacity="0.42" />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
             <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} minTickGap={28} />
             <YAxis yAxisId="money" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={value => `${Math.round(value / 1000)}K`} />
             {!combined && <YAxis yAxisId="tickets" orientation="right" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} allowDecimals={false} />}
-            <Tooltip content={<ChartTooltip t={t} />} cursor={{ fill: 'var(--orange-light)', opacity: 0.45 }} />
+            <Tooltip content={<ChartTooltip t={t} />} cursor={{ fill: 'var(--orange-light)', opacity: 0.32 }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />
             {combined ? (
               <>
-                <Bar yAxisId="money" dataKey="retailRevenue" name={t('playgroundAnalytics.retail')} stackId="revenue" fill={seriesColor(darkMode)} maxBarSize={44} />
-                <Bar yAxisId="money" dataKey="playgroundRevenue" name={t('playgroundAnalytics.playground')} stackId="revenue" fill={colorAt(1, darkMode)} maxBarSize={44} radius={[4, 4, 0, 0]} />
-                <Line yAxisId="money" type="monotone" dataKey="revenue" name={t('table.total')} stroke="var(--text-primary)" strokeWidth={2} dot={false} />
+                <Bar yAxisId="money" dataKey="retailRevenue" name={t('playgroundAnalytics.retail')} stackId="revenue" fill={`url(#${chartId}-primary)`} maxBarSize={44}
+                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[0, 0, 2, 2]} animationDuration={600} animationEasing="ease-out" />
+                <Bar yAxisId="money" dataKey="playgroundRevenue" name={t('playgroundAnalytics.playground')} stackId="revenue" fill={`url(#${chartId}-secondary)`} maxBarSize={44}
+                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[7, 7, 0, 0]} animationDuration={650} animationEasing="ease-out" />
+                <Line yAxisId="money" type="monotone" dataKey="revenue" name={t('table.total')} stroke="var(--text-primary)" strokeWidth={2} dot={false}
+                  animationDuration={780} animationEasing="ease-out" activeDot={{ r: 5, fill: seriesColor(darkMode), stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
               </>
             ) : (
               <>
-                <Bar yAxisId="tickets" dataKey="paid" name={t('playgroundAnalytics.paid')} stackId="tickets" fill={seriesColor(darkMode)} maxBarSize={44} />
-                <Bar yAxisId="tickets" dataKey="free" name={t('playgroundAnalytics.free')} stackId="tickets" fill={colorAt(1, darkMode)} maxBarSize={44} radius={[4, 4, 0, 0]} />
-                <Line yAxisId="money" type="monotone" dataKey="revenue" name={t('playgroundAnalytics.revenue')} stroke="var(--text-primary)" strokeWidth={2} dot={false} />
+                <Bar yAxisId="tickets" dataKey="paid" name={t('playgroundAnalytics.paid')} stackId="tickets" fill={`url(#${chartId}-primary)`} maxBarSize={44}
+                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[0, 0, 2, 2]} animationDuration={600} animationEasing="ease-out" />
+                <Bar yAxisId="tickets" dataKey="free" name={t('playgroundAnalytics.free')} stackId="tickets" fill={`url(#${chartId}-secondary)`} maxBarSize={44}
+                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[7, 7, 0, 0]} animationDuration={650} animationEasing="ease-out" />
+                <Line yAxisId="money" type="monotone" dataKey="revenue" name={t('playgroundAnalytics.revenue')} stroke="var(--text-primary)" strokeWidth={2} dot={false}
+                  animationDuration={780} animationEasing="ease-out" activeDot={{ r: 5, fill: seriesColor(darkMode), stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
               </>
             )}
           </ComposedChart>

@@ -602,6 +602,11 @@ html.dark[data-style="skeuomorphism"] { --field-bg: #302a23; }
 .chart-summary-grid span { display: block; color: var(--text-muted); font-size: 10px; line-height: 1.3; text-transform: uppercase; letter-spacing: .055em; }
 .chart-summary-grid strong { display: block; overflow: hidden; margin-top: 3px; color: var(--text-primary); font-size: 13px; font-weight: 650; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .chart-tooltip { padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--s-menu-bg); box-shadow: 0 12px 28px -16px #0009; }
+.liquid-treemap { overflow: hidden; border-radius: calc(var(--s-radius) * .8); }
+.liquid-treemap-shape { transition: filter 180ms ease, opacity 180ms ease; }
+.liquid-treemap-cell:hover .liquid-treemap-shape { filter: saturate(1.08) brightness(1.06); }
+.liquid-treemap-label { fill: #fff; font-size: 12px; font-weight: 650; paint-order: stroke; stroke: rgb(0 0 0 / .12); stroke-width: 2px; stroke-linejoin: round; }
+.liquid-treemap-share { fill: rgb(255 255 255 / .82); font-size: 10px; font-weight: 600; }
 
 /* Bars grow from the baseline on mount. scaleX rather than width so it
    composites instead of triggering layout on every frame, with the origin on

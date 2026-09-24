@@ -61,8 +61,20 @@ export const chartFromTool = (tool, result) => {
     const rows = result.categories ?? [];
     if (rows.length < 2) return null;
     const allData = rows.map(c => ({ label: c.category, value: c.retail_value_mmk }));
-    return { ...meta, kind: 'bars', unit: 'mmk', categorical: true,
-      metricKey: 'aiChart.retailValue', data: allData.slice(0, 8), allData, totalCount: rows.length };
+    // A treemap communicates each category's share of the whole more directly
+    // than unrelated horizontal bars. Keep the eight largest tiles legible and
+    // roll the tail into one tile; the exact table below still carries every
+    // category, and the grouped tile means no inventory value disappears.
+    const ranked = [...allData].sort((a, b) => Number(b.value) - Number(a.value));
+    const visible = ranked.slice(0, 8);
+    const rest = ranked.slice(8);
+    const otherValue = rest.reduce((sum, row) => sum + Number(row.value ?? 0), 0);
+    const data = otherValue > 0
+      ? [...visible, { label: '', value: otherValue, other: true }]
+      : visible;
+    return { ...meta, kind: 'treemap', unit: 'mmk', categorical: true,
+      metricKey: 'aiChart.retailValue', data, allData, totalCount: rows.length,
+      groupedCount: rest.length };
   }
   if (tool === 'low_stock') {
     const products = result.products ?? [];

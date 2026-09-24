@@ -66,11 +66,15 @@ assert.equal(chartFromTool('sales_by_weekday', {
   by_weekday: [{ weekday: 'Monday', revenue_mmk: 500 }, { weekday: 'Tuesday', revenue_mmk: 0 }],
 }), null, 'one active day is not a trend');
 
-// stock_by_category: capped at 8 bars, valued in MMK.
+// stock_by_category: eight named tiles plus a lossless grouped tail, valued in MMK.
 const cat = chartFromTool('stock_by_category', {
   categories: Array.from({ length: 10 }, (_, i) => ({ category: `c${i}`, retail_value_mmk: i * 100, units: i })),
 });
-assert.equal(cat.data.length, 8);
+assert.equal(cat.kind, 'treemap');
+assert.equal(cat.data.length, 9);
+assert.equal(cat.groupedCount, 2);
+assert.equal(cat.data.at(-1).other, true);
+assert.equal(cat.data.reduce((sum, row) => sum + row.value, 0), cat.allData.reduce((sum, row) => sum + row.value, 0));
 assert.equal(cat.unit, 'mmk');
 assert.equal(chartFromTool('stock_by_category', { categories: [{ category: 'only', retail_value_mmk: 5 }] }), null);
 

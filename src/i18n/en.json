@@ -519,6 +519,8 @@
     "item": "Item",
     "viewData": "View exact values",
     "groupedDays": "Grouped into {{days}}-day intervals; final interval may be shorter.",
+    "groupedOther": "The {{count}} smallest categories are grouped as Other.",
+    "other": "Other",
     "showing": "Showing {{count}} of {{total}} entries",
     "returned": "The report returned {{count}} of {{total}} matching entries.",
     "chartDescription": "{{title}} chart. Exact values are available in the table below.",
