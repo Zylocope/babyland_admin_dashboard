@@ -1,5 +1,5 @@
 import { useId } from 'react';
-import { AreaChart, Area, BarChart, Bar, Treemap, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../../utils/currency';
 import { colorAt, seriesColor, referenceColor, STATUS } from '../../utils/chartPalette';
@@ -11,47 +11,55 @@ const short = value => new Intl.NumberFormat('en-US', { notation: 'compact', max
 const dateLabel = date => date ? new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }).format(new Date(`${date}T00:00:00Z`)) : '';
 const rangeLabel = range => range ? `${dateLabel(range.start)} – ${dateLabel(range.end)}` : '';
 
-function LiquidTreemapCell({ depth, x, y, width, height, name, value, index, liquidId, darkMode, total }) {
-  if (depth !== 1 || width < 5 || height < 5) return null;
-  const color = colorAt(index ?? 0, darkMode);
-  const cellId = `${liquidId}-${index}`;
-  const inset = 2;
-  const w = Math.max(0, width - inset * 2);
-  const h = Math.max(0, height - inset * 2);
-  const showName = w >= 62 && h >= 38;
-  const showShare = w >= 82 && h >= 64;
-  const maxChars = Math.max(4, Math.floor((w - 20) / 7));
-  const label = name.length > maxChars ? `${name.slice(0, Math.max(3, maxChars - 1))}…` : name;
-  const share = total > 0 ? `${(Number(value) / total * 100).toFixed(Number(value) / total >= 0.1 ? 0 : 1)}%` : '0%';
+// A compact binary treemap keeps tile area proportional without pulling in the
+// Recharts Treemap module. Its production-minified Lodash helper crashed before
+// the Assistant could render, while this deterministic layout needs no runtime
+// dependency and is small enough for the already lazy-loaded Assistant route.
+const layoutTreemap = (items, x = 0, y = 0, width = 100, height = 100) => {
+  if (!items.length) return [];
+  if (items.length === 1) return [{ ...items[0], x, y, width, height }];
+  const total = items.reduce((sum, item) => sum + Number(item.value ?? 0), 0);
+  let split = 1, leftTotal = Number(items[0].value ?? 0);
+  while (split < items.length - 1 && leftTotal + Number(items[split].value ?? 0) <= total / 2) {
+    leftTotal += Number(items[split].value ?? 0);
+    split += 1;
+  }
+  const ratio = total > 0 ? leftTotal / total : split / items.length;
+  if (width >= height) {
+    const firstWidth = width * ratio;
+    return [
+      ...layoutTreemap(items.slice(0, split), x, y, firstWidth, height),
+      ...layoutTreemap(items.slice(split), x + firstWidth, y, width - firstWidth, height),
+    ];
+  }
+  const firstHeight = height * ratio;
+  return [
+    ...layoutTreemap(items.slice(0, split), x, y, width, firstHeight),
+    ...layoutTreemap(items.slice(split), x, y + firstHeight, width, height - firstHeight),
+  ];
+};
 
+function LiquidTreemap({ data, darkMode, valueLabel }) {
+  const total = data.reduce((sum, row) => sum + Number(row.value ?? 0), 0);
+  const tiles = layoutTreemap(data);
   return (
-    <g className="liquid-treemap-cell">
-      <defs>
-        <linearGradient id={`${cellId}-fill`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0%" stopColor={color} stopOpacity="0.98" />
-          <stop offset="58%" stopColor={color} stopOpacity="0.78" />
-          <stop offset="100%" stopColor={color} stopOpacity="0.52" />
-        </linearGradient>
-        <radialGradient id={`${cellId}-shine`} cx="22%" cy="8%" r="95%">
-          <stop offset="0%" stopColor="#fff" stopOpacity="0.36" />
-          <stop offset="42%" stopColor="#fff" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="#fff" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <rect x={x + inset} y={y + inset} width={w} height={h} rx={Math.min(12, w / 5, h / 5)}
-        fill={`url(#${cellId}-fill)`} className="liquid-treemap-shape" />
-      <rect x={x + inset + 1} y={y + inset + 1} width={Math.max(0, w - 2)} height={Math.max(0, h - 2)}
-        rx={Math.min(11, w / 5, h / 5)} fill={`url(#${cellId}-shine)`}
-        stroke="rgba(255,255,255,.32)" strokeWidth="1" pointerEvents="none" />
-      {showName && (
-        <text x={x + width / 2} y={y + height / 2 - (showShare ? 5 : -4)} textAnchor="middle"
-          className="liquid-treemap-label" pointerEvents="none">{label}</text>
-      )}
-      {showShare && (
-        <text x={x + width / 2} y={y + height / 2 + 15} textAnchor="middle"
-          className="liquid-treemap-share" pointerEvents="none">{share}</text>
-      )}
-    </g>
+    <div className="liquid-treemap" aria-hidden="true">
+      {tiles.map((tile, index) => {
+        const color = colorAt(index, darkMode);
+        const share = total > 0 ? Number(tile.value) / total : 0;
+        return (
+          <div key={`${tile.name}-${index}`} className="liquid-treemap-cell"
+            title={`${tile.name}: ${valueLabel(tile.value)}`}
+            style={{
+              left: `${tile.x}%`, top: `${tile.y}%`, width: `${tile.width}%`, height: `${tile.height}%`,
+              '--tile-color': color,
+            }}>
+            {share >= 0.025 && <strong>{tile.name}</strong>}
+            {share >= 0.045 && <span>{`${(share * 100).toFixed(share >= 0.1 ? 0 : 1)}%`}</span>}
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -72,7 +80,6 @@ export default function AssistantChart({ spec }) {
   const treeData = spec.kind === 'treemap'
     ? spec.data.map(row => ({ ...row, name: row.other ? t('aiChart.other') : row.label }))
     : [];
-  const treeTotal = treeData.reduce((sum, row) => sum + Number(row.value ?? 0), 0);
   const maxValue = Math.max(1, ...spec.data.map(row => Number(row.stock ?? row.value ?? 0)));
   const period = row => rangeLabel({ start: row.date, end: row.endDate ?? row.date });
   const columns = spec.kind === 'sales'
@@ -124,14 +131,8 @@ export default function AssistantChart({ spec }) {
       </div>
 
       {spec.kind === 'treemap' ? (
-        <div className="w-full min-w-0 liquid-treemap" role="img" aria-label={t('aiChart.chartDescription', { title })}>
-          <ResponsiveContainer width="100%" height={280} minWidth={0}>
-            <Treemap data={treeData} dataKey="value" nameKey="name" aspectRatio={4 / 3}
-              isAnimationActive="auto" animationDuration={650} animationEasing="ease-out"
-              content={props => <LiquidTreemapCell {...props} liquidId={id} darkMode={darkMode} total={treeTotal} />}>
-              <Tooltip formatter={valueLabel} contentStyle={tip} wrapperStyle={{ outline: 'none' }} />
-            </Treemap>
-          </ResponsiveContainer>
+        <div className="w-full min-w-0" role="img" aria-label={t('aiChart.chartDescription', { title })}>
+          <LiquidTreemap data={treeData} darkMode={darkMode} valueLabel={valueLabel} />
         </div>
       ) : horizontal ? (
         <div className="space-y-3">
@@ -160,15 +161,25 @@ export default function AssistantChart({ spec }) {
           <ResponsiveContainer width="100%" height={250} minWidth={0}>
             {spec.kind === 'sales' ? (
               <AreaChart data={spec.data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
-                <defs><linearGradient id={`${id}-revenue`} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={brand} stopOpacity={0.2} /><stop offset="100%" stopColor={brand} stopOpacity={0.02} /></linearGradient></defs>
-                <CartesianGrid strokeDasharray="3 4" stroke="var(--border)" vertical={false} />
+                <defs>
+                  <linearGradient id={`${id}-revenue`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={brand} stopOpacity="0.38" />
+                    <stop offset="56%" stopColor={brand} stopOpacity="0.12" />
+                    <stop offset="100%" stopColor={brand} stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
                 <XAxis dataKey="date" tick={axis} tickFormatter={v => dateLabel(v).replace(/ \d{4}$/, '')} axisLine={false} tickLine={false} minTickGap={28} />
                 <YAxis tick={axis} tickFormatter={short} axisLine={false} tickLine={false} width={48} />
-                <Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? period(payload[0].payload) : ''} formatter={valueLabel} contentStyle={tip} wrapperStyle={{ outline: 'none' }} />
+                <Tooltip labelFormatter={(_, payload) => payload?.[0]?.payload ? period(payload[0].payload) : ''} formatter={valueLabel}
+                  contentStyle={tip} wrapperStyle={{ outline: 'none' }} cursor={{ stroke: 'var(--border)', strokeDasharray: '3 3' }} />
                 <Legend wrapperStyle={{ fontSize: 11, paddingTop: 8 }} />
-                <Area type="linear" dataKey="revenue" name={revenue} stroke={brand} strokeWidth={2} fill={`url(#${id}-revenue)`} isAnimationActive={false} />
-                {spec.hasOnline && <Area type="linear" dataKey="inStore" name={t('posDash.chInstore')} stroke={referenceColor(darkMode)} strokeWidth={1.5} fill="none" isAnimationActive={false} />}
-                {spec.hasOnline && <Area type="linear" dataKey="online" name={t('posDash.chOnline')} stroke={colorAt(1, darkMode)} strokeWidth={1.5} fill="none" isAnimationActive={false} />}
+                <Area type="monotone" dataKey="revenue" name={revenue} stroke={brand} strokeWidth={2.5} fill={`url(#${id}-revenue)`}
+                  animationDuration={760} animationEasing="ease-out" activeDot={{ r: 5, fill: brand, stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
+                {spec.hasOnline && <Area type="monotone" dataKey="inStore" name={t('posDash.chInstore')} stroke={referenceColor(darkMode)} strokeWidth={1.5} fill="none"
+                  animationDuration={680} animationEasing="ease-out" activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--s-menu-bg)' }} />}
+                {spec.hasOnline && <Area type="monotone" dataKey="online" name={t('posDash.chOnline')} stroke={colorAt(1, darkMode)} strokeWidth={1.5} fill="none"
+                  animationDuration={720} animationEasing="ease-out" activeDot={{ r: 4, strokeWidth: 2, stroke: 'var(--s-menu-bg)' }} />}
               </AreaChart>
             ) : (
               <BarChart data={spec.kind === 'compare' ? spec.data.map(row => ({ ...row, label: t(`posDash.${row.metric}`) })) : spec.data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }} barGap={6}>
