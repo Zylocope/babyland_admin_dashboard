@@ -603,6 +603,19 @@ html.dark[data-style="skeuomorphism"] { --field-bg: #302a23; }
 .chart-summary-grid strong { display: block; overflow: hidden; margin-top: 3px; color: var(--text-primary); font-size: 13px; font-weight: 650; line-height: 1.35; text-overflow: ellipsis; white-space: nowrap; }
 .chart-tooltip { padding: 11px 12px; border: 1px solid var(--border); border-radius: 12px; background: var(--s-menu-bg); box-shadow: 0 12px 28px -16px #0009; }
 
+/* Bars grow from the baseline on mount. scaleX rather than width so it
+   composites instead of triggering layout on every frame, with the origin on
+   the left so it grows the way the value reads. The global reduced-motion rule
+   at the foot of this file removes it. */
+@keyframes chart-bar-grow {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.chart-bar-grow {
+  transform-origin: left center;
+  animation: chart-bar-grow 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 .theme-preview { height: 92px; padding: 10px; border-radius: 9px; display: grid; grid-template-columns: 22px 1fr; gap: 8px; background: #edf1f7; }
 .theme-preview > i { display: block; border-radius: 5px; background: #e4e8ef; }
 .theme-preview > span { display: flex; flex-direction: column; gap: 7px; padding: 10px; border-radius: 6px; background: #fff; }

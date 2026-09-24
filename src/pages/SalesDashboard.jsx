@@ -156,6 +156,11 @@ export default function SalesDashboard() {
   // Seeded at 0, not -1: with no sales at all every total ties, and the old
   // seed made the first day of the range read as the peak.
   const peakDay = chart.reduce((best, row) => (row.total > (best?.total ?? 0) ? row : best), null);
+  // The stack separator and the second series only make sense when online sales
+  // exist. With a single segment the 2px stroke just eats into thin bars, and at
+  // 30 days the bars are thin.
+  const hasOnline = chart.some(row => Number(row[onlineLabel]) > 0);
+  const barRadius = chart.length > 14 ? 3 : 5;
   const show = (v) => (loading ? '...' : v);
 
   const VIEWS = [
@@ -288,18 +293,40 @@ export default function SalesDashboard() {
                 <Tooltip content={<SalesTooltip inStoreLabel={inStoreLabel} onlineLabel={onlineLabel} totalLabel={t('table.total')} />}
                   cursor={{ fill: 'var(--orange-light)', opacity: 0.35 }} />
                 <Legend content={<ChartLegend />} verticalAlign="top" align="right" height={30} />
-                {/* The 2px surface-coloured stroke is the gap between stacked
-                    segments. Without it the two channels read as one solid block
-                    and the split is only visible where the hue changes. */}
-                <Bar dataKey={inStoreLabel} stackId="rev" fill={seriesColor(darkMode)} maxBarSize={40}
-                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[0, 0, 3, 3]} />
-                <Bar dataKey={onlineLabel} stackId="rev" fill={colorAt(1, darkMode)} maxBarSize={40}
-                  stroke="var(--s-menu-bg)" strokeWidth={2} radius={[5, 5, 0, 0]} />
+                {/* Gradient rather than a flat fill: the bar is strongest at the
+                    value it encodes and fades toward the baseline, which stops a
+                    row of solid blocks reading as a wall. */}
+                <defs>
+                  <linearGradient id="salesInStore" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={seriesColor(darkMode)} stopOpacity={1} />
+                    <stop offset="100%" stopColor={seriesColor(darkMode)} stopOpacity={0.45} />
+                  </linearGradient>
+                  <linearGradient id="salesOnline" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={colorAt(1, darkMode)} stopOpacity={1} />
+                    <stop offset="100%" stopColor={colorAt(1, darkMode)} stopOpacity={0.45} />
+                  </linearGradient>
+                </defs>
+                {/* The surface-coloured stroke is the gap between stacked
+                    segments — applied only when a second segment exists, since on
+                    a single thin bar it just eats the fill. */}
+                <Bar dataKey={inStoreLabel} stackId="rev" fill="url(#salesInStore)" maxBarSize={40}
+                  stroke={hasOnline ? 'var(--s-menu-bg)' : 'none'} strokeWidth={hasOnline ? 2 : 0}
+                  radius={hasOnline ? [0, 0, 2, 2] : [barRadius, barRadius, 2, 2]}
+                  animationDuration={650} animationEasing="ease-out" />
+                <Bar dataKey={onlineLabel} stackId="rev" fill="url(#salesOnline)" maxBarSize={40}
+                  stroke={hasOnline ? 'var(--s-menu-bg)' : 'none'} strokeWidth={hasOnline ? 2 : 0}
+                  radius={[barRadius, barRadius, 0, 0]}
+                  animationDuration={650} animationEasing="ease-out" />
                 {/* The total is an annotation over the stack, not a third
                     category, so it wears ink rather than a palette slot. */}
-                <Line type="monotone" dataKey="total" name={t('table.total')} stroke="var(--text-primary)"
-                  strokeWidth={2} dot={false} strokeOpacity={0.55}
-                  activeDot={{ r: 5, fill: 'var(--text-primary)', stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
+                {/* Hidden when there is only one channel: the total line would
+                    trace the top of the single bar and add nothing. */}
+                {hasOnline && (
+                  <Line type="monotone" dataKey="total" name={t('table.total')} stroke="var(--text-primary)"
+                    strokeWidth={2} dot={false} strokeOpacity={0.55}
+                    animationDuration={800} animationEasing="ease-out"
+                    activeDot={{ r: 5, fill: 'var(--text-primary)', stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
+                )}
               </ComposedChart>
             </ResponsiveContainer>
           </Panel>

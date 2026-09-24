@@ -98,12 +98,20 @@ export default function Dashboard() {
             // would undo the route splitting that keeps it off every screen
             // except Sales and the assistant.
             <div className="space-y-2.5">
-              {days.map(d => (
+              {days.map((d, i) => (
                 <div key={d.date} className="flex items-center gap-3">
                   <span className="w-14 flex-shrink-0 text-[11px] text-mute tabular-nums">{d.label}</span>
                   <div className="flex-1 h-5 rounded-md bg-app overflow-hidden">
-                    <div className="h-full rounded-md transition-all"
-                      style={{ width: `${(d.revenue / peak) * 100}%`, background: 'var(--orange-primary)' }} />
+                    {/* Gradient along the bar rather than a flat block, and each
+                        row grows in on mount with a small stagger so the panel
+                        reads as one movement instead of seven. The width lands
+                        from CSS, so a reduced-motion setting removes it. */}
+                    <div className="chart-bar-grow h-full rounded-md"
+                      style={{
+                        width: `${(d.revenue / peak) * 100}%`,
+                        animationDelay: `${i * 45}ms`,
+                        background: 'linear-gradient(90deg, color-mix(in srgb, var(--orange-primary) 78%, transparent) 0%, var(--orange-primary) 100%)',
+                      }} />
                   </div>
                   <span className="w-24 flex-shrink-0 text-right text-[12px] text-ink font-medium tabular-nums">
                     {d.revenue ? formatMMK(d.revenue) : '—'}
