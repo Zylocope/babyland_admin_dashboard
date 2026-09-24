@@ -267,41 +267,52 @@ export default function POS() {
       {/* Sale result dialog */}
       <Modal open={!!receipt} onClose={() => setReceipt(null)} title="" size="sm">
         {receipt && (
-          <div className="flex flex-col items-center text-center space-y-4 py-2">
-            {receipt.recorded ? (
-              <>
-                <div className="w-14 h-14 rounded-full bg-green-100 flex items-center justify-center">
-                  <IconCircleCheck size={32} className="text-green-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-green-800 dark:text-green-300">{t('pos.saleSuccess')}</p>
-                  <p className="text-sm text-mute mt-1">{t('pos.saleSuccessDesc')}</p>
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="w-14 h-14 rounded-full bg-red-100 flex items-center justify-center">
-                  <IconAlertTriangle size={32} className="text-red-600" />
-                </div>
-                <div>
-                  <p className="text-lg font-semibold text-red-800 dark:text-red-300">{t('pos.saleFailed')}</p>
-                  <p className="text-sm text-mute mt-1">{receipt.reason || t('pos.saleFailedDesc')}</p>
-                </div>
-              </>
-            )}
-            <div className="w-full border-t border-app pt-4 space-y-2">
+          // The amount is the hero, not the tick. What the cashier turns to the
+          // customer and says is the total; the status is one quiet line
+          // confirming it went through. The old layout had it the other way
+          // round — a 56px filled badge and a bold coloured heading above a
+          // small total — which is the look of a template rather than a till.
+          //
+          // Colour comes from the status tokens, so it follows the theme. The
+          // hardcoded green-100/green-800 pair it replaces stayed the same
+          // washed-out green in every theme and in dark mode.
+          <div className="space-y-5 py-1">
+            <div className="flex items-center gap-2">
+              {receipt.recorded
+                ? <IconCircleCheck size={16} stroke={1.8} style={{ color: 'var(--status-delivered)' }} />
+                : <IconAlertTriangle size={16} stroke={1.8} style={{ color: 'var(--status-cancelled)' }} />}
+              <span className="text-[13px] font-medium"
+                style={{ color: receipt.recorded ? 'var(--status-delivered)' : 'var(--status-cancelled)' }}>
+                {receipt.recorded ? t('pos.saleSuccess') : t('pos.saleFailed')}
+              </span>
+            </div>
+
+            <div>
+              <p className="text-[12px] text-sub">{t('pos.total')}</p>
+              <p className="text-[34px] font-bold text-ink tabular-nums leading-none mt-1">
+                {formatMMK(receipt.total)}
+              </p>
+              <p className="text-[12px] text-sub mt-2 leading-relaxed">
+                {receipt.recorded ? t('pos.saleSuccessDesc') : (receipt.reason || t('pos.saleFailedDesc'))}
+              </p>
+            </div>
+
+            {/* A recessed panel rather than rules across the dialog: on a glass
+                surface a hairline border reads as a seam, a tint reads as depth. */}
+            <div className="rounded-2xl px-4 py-3 space-y-2"
+              style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)' }}>
               {receipt.lines.map((l, i) => (
-                <div key={i} className="flex justify-between text-sm">
-                  <span className="text-ink">{l.name} <span className="text-mute">×{l.qty}</span></span>
-                  <span className="tabular-nums text-ink">{formatMMK(l.lineTotal)}</span>
+                <div key={i} className="flex justify-between gap-4 text-[13px]">
+                  <span className="text-sub min-w-0 truncate">
+                    {l.name} <span className="text-mute tabular-nums">×{l.qty}</span>
+                  </span>
+                  <span className="tabular-nums text-ink flex-shrink-0">{formatMMK(l.lineTotal)}</span>
                 </div>
               ))}
             </div>
-            <div className="flex justify-between w-full font-bold text-ink border-t border-app pt-3">
-              <span>{t('pos.total')}</span>
-              <span className="tabular-nums">{formatMMK(receipt.total)}</span>
-            </div>
-            <button onClick={() => setReceipt(null)} className="w-full py-2.5 bg-brand text-white rounded-lg font-medium hover:bg-brand-hover cursor-pointer">
+
+            <button onClick={() => setReceipt(null)}
+              className="press-spring w-full py-3.5 rounded-2xl bg-brand text-white font-medium hover:bg-brand-hover transition-colors cursor-pointer">
               {receipt.recorded ? t('pos.newSale') : t('pos.backToCart')}
             </button>
           </div>
