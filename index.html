@@ -6,7 +6,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Appleland Admin</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <!-- The font FILES come from gstatic, not googleapis. Without this the
+         browser pays a second DNS + TLS handshake mid-render, which is worst
+         exactly where the connection is slowest. -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Myanmar:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Theme applied BEFORE first paint.
+         ThemeProvider sets these in a useEffect, which cannot run until the JS
+         bundle has downloaded, parsed and mounted — so until then the page has
+         no `dark` class and paints the light background. That is the white
+         flash on every refresh, and on a slow connection it lasts as long as
+         the bundle takes rather than a frame.
+         Deliberately inline and blocking: a deferred script would paint first,
+         which is the whole problem. It stays in sync with ThemeContext by
+         reading the same two keys. -->
+    <script>
+      (function () {
+        try {
+          var d = document.documentElement;
+          if (localStorage.getItem('theme') === 'dark') d.classList.add('dark');
+          var s = localStorage.getItem('al_style');
+          d.dataset.style = ['glass', 'neumorphism', 'flat', 'skeuomorphism'].indexOf(s) > -1 ? s : 'glass';
+        } catch (e) {
+          /* private mode: fall through to the light default rather than fail */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

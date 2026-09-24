@@ -424,7 +424,8 @@
     "channel": "In-store vs online",
     "receipts": "Receipts",
     "daily": "Daily revenue",
-    "bestworst": "Best & worst days"
+    "bestworst": "Best & worst days",
+    "weekday": "By weekday"
   },
   "salesTable": {
     "receipt": "Receipt",
@@ -440,7 +441,11 @@
     "marginCol": "Margin %",
     "month": "Month",
     "monthly": "Monthly summary",
-    "allReceipts": "All receipts (every month)"
+    "allReceipts": "All receipts (every month)",
+    "weekdayHelp": "Average takings for each weekday in this range, so a range with more Saturdays than Sundays does not flatter Saturday.",
+    "weekdayThin": "Only one of each weekday in this range — pick a longer period before reading these as a pattern.",
+    "weekdayCount": "{{count}} day",
+    "weekdayCount_plural": "{{count}} days"
   },
   "productViews": {
     "all": "All products",

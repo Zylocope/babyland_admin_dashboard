@@ -98,3 +98,52 @@ rankDays(source);
 assert.deepEqual(source.map(d => d.date), ['p', 'q'], 'rankDays must not mutate its input');
 
 console.log('salesRollup ok');
+// ---- byWeekday -------------------------------------------------------------
+{
+  const { byWeekday } = await import('./salesRollup.js');
+
+  // 2026-09-19 is a Saturday. Two Saturdays, one Tuesday, and a Sunday the shop
+  // was shut — a range that is deliberately lopsided, because that is the case
+  // raw totals get wrong.
+  const rows = [
+    { date: '2026-09-19', revenue_mmk: 300000, transactions: 10, items_sold: 40 }, // Sat
+    { date: '2026-09-22', revenue_mmk: 100000, transactions: 5,  items_sold: 12 }, // Tue
+    { date: '2026-09-26', revenue_mmk: 500000, transactions: 15, items_sold: 60 }, // Sat
+    { date: '2026-09-20', revenue_mmk: 0,      transactions: 0,  items_sold: 0  }, // Sun, shut
+  ];
+  const week = byWeekday(rows);
+  const on = key => week.find(d => d.key === key);
+
+  assert.equal(week.length, 7, 'always seven weekdays, traded or not');
+
+  // The whole point: two Saturdays totalling 800k must report 400k, not 800k.
+  assert.equal(on('Sat').days, 2);
+  assert.equal(on('Sat').avg_revenue_mmk, 400000);
+  assert.equal(on('Tue').days, 1);
+  assert.equal(on('Tue').avg_revenue_mmk, 100000);
+
+  // Saturday really is the better day, and by the right multiple.
+  assert.equal(on('Sat').avg_revenue_mmk / on('Tue').avg_revenue_mmk, 4);
+
+  // A shut day is not a quiet day. Sunday has no occurrences at all, so it
+  // cannot drag an average down.
+  assert.equal(on('Sun').days, 0);
+  assert.equal(on('Sun').avg_revenue_mmk, 0);
+
+  // Basket is revenue over transactions, not an average of averages.
+  assert.equal(on('Sat').avg_basket_mmk, 800000 / 25);
+  assert.equal(on('Sat').avg_transactions, 12.5);
+
+  // Untraded weekdays are present and zeroed rather than missing.
+  for (const key of ['Mon', 'Wed', 'Thu', 'Fri']) {
+    assert.equal(on(key).days, 0, `${key} present`);
+  }
+
+  // A malformed date is skipped, not counted as a Sunday via NaN.
+  assert.deepEqual(
+    byWeekday([{ date: 'not-a-date', revenue_mmk: 999, transactions: 1 }]).map(d => d.days),
+    [0, 0, 0, 0, 0, 0, 0],
+  );
+
+  console.log('byWeekday ok');
+}

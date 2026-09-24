@@ -88,3 +88,46 @@ export const rankDays = (byDay, size = 3) => {
     worst: ranked.slice(Math.max(size, ranked.length - size)).reverse(),
   };
 };
+
+// Sales folded onto the seven weekdays.
+//
+// The point is staffing: "Saturday is worth three times a Tuesday" is only
+// answerable over several weeks, and a week-at-a-time chart cannot say it.
+//
+// Totals alone would lie. A range covering three Saturdays and two Sundays
+// makes Saturday look bigger for a reason that has nothing to do with trade,
+// so every figure here is an AVERAGE PER OCCURRENCE and the occurrence count
+// travels with it — a weekday seen once is a data point, not a pattern, and
+// the screen has to be able to say which it is.
+//
+// The weekday comes from the shop-day string itself, parsed as UTC. The date
+// has already been resolved to the Myanmar calendar day upstream; re-reading it
+// through a device clock is what would move it.
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export const byWeekday = (byDay) => {
+  const slots = WEEKDAYS.map((key, index) => ({
+    index, key,
+    days: 0, revenue_mmk: 0, transactions: 0, items_sold: 0,
+  }));
+
+  for (const day of byDay) {
+    const at = new Date(`${day.date}T00:00:00Z`);
+    if (Number.isNaN(at.getTime())) continue;
+    const slot = slots[at.getUTCDay()];
+    // Only days that traded count as occurrences. A closed Sunday averaged in
+    // as a zero would report the shop as quiet on Sundays rather than shut.
+    if (!(day.revenue_mmk > 0)) continue;
+    slot.days += 1;
+    slot.revenue_mmk += day.revenue_mmk;
+    slot.transactions += day.transactions ?? 0;
+    slot.items_sold += day.items_sold ?? 0;
+  }
+
+  return slots.map(s => ({
+    ...s,
+    avg_revenue_mmk: s.days ? s.revenue_mmk / s.days : 0,
+    avg_transactions: s.days ? s.transactions / s.days : 0,
+    avg_basket_mmk: s.transactions ? s.revenue_mmk / s.transactions : 0,
+  }));
+};

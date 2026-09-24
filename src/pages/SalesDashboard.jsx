@@ -2,7 +2,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage,
-  IconDatabase, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket, IconPrinter
+  IconDatabase, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket, IconPrinter,
+  IconCalendarWeek
 } from '@tabler/icons-react';
 import { Area, Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
@@ -18,7 +19,7 @@ import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
-import { summarizeSales, rankDays } from '../services/salesRollup';
+import { summarizeSales, rankDays, byWeekday } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
 
@@ -172,6 +173,7 @@ export default function SalesDashboard() {
     { key: 'receipts', label: t('salesViews.receipts'), icon: IconReceipt },
     { key: 'daily', label: t('salesViews.daily'), icon: IconCalendarStats },
     { key: 'bestworst', label: t('salesViews.bestworst'), icon: IconTrophy },
+    { key: 'weekday', label: t('salesViews.weekday'), icon: IconCalendarWeek },
   ];
 
   const receiptCols = [
@@ -426,6 +428,50 @@ export default function SalesDashboard() {
           <DataTable columns={dailyCols} rows={s.by_day} empty={t('posDash.noData')} />
         </Panel>
       )}
+
+      {view === 'weekday' && (() => {
+        const week = byWeekday(s.by_day);
+        const peak = Math.max(1, ...week.map(d => d.avg_revenue_mmk));
+        const traded = week.filter(d => d.days > 0);
+        // One of each weekday is a diary, not a pattern. Say so rather than
+        // letting a single Saturday be read as "Saturdays are like this".
+        const thin = traded.length > 0 && traded.every(d => d.days < 2);
+        return (
+          <Panel title={t('salesViews.weekday')}>
+            <p className="text-[13px] text-sub mb-4">
+              {thin ? t('salesTable.weekdayThin') : t('salesTable.weekdayHelp')}
+            </p>
+            {traded.length === 0 ? (
+              <p className="py-10 text-center text-sm text-mute">{t('posDash.noData')}</p>
+            ) : (
+              <div className="space-y-2.5">
+                {week.map((d, i) => (
+                  <div key={d.key} className="flex items-center gap-3">
+                    <span className="w-10 flex-shrink-0 text-[12px] font-medium text-sub">{d.key}</span>
+                    <div className="flex-1 h-6 rounded-md overflow-hidden"
+                      style={{ background: 'color-mix(in srgb, var(--text-muted) 10%, transparent)' }}>
+                      <div className="chart-bar-grow h-full rounded-md"
+                        style={{
+                          width: d.days ? `${Math.max(2, (d.avg_revenue_mmk / peak) * 100)}%` : 0,
+                          animationDelay: `${i * 45}ms`,
+                          background: 'linear-gradient(90deg, color-mix(in srgb, var(--orange-primary) 72%, transparent) 0%, var(--orange-primary) 100%)',
+                        }} />
+                    </div>
+                    <span className="w-28 flex-shrink-0 text-right text-[12px] text-ink font-medium tabular-nums">
+                      {d.days ? formatMMK(Math.round(d.avg_revenue_mmk)) : '—'}
+                    </span>
+                    {/* How many of this weekday the range actually contained.
+                        Without it an average is not checkable. */}
+                    <span className="w-20 flex-shrink-0 text-right text-[11px] text-mute tabular-nums">
+                      {d.days ? t('salesTable.weekdayCount', { count: d.days }) : ''}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Panel>
+        );
+      })()}
 
       {view === 'bestworst' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
