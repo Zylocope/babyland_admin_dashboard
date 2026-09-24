@@ -222,7 +222,11 @@ export default function Products() {
                           {p.name}
                           {p.is_perishable && <IconClockHour4 size={14} stroke={1.7} className="text-amber-600" title={t('table.expiry')} />}
                         </p>
-                        <p className="text-xs text-mute truncate">{p.id}</p>
+                        {/* The category, not the row's UUID. A database id under
+                            every product name told a shop manager nothing and
+                            cost a line in every row; the barcode already has its
+                            own column. */}
+                        <p className="text-xs text-mute truncate">{p.category}</p>
                       </div>
                     </div>
                   </td>

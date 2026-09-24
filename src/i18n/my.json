@@ -113,7 +113,7 @@
     "phone": "ဖုန်း",
     "actions": "လုပ်ဆောင်ချက်",
     "item": "ပစ္စည်း",
-    "barcode": "Barcode",
+    "barcode": "ဘားကုဒ်",
     "category": "အမျိုးအစား",
     "stock": "လက်ကျန်",
     "unit": "ယူနစ်",
@@ -137,7 +137,7 @@
     "saveChanges": "သိမ်းဆည်းရန်",
     "allCategories": "အမျိုးအစားအားလုံး",
     "allStatuses": "အခြေအနေအားလုံး",
-    "export": "Export",
+    "export": "ထုတ်ယူရန်",
     "notConnected": "ဤစာမျက်နှာသည် backend နှင့် မချိတ်ဆက်ရသေးပါ — ပြထားသည်များမှာ တကယ့်ဒေတာ မဟုတ်ပါ။"
   },
   "badge": {
@@ -366,7 +366,7 @@
     "period_month": "ဤလ",
     "sales": "အရောင်း",
     "profit": "အကြမ်းအမြတ်",
-    "margin": "{{n}}% margin",
+    "margin": "အမြတ် {{n}}%",
     "txns": "အရောင်းအရေအတွက်",
     "basket": "ပျမ်းမျှ တစ်ကြိမ်",
     "items": "ရောင်းသည့် ပစ္စည်း",
@@ -375,7 +375,7 @@
     "metric": "အချက်",
     "totalCol": "စုစုပေါင်း",
     "chInstore": "ဆိုင်တွင်း",
-    "chOnline": "Online",
+    "chOnline": "အွန်လိုင်း",
     "compareTrend": "ဆိုင်တွင်း vs Online",
     "shareToday": "ဝင်ငွေ အချိုး"
   },
@@ -432,7 +432,7 @@
     "rank": "#",
     "noReceipts": "ဤကာလအတွင်း အရောင်း မရှိပါ",
     "showing": "{{total}} ခုအနက် {{count}} ခု ပြသနေသည်",
-    "marginCol": "Margin %",
+    "marginCol": "အမြတ် %",
     "month": "လ",
     "monthly": "လအလိုက် အနှစ်ချုပ်",
     "allReceipts": "ဘောက်ချာ အားလုံး (လအားလုံး)"

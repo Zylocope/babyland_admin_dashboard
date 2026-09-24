@@ -660,6 +660,21 @@ html.dark[data-style="skeuomorphism"] { --field-bg: #302a23; }
    pulsing. Cheap: a delay costs nothing per frame. */
 .skeleton-row > .skeleton { animation-delay: calc(var(--i, 0) * 90ms); }
 
+/* The route placeholder holds itself invisible first, so a chunk that arrives
+   quickly — which is most of them, and all of them on a warm cache — draws
+   nothing at all. Without this, every navigation flashed a grey block for one
+   frame, which is more distracting than the wait it was covering.
+   `both` keeps opacity at 0 through the delay. Under reduced motion the global
+   rule drops the animation entirely and the block simply shows straight away,
+   which is the right trade: no flash-suppression, but nothing hidden either. */
+@keyframes route-fallback-in { to { opacity: 1; } }
+.skeleton.route-fallback {
+  opacity: 0;
+  animation:
+    route-fallback-in 180ms ease-out 350ms both,
+    skeleton-sweep 1.4s linear infinite;
+}
+
 .theme-preview { height: 92px; padding: 10px; border-radius: 9px; display: grid; grid-template-columns: 22px 1fr; gap: 8px; background: #edf1f7; }
 .theme-preview > i { display: block; border-radius: 5px; background: #e4e8ef; }
 .theme-preview > span { display: flex; flex-direction: column; gap: 7px; padding: 10px; border-radius: 6px; background: #fff; }
