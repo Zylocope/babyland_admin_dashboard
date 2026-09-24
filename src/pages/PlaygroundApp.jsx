@@ -1,14 +1,66 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IconTicket, IconLayoutDashboard, IconBabyCarriage, IconLogout, IconArrowLeft,
+  IconCircleCheck, IconClockOff,
 } from '@tabler/icons-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../context/AuthContext';
-import { createPlaygroundToken } from '../services/playgroundService';
+import { createPlaygroundToken, getPlaygroundCheckout } from '../services/playgroundService';
+import { checkoutStatus, amountDue, freeTickets, isSettled } from '../services/playgroundCheckout';
 import { formatMMK } from '../utils/currency';
 import NotConnected from '../components/common/NotConnected';
+
+// Slow enough not to spend the customer's data standing at a door, fast enough
+// that the amount lands before they have put their phone away.
+const POLL_MS = 3000;
+
+// Watches one claim token until it is scanned or dies.
+//
+// There is no spinner anywhere in this flow on purpose. The price is already
+// known from what staff typed, so the panel renders it on the first frame and
+// this only ever CORRECTS it once the customer's coupons are known. A spinner
+// would hide a number we already have.
+function useCheckout(tokenId) {
+  // The token this state belongs to is stored with it, so a new sale shows a
+  // clean panel by comparison at render time rather than by clearing state from
+  // inside the effect — which would cost an extra render and, for one frame,
+  // show the previous customer's total against the new code.
+  const [state, setState] = useState({ id: null, data: null, failed: false });
+
+  useEffect(() => {
+    if (!tokenId) return;
+    let alive = true;
+    let timer;
+
+    const tick = async () => {
+      if (!alive) return;
+      // A pocketed phone should not keep hitting the rate limiter. Skip the
+      // request but keep the timer, so it resumes the moment it is looked at.
+      if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
+        timer = setTimeout(tick, POLL_MS);
+        return;
+      }
+      try {
+        const data = await getPlaygroundCheckout(tokenId);
+        if (!alive) return;
+        setState({ id: tokenId, data, failed: false });
+        if (isSettled(data)) return;   // scanned or expired: nothing left to learn
+      } catch {
+        // One dropped request at a door with bad wifi is not worth a red
+        // message; it is only reported if nothing ever succeeds.
+        if (alive) setState(prev => (prev.data ? prev : { id: tokenId, data: null, failed: true }));
+      }
+      if (alive) timer = setTimeout(tick, POLL_MS);
+    };
+
+    tick();
+    return () => { alive = false; clearTimeout(timer); };
+  }, [tokenId]);
+
+  return state.id === tokenId ? state : { id: tokenId, data: null, failed: false };
+}
 
 
 // Full-bleed phone layout: this route sits OUTSIDE AppLayout on purpose, so
@@ -30,6 +82,12 @@ export default function PlaygroundApp() {
   const [copied, setCopied] = useState(false);
 
   const total = (Number(qty) || 0) * (Number(price) || 0);
+
+  // The sale that is on screen right now, if a code has been minted for it.
+  const { data: checkout, failed: checkoutFailed } = useCheckout(token);
+  const status = checkoutStatus(checkout);
+  const due = amountDue(checkout, total);
+  const free = freeTickets(checkout);
 
   const sell = async (e) => {
     e.preventDefault();
@@ -129,7 +187,57 @@ export default function PlaygroundApp() {
                       </button>
                     </div>
                   </div>
-                  <NotConnected>{t('playground.claimUnknown')}</NotConnected>
+
+                  {/* What to charge. Present from the first frame with the
+                      figure staff typed, then corrected by the server once the
+                      customer scans and their free tickets are known — so the
+                      panel never shows a placeholder where money should be. */}
+                  <div className="surface-card p-5 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-[13px] font-semibold text-ink">{t('playground.amountToCollect')}</p>
+                      {status === 'waiting' && (
+                        <span className="flex items-center gap-1.5 text-[11px] text-mute">
+                          {/* A pulsing dot, not a spinner: nothing is loading,
+                              we are waiting on a person. */}
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand animate-pulse" />
+                          {t('playground.waitingScan')}
+                        </span>
+                      )}
+                      {status === 'claimed' && (
+                        <span className="flex items-center gap-1.5 text-[11px] font-semibold"
+                          style={{ color: 'var(--status-delivered)' }}>
+                          <IconCircleCheck size={14} stroke={2} /> {t('playground.scanned')}
+                        </span>
+                      )}
+                      {status === 'expired' && (
+                        <span className="flex items-center gap-1.5 text-[11px] text-mute">
+                          <IconClockOff size={14} stroke={1.8} /> {t('playground.codeExpired')}
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-[34px] font-bold text-ink tabular-nums leading-none transition-opacity"
+                      style={{ opacity: status === 'expired' ? 0.4 : 1 }}>
+                      {formatMMK(due)}
+                    </p>
+
+                    {/* Only shown once it is true — a "0 free tickets" line
+                        would be noise on every ordinary sale. */}
+                    {status === 'claimed' && free > 0 && (
+                      <p className="text-[12px]" style={{ color: 'var(--status-delivered)' }}>
+                        {t('playground.freeApplied', { count: free })}
+                      </p>
+                    )}
+                    {status === 'waiting' && (
+                      <p className="text-[12px] text-sub leading-relaxed">{t('playground.beforeScanNote')}</p>
+                    )}
+                    {status === 'expired' && (
+                      <p className="text-[12px] text-sub leading-relaxed">{t('playground.expiredNote')}</p>
+                    )}
+                    {checkoutFailed && (
+                      <p className="text-[12px] text-mute leading-relaxed">{t('playground.checkOffline')}</p>
+                    )}
+                  </div>
                 </>
               ) : (
                 <div className="surface-card p-5">

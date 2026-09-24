@@ -312,7 +312,6 @@
     "tokenFailed": "Could not create the code. Check the connection and try again.",
     "quantityInvalid": "Enter at least 1 ticket.",
     "priceInvalid": "Enter a price of 0 or more.",
-    "claimUnknown": "This app cannot yet confirm whether the customer completed the purchase — the backend has no staff read endpoint. Confirm with the customer's own screen.",
     "soldToday": "Sold on this phone",
     "soldTodayHelp": "Codes you have created since opening the app.",
     "codesMade": "Codes made",
@@ -320,7 +319,16 @@
     "soldNone": "No codes yet. Sell a ticket to start.",
     "ticketCount": "{{count}} ticket",
     "ticketCount_plural": "{{count}} tickets",
-    "soldLocalOnly": "This list is only what this phone created since the app was opened — it clears if you reload, and it does not say whether the customer completed the purchase. A proper shift report needs a staff read endpoint from the backend."
+    "soldLocalOnly": "This list is only what this phone created since the app was opened — it clears if you reload, and it does not say whether the customer completed the purchase. A proper shift report needs a staff read endpoint from the backend.",
+    "amountToCollect": "Amount to collect",
+    "waitingScan": "waiting for scan",
+    "scanned": "Scanned",
+    "codeExpired": "Code expired",
+    "freeApplied": "{{count}} free ticket applied",
+    "freeApplied_plural": "{{count}} free tickets applied",
+    "beforeScanNote": "This is the full price. If the customer has free tickets, it drops when they scan.",
+    "expiredNote": "Nobody scanned this code in time. Make a new one.",
+    "checkOffline": "Can't reach the server to confirm. The price above is the full amount."
   },
   "playgroundAnalytics": {
     "title": "Playground sales",
