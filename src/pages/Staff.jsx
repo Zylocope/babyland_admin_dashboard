@@ -5,6 +5,7 @@ import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import { getStaff } from '../services/staffService';
 import { toUiRole } from '../utils/roles';
+import { SkeletonRows } from '../components/common/Skeleton';
 
 // Read-only: the admins table holds only username and role, and the backend has
 // no create/edit/delete route for staff. Columns and actions come back when the
@@ -58,7 +59,8 @@ export default function Staff() {
             </tr>
           </thead>
           <tbody className="divide-y divide-app">
-            {filtered.map(s => (
+            {loading && <SkeletonRows rows={5} cols={['55%', '35%']} />}
+            {!loading && filtered.map(s => (
               <tr key={s.id} className="hover:bg-brand-light transition-colors">
                 <td className="px-5 py-3.5">
                   <div className="flex items-center gap-3">
@@ -73,10 +75,11 @@ export default function Staff() {
             ))}
           </tbody>
         </table>
-        {!filtered.length && (
+        {/* The skeleton above already covers the waiting case. */}
+        {!loading && !filtered.length && (
           <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
             <IconDatabase size={28} stroke={1.2} />
-            {loading ? t('staff.loading') : t('staff.none')}
+            {t('staff.none')}
           </div>
         )}
       </div>

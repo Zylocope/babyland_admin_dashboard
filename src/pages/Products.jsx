@@ -15,6 +15,7 @@ import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import SubBar from '../components/common/SubBar';
 import StockInModal from '../components/common/StockInModal';
+import { SkeletonRows } from '../components/common/Skeleton';
 import { getAllProducts } from '../services/productService';
 import { getCategories } from '../services/categoryService';
 import { isLowStock, isOutOfStock, needsRestock } from '../utils/stock';
@@ -199,11 +200,12 @@ export default function Products() {
             </thead>
             <tbody className="divide-y divide-app">
               {loading ? (
-                <tr>
-                  <td colSpan={isManager ? 7 : 6} className="px-5 py-12 text-center text-sm text-mute">
-                    {t('products.loading')}
-                  </td>
-                </tr>
+                // A page of rows, in the shape of the real ones. PAGE_SIZE so
+                // the table does not resize when the data lands.
+                <SkeletonRows rows={PAGE_SIZE}
+                  cols={isManager
+                    ? ['70%', '60%', '55%', '40%', '50%', '45%', '30%']
+                    : ['70%', '60%', '55%', '40%', '50%', '45%']} />
               ) : pageItems.map(p => (
                 <tr key={p.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5">

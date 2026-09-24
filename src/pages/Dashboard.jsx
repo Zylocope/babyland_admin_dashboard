@@ -12,6 +12,7 @@ import { summarizeSales } from '../services/salesRollup';
 import { getSaleSummary } from '../services/salesService';
 import { getAllProducts } from '../services/productService';
 import { needsRestock } from '../utils/stock';
+import Skeleton from '../components/common/Skeleton';
 
 const DAYS = 7;
 
@@ -52,10 +53,10 @@ export default function Dashboard() {
     .filter(needsRestock)
     .sort((a, b) => Number(a.quantity_in_stock ?? 0) - Number(b.quantity_in_stock ?? 0));
 
-  // A dash while loading and a word on failure — never a number that could be
-  // mistaken for a real one.
+  // A shimmer while loading and a word on failure — never a number that could
+  // be mistaken for a real one.
   const show = (value) => {
-    if (status === 'loading') return '—';
+    if (status === 'loading') return <Skeleton w="70%" h={24} />;
     if (status === 'error') return t('header.revenueUnavailable');
     return value;
   };
@@ -87,10 +88,22 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
         <div className="xl:col-span-8 surface-card is-sheet p-6">
           <h3 className="font-semibold text-ink mb-4">{t('dashboard.revenue7d')}</h3>
-          {status !== 'ok' ? (
+          {status === 'loading' ? (
+            // Seven rows the shape of the seven bars that are coming, so the
+            // panel is already its final height when they land.
+            <div className="space-y-2.5">
+              {Array.from({ length: DAYS }, (_, i) => (
+                <div key={i} className="skeleton-row flex items-center gap-3" style={{ '--i': i }}>
+                  <Skeleton w={56} h={11} />
+                  <Skeleton h={20} style={{ flex: 1, borderRadius: 6 }} />
+                  <Skeleton w={96} h={11} />
+                </div>
+              ))}
+            </div>
+          ) : status === 'error' ? (
             <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
               <IconDatabase size={28} stroke={1.2} />
-              {status === 'error' ? t('header.revenueUnavailable') : '—'}
+              {t('header.revenueUnavailable')}
             </div>
           ) : (
             // Plain bars rather than recharts: this is the manager's landing
@@ -126,10 +139,22 @@ export default function Dashboard() {
           <h3 className="font-semibold text-ink mb-4 flex items-center gap-2">
             <IconAlertTriangle size={16} stroke={1.5} className="text-[#EF4444]" /> {t('dashboard.lowStockAlerts')}
           </h3>
-          {status !== 'ok' ? (
+          {status === 'loading' ? (
+            <div className="space-y-3">
+              {Array.from({ length: 6 }, (_, i) => (
+                <div key={i} className="skeleton-row flex items-center gap-3" style={{ '--i': i }}>
+                  <div className="min-w-0 flex-1 space-y-1.5">
+                    <Skeleton w="75%" h={13} />
+                    <Skeleton w="45%" h={10} />
+                  </div>
+                  <Skeleton w={48} h={13} />
+                </div>
+              ))}
+            </div>
+          ) : status === 'error' ? (
             <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
               <IconDatabase size={28} stroke={1.2} />
-              {status === 'error' ? t('header.revenueUnavailable') : '—'}
+              {t('header.revenueUnavailable')}
             </div>
           ) : lowStock.length === 0 ? (
             <p className="py-12 text-center text-sm text-mute">{t('dashboard.allStocked')}</p>

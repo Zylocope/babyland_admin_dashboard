@@ -15,6 +15,9 @@ const TONES = {
 // end in " MMK", so the trailing word is split off and set smaller and lighter.
 // Anything without a trailing word ("23", "—", "Unavailable") renders whole.
 const splitUnit = (value) => {
+  // A node (a skeleton while the figure loads) is rendered as-is; only a string
+  // gets its trailing unit peeled off for smaller type.
+  if (typeof value !== 'string' && typeof value !== 'number') return { amount: value, unit: null };
   const match = /^(.*\S)\s+([A-Za-z]+)$/.exec(String(value ?? ''));
   return match ? { amount: match[1], unit: match[2] } : { amount: value, unit: null };
 };

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { IconDatabase, IconRefresh, IconChevronLeft, IconChevronRight } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { getCustomers } from '../services/customerService';
+import { SkeletonRows } from '../components/common/Skeleton';
 
 const PAGE_SIZE = 20;
 
@@ -65,6 +66,7 @@ export default function Customers() {
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
+              {loading && <SkeletonRows rows={8} cols={['60%', '55%', '75%']} />}
               {!loading && rows.map(c => (
                 <tr key={c.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5">
@@ -84,10 +86,12 @@ export default function Customers() {
               ))}
             </tbody>
           </table>
-          {(loading || rows.length === 0) && (
+          {/* Only for a genuinely empty list — while loading, the skeleton
+              rows above are already saying that. */}
+          {!loading && rows.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
               <IconDatabase size={28} stroke={1.2} />
-              {loading ? t('customers.loading') : t('customers.none')}
+              {t('customers.none')}
             </div>
           )}
         </div>
