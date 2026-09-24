@@ -328,7 +328,9 @@
     "freeApplied_plural": "{{count}} free tickets applied",
     "beforeScanNote": "This is the full price. If the customer has free tickets, it drops when they scan.",
     "expiredNote": "Nobody scanned this code in time. Make a new one.",
-    "checkOffline": "Can't reach the server to confirm. The price above is the full amount."
+    "checkOffline": "Can't reach the server to confirm. The price above is the full amount.",
+    "defaultPrice": "Ticket price",
+    "defaultPriceHelp": "Remembered on this phone, so you only type the quantity for each sale."
   },
   "playgroundAnalytics": {
     "title": "Playground sales",

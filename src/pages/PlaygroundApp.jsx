@@ -3,14 +3,28 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   IconTicket, IconLayoutDashboard, IconBabyCarriage, IconLogout, IconArrowLeft,
-  IconCircleCheck, IconClockOff,
+  IconCircleCheck, IconClockOff, IconSettings, IconMoon, IconSun,
 } from '@tabler/icons-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { setLanguage } from '../i18n';
+import Modal from '../components/common/Modal';
+
 import { createPlaygroundToken, getPlaygroundCheckout } from '../services/playgroundService';
 import { checkoutStatus, amountDue, freeTickets, isSettled } from '../services/playgroundCheckout';
 import { formatMMK } from '../utils/currency';
 import NotConnected from '../components/common/NotConnected';
+
+// The ticket price barely changes, but staff were retyping it on every single
+// sale because the form resets after each one. Remembered on the device, so a
+// shift is: open app, type quantity, press the button.
+const PRICE_KEY = 'al_pg_price';
+const DEFAULT_PRICE = '2000';
+const readPrice = () => {
+  try { return localStorage.getItem(PRICE_KEY) || DEFAULT_PRICE; } catch { return DEFAULT_PRICE; }
+};
+
 
 // Slow enough not to spend the customer's data standing at a door, fast enough
 // that the amount lands before they have put their phone away.
@@ -66,16 +80,18 @@ function useCheckout(tokenId) {
 // Full-bleed phone layout: this route sits OUTSIDE AppLayout on purpose, so
 // there is no desktop sidebar or header. Staff hold a phone at the door.
 export default function PlaygroundApp() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { user, logout, isManager } = useAuth();
+  const { darkMode, toggleDark } = useTheme();
   const navigate = useNavigate();
   const [tab, setTab] = useState('sell');
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Selling a ticket is the ONE thing the backend supports for staff: mint a
   // claim token. The customer scans it with their own Appleland account, so
   // nothing here identifies the customer and there is no phone lookup.
   const [qty, setQty] = useState('1');
-  const [price, setPrice] = useState('2000');
+  const [price, setPrice] = useState(readPrice);
   const [token, setToken] = useState(null);
   const [selling, setSelling] = useState(false);
   const [sellError, setSellError] = useState('');
@@ -110,7 +126,9 @@ export default function PlaygroundApp() {
     }
   };
 
-  const resetSale = () => { setToken(null); setQty('1'); setPrice('2000'); setCopied(false); };
+  // Quantity resets, price does not: the next customer is a different
+  // number of tickets at the same price.
+  const resetSale = () => { setToken(null); setQty('1'); setCopied(false); };
   const copyToken = async () => {
     // Insecure contexts and older webviews have no clipboard API. The code is
     // select-all, so failing here still leaves it copyable by hand.
@@ -148,6 +166,11 @@ export default function PlaygroundApp() {
               <IconArrowLeft size={17} stroke={1.8} />
             </button>
           )}
+          <button onClick={() => setSettingsOpen(true)} title={t('titles.settings')}
+            aria-label={t('titles.settings')}
+            className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-brand cursor-pointer">
+            <IconSettings size={17} stroke={1.6} />
+          </button>
           <button onClick={logout} title={t('sidebar.logout')}
             className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-[#EF4444] cursor-pointer">
             <IconLogout size={17} stroke={1.6} />
@@ -322,6 +345,58 @@ export default function PlaygroundApp() {
           )}
 
         </main>
+
+        {/* Everything a door phone needs and nothing it doesn't: the language,
+            a dark mode for an evening shift, and the price staff would
+            otherwise retype all day. No style themes — that is a desk
+            decision, not a door one. */}
+        <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title={t('titles.settings')} size="sm">
+          <div className="space-y-5">
+            <div>
+              <p className="text-[13px] font-semibold text-ink mb-2">{t('settings.language')}</p>
+              <div className="flex gap-2">
+                {[['en', 'English'], ['my', 'မြန်မာ']].map(([code, label]) => (
+                  <button key={code} type="button" onClick={() => setLanguage(code)}
+                    className={`press-spring flex-1 py-3 rounded-2xl text-sm font-medium cursor-pointer border ${
+                      i18n.resolvedLanguage === code
+                        ? 'border-brand text-brand bg-brand-light'
+                        : 'border-app text-sub'}`}>
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <p className="text-[13px] font-semibold text-ink mb-2">{t('settings.mode')}</p>
+              <button type="button" onClick={toggleDark}
+                className="press-spring w-full flex items-center justify-between gap-3 py-3 px-4 rounded-2xl border border-app cursor-pointer">
+                <span className="flex items-center gap-2.5 text-sm text-sub">
+                  {darkMode ? <IconMoon size={17} stroke={1.6} /> : <IconSun size={17} stroke={1.6} />}
+                  {darkMode ? t('settings.dark') : t('settings.light')}
+                </span>
+                <span className={`w-11 h-6 rounded-full transition-colors flex items-center px-0.5 ${darkMode ? 'bg-brand' : 'bg-app'}`}>
+                  <span className={`w-5 h-5 rounded-full bg-card shadow transition-transform ${darkMode ? 'translate-x-5' : ''}`} />
+                </span>
+              </button>
+            </div>
+
+            <div>
+              <label className="block">
+                <span className="text-[13px] font-semibold text-ink">{t('playground.defaultPrice')}</span>
+                <input value={price} type="number" min="0" step="any" inputMode="decimal"
+                  onChange={e => {
+                    setPrice(e.target.value);
+                    // Written as it is typed: there is no Save button to forget
+                    // to press, and the field is the setting.
+                    try { localStorage.setItem(PRICE_KEY, e.target.value); } catch { /* private mode */ }
+                  }}
+                  className="w-full mt-2 px-4 py-3.5 text-[17px] bg-card border border-app rounded-2xl focus:outline-none focus:ring-2 focus:ring-brand" />
+              </label>
+              <p className="text-[12px] text-sub mt-2 leading-relaxed">{t('playground.defaultPriceHelp')}</p>
+            </div>
+          </div>
+        </Modal>
 
         {/* Bottom tab bar, like the reference. Fixed so it stays under the thumb
             while the content above scrolls. */}

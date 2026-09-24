@@ -2,6 +2,7 @@ import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock } from '@tabler/ic
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import InformationLinks from '../components/common/InformationLinks';
+import { setLanguage } from '../i18n';
 
 const STYLE_OPTIONS = [
   { id: 'glass',        labelKey: 'settings.styleGlass' },
@@ -44,8 +45,8 @@ export default function Settings() {
       <Section title={t('settings.language')} desc={t('settings.languageDesc')}>
         <div className="flex items-center gap-2">
           <IconLanguage size={18} stroke={1.5} className="text-mute mr-1" />
-          <Toggle active={!isMy} onClick={() => i18n.changeLanguage('en')}>English</Toggle>
-          <Toggle active={isMy} onClick={() => i18n.changeLanguage('my')}>မြန်မာ</Toggle>
+          <Toggle active={!isMy} onClick={() => setLanguage('en')}>English</Toggle>
+          <Toggle active={isMy} onClick={() => setLanguage('my')}>မြန်မာ</Toggle>
         </div>
       </Section>
 

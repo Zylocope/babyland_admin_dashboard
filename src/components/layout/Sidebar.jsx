@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { setLanguage } from '../../i18n';
 
 // `roles` = staff roles allowed (besides Manager, who sees everything).
 // Keep labels mounted at their natural width; fade them inside clipped rows
@@ -134,21 +135,21 @@ export default function Sidebar({ collapsed, onToggle }) {
         <div className="sidebar-preferences">
           <div className="sidebar-language rounded-full border border-app" hidden={collapsed}>
             <button
-              onClick={() => i18n.changeLanguage('en')}
+              onClick={() => setLanguage('en')}
               title="English"
               className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${!isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
             >
               EN
             </button>
             <button
-              onClick={() => i18n.changeLanguage('my')}
+              onClick={() => setLanguage('my')}
               title="မြန်မာ"
               className={`flex-1 w-full px-2 py-1 rounded-full text-xs font-semibold transition-colors cursor-pointer ${isMy ? 'bg-brand text-white' : 'text-sub hover:text-brand'}`}
             >
               MY
             </button>
           </div>
-          {collapsed && <button type="button" className="sidebar-language-toggle text-xs font-semibold text-brand" onClick={() => i18n.changeLanguage(isMy ? 'en' : 'my')} aria-label={isMy ? 'Switch to English' : 'မြန်မာဘာသာသို့ ပြောင်းရန်'}>{isMy ? 'MY' : 'EN'}</button>}
+          {collapsed && <button type="button" className="sidebar-language-toggle text-xs font-semibold text-brand" onClick={() => setLanguage(isMy ? 'en' : 'my')} aria-label={isMy ? 'Switch to English' : 'မြန်မာဘာသာသို့ ပြောင်းရန်'}>{isMy ? 'MY' : 'EN'}</button>}
           <button
             onClick={() => navigate('/settings')}
             title={t('nav.settings')}
