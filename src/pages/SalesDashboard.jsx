@@ -4,7 +4,7 @@ import {
   IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage,
   IconDatabase, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket, IconPrinter
 } from '@tabler/icons-react';
-import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { Area, Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
 import ChartLegend from '../components/common/ChartLegend';
@@ -207,11 +207,66 @@ export default function SalesDashboard() {
     { _key: 'basket', label: t('posDash.basket'), field: 'avg_basket_mmk', fmt: formatMMK },
   ];
 
+  // Months rolled up from the daily rows already in memory. A year of days is
+  // 365 lines nobody reads; twelve is a page.
+  const monthlyRows = useMemo(() => {
+    const byMonth = new Map();
+    for (const d of s.by_day) {
+      const key = d.date.slice(0, 7);
+      const acc = byMonth.get(key) ?? {
+        month: key, revenue_mmk: 0, in_store_mmk: 0, online_mmk: 0,
+        cost_mmk: 0, profit_mmk: 0, transactions: 0, items_sold: 0,
+      };
+      acc.revenue_mmk += d.revenue_mmk; acc.in_store_mmk += d.in_store_mmk;
+      acc.online_mmk += d.online_mmk; acc.cost_mmk += d.cost_mmk ?? 0;
+      acc.profit_mmk += d.profit_mmk; acc.transactions += d.transactions;
+      acc.items_sold += d.items_sold;
+      byMonth.set(key, acc);
+    }
+    return [...byMonth.values()].map(m => ({
+      ...m,
+      margin_pct: m.revenue_mmk ? Math.round((m.profit_mmk / m.revenue_mmk) * 1000) / 10 : 0,
+    }));
+  }, [s]);
+
+  const monthlyCols = [
+    { key: 'month', label: t('salesTable.month'), value: m => m.month },
+    { key: 'instore', label: inStoreLabel, align: 'right', value: m => m.in_store_mmk, cell: m => formatMMK(m.in_store_mmk) },
+    { key: 'online', label: onlineLabel, align: 'right', value: m => m.online_mmk, cell: m => formatMMK(m.online_mmk) },
+    { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: m => m.revenue_mmk, cell: m => formatMMK(m.revenue_mmk) },
+    { key: 'profit', label: t('posDash.profit'), align: 'right', value: m => m.profit_mmk, cell: m => formatMMK(m.profit_mmk) },
+    { key: 'margin', label: t('salesTable.marginCol'), align: 'right', value: m => m.margin_pct, cell: m => `${m.margin_pct}%` },
+    { key: 'txns', label: t('posDash.txns'), align: 'right', value: m => m.transactions },
+    { key: 'items', label: t('posDash.items'), align: 'right', value: m => m.items_sold },
+  ];
+
   const reportSections = [
     { key: 'channel', name: t('salesViews.channel'), columns: channelCols, rows: channelRows },
     { key: 'daily', name: t('salesViews.daily'), columns: dailyCols, rows: s.by_day },
     { key: 'bestworst', name: t('salesViews.bestworst'), columns: dailyCols, rows: ranked },
     { key: 'receipts', name: t('salesViews.receipts'), columns: receiptCols, rows: periodReceipts },
+    { key: 'monthly', name: t('salesTable.monthly'), columns: monthlyCols, rows: monthlyRows },
+    // Every receipt the shop has, not the page currently on screen. Loaded only
+    // when ticked, because it walks the pagination and that is many requests.
+    {
+      key: 'allReceipts',
+      name: t('salesTable.allReceipts'),
+      columns: receiptCols,
+      rows: [],
+      count: receipts.total,
+      load: async () => {
+        const size = 200;
+        const first = await getSales(1, size);
+        const pages = first.total_pages ?? 1;
+        const rest = await Promise.all(
+          Array.from({ length: Math.max(0, pages - 1) }, (_, i) => getSales(i + 2, size))
+        );
+        return [first, ...rest]
+          .flatMap(page => page?.data ?? [])
+          .map(r => ({ ...r, _at: parseApiDate(r.created_at) }))
+          .sort((a, b) => b._at - a._at);
+      },
+    },
   ];
 
   const stamp = `appleland-${start}_${end}`;
@@ -333,6 +388,14 @@ export default function SalesDashboard() {
                     value it encodes and fades toward the baseline, which stops a
                     row of solid blocks reading as a wall. */}
                 <defs>
+                  {/* The soft mountain behind the bars. This is what carries the
+                      shape of the month at a glance — the bars give you the exact
+                      day, the fill gives you the trend without reading any. */}
+                  <linearGradient id="salesTotal" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={seriesColor(darkMode)} stopOpacity={0.38} />
+                    <stop offset="60%" stopColor={seriesColor(darkMode)} stopOpacity={0.12} />
+                    <stop offset="100%" stopColor={seriesColor(darkMode)} stopOpacity={0} />
+                  </linearGradient>
                   <linearGradient id="salesInStore" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={seriesColor(darkMode)} stopOpacity={1} />
                     <stop offset="100%" stopColor={seriesColor(darkMode)} stopOpacity={0.45} />
@@ -342,6 +405,11 @@ export default function SalesDashboard() {
                     <stop offset="100%" stopColor={colorAt(1, darkMode)} stopOpacity={0.45} />
                   </linearGradient>
                 </defs>
+                {/* Declared before the bars so it paints behind them: a smooth
+                    gradient fill under the daily total, with no stroke of its
+                    own — the crisp edge is the bars' job. */}
+                <Area type="monotone" dataKey="total" fill="url(#salesTotal)" stroke="none"
+                  legendType="none" tooltipType="none" isAnimationActive={false} />
                 {/* The surface-coloured stroke is the gap between stacked
                     segments — applied only when a second segment exists, since on
                     a single thin bar it just eats the fill. */}
@@ -355,14 +423,13 @@ export default function SalesDashboard() {
                   animationDuration={650} animationEasing="ease-out" />
                 {/* The total is an annotation over the stack, not a third
                     category, so it wears ink rather than a palette slot. */}
-                {/* Hidden when there is only one channel: the total line would
-                    trace the top of the single bar and add nothing. */}
-                {hasOnline && (
-                  <Line type="monotone" dataKey="total" name={t('table.total')} stroke="var(--text-primary)"
-                    strokeWidth={2} dot={false} strokeOpacity={0.55}
-                    animationDuration={800} animationEasing="ease-out"
-                    activeDot={{ r: 5, fill: 'var(--text-primary)', stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
-                )}
+                {/* Always drawn now. With one channel it does trace the bar
+                    tops, but it is the line that ties the gradient to the bars —
+                    removing it left the fill with no edge. */}
+                <Line type="monotone" dataKey="total" name={t('table.total')} stroke={seriesColor(darkMode)}
+                  strokeWidth={2} dot={false}
+                  animationDuration={800} animationEasing="ease-out"
+                  activeDot={{ r: 5, fill: seriesColor(darkMode), stroke: 'var(--s-menu-bg)', strokeWidth: 2 }} />
               </ComposedChart>
             </ResponsiveContainer>
           </Panel>

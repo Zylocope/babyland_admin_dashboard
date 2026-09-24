@@ -117,12 +117,22 @@ export default function Products() {
   // list" is a shop errand, not a reason to navigate first. Search and category
   // filters are deliberately NOT applied: a report of "what I happened to be
   // searching for" is not a report.
+  const categoryCols = [
+    { key: 'name', label: t('table.category'), value: c => c.name },
+    { key: 'products', label: t('titles.products'), align: 'right',
+      value: c => allProducts.filter(p => p.category_id === c.id || p.sub_category_id === c.id).length },
+    { key: 'status', label: t('table.visibility'),
+      value: c => (c.is_deleted ? t('categories.archivedTitle') : 'Active') },
+  ];
+
   const reportSections = Object.entries(VIEW_FILTERS).map(([key, match]) => ({
     key,
     name: t(`products.view_${key}`),
     columns: exportCols,
     rows: allProducts.map(normalizeProduct).filter(match),
-  }));
+  })).concat([
+    { key: 'categories', name: t('titles.categories'), columns: categoryCols, rows: categories },
+  ]);
 
   const stamp = `appleland-products-${new Date().toISOString().slice(0, 10)}`;
   const printSheet = (chosen) => {

@@ -441,7 +441,10 @@
     "rank": "#",
     "noReceipts": "No sales recorded in this period",
     "showing": "Showing {{count}} of {{total}}",
-    "marginCol": "Margin %"
+    "marginCol": "Margin %",
+    "month": "Month",
+    "monthly": "Monthly summary",
+    "allReceipts": "All receipts (every month)"
   },
   "productViews": {
     "all": "All products",
@@ -537,6 +540,7 @@
     "print": "Print",
     "printHint": "Print also saves as PDF — choose \"Save as PDF\" in the print dialog.",
     "range": "{{start}} to {{end}}",
-    "generated": "Generated {{at}}"
+    "generated": "Generated {{at}}",
+    "loadFailed": "Could not load the full data for one of the selected sections."
   }
 }

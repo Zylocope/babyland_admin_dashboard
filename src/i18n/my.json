@@ -441,7 +441,10 @@
     "rank": "#",
     "noReceipts": "ဤကာလအတွင်း အရောင်း မရှိပါ",
     "showing": "{{total}} ခုအနက် {{count}} ခု ပြသနေသည်",
-    "marginCol": "Margin %"
+    "marginCol": "Margin %",
+    "month": "လ",
+    "monthly": "လအလိုက် အနှစ်ချုပ်",
+    "allReceipts": "ဘောက်ချာ အားလုံး (လအားလုံး)"
   },
   "productViews": {
     "all": "ပစ္စည်း အားလုံး",
@@ -537,6 +540,7 @@
     "print": "ပုံနှိပ်ရန်",
     "printHint": "ပုံနှိပ်ခြင်းဖြင့် PDF အဖြစ်လည်း သိမ်းနိုင်သည် — print dialog တွင် \"Save as PDF\" ကို ရွေးပါ။",
     "range": "{{start}} မှ {{end}}",
-    "generated": "{{at}} တွင် ထုတ်သည်"
+    "generated": "{{at}} တွင် ထုတ်သည်",
+    "loadFailed": "ရွေးထားသော အပိုင်းတစ်ခု၏ ဒေတာအပြည့်အစုံ မရယူနိုင်ပါ။"
   }
 }
