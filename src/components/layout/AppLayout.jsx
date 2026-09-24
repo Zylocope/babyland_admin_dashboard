@@ -5,10 +5,15 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import RouteFallback from '../common/RouteFallback';
 
+// Every route under AppLayout needs an entry. A missing one is not an empty
+// header — it falls through to 'dashboard' below and confidently shows the
+// wrong page name, which is how Stock In spent its life labelled "Dashboard".
+// Add the route here at the same time as you add it to App.jsx.
 const TITLE_KEYS = {
   '/': 'dashboard', '/pos': 'pos', '/sales': 'sales', '/products': 'products',
   '/categories': 'categories', '/orders': 'orders', '/playground': 'playground',
   '/customers': 'customers', '/staff': 'staff', '/settings': 'settings', '/assistant': 'assistant',
+  '/stock-in': 'stockIn',
 };
 
 export default function AppLayout() {
