@@ -142,7 +142,7 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
 
       <div className="surface-card p-5">
         <h3 className="text-[13px] font-semibold text-ink mb-4">{combined ? t('playgroundAnalytics.combinedTrend') : t('playgroundAnalytics.trend')}</h3>
-        <ResponsiveContainer width="100%" height={280}>
+        <ResponsiveContainer width="100%" height={280} debounce={150}>
           <ComposedChart data={chart} margin={{ top: 8, right: 10, left: 0, bottom: 0 }}>
             <defs>
               <linearGradient id={`${chartId}-primary`} x1="0" y1="0" x2="0" y2="1">

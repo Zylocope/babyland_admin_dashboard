@@ -335,7 +335,7 @@ export default function SalesDashboard() {
               <div><span>{t('aiChart.peak')}</span><strong>{peakDay?.day ?? '—'}</strong></div>
               <div><span>{inStoreLabel}</span><strong>{posPct}%</strong></div>
             </div>
-            <ResponsiveContainer width="100%" height={280}>
+            <ResponsiveContainer width="100%" height={280} debounce={150}>
               <ComposedChart data={chart} margin={{ top: 4, right: 8, left: 0, bottom: 0 }}>
                 {/* Dashed, horizontal only, and recessive: the grid is a reading
                     aid, not a subject. */}

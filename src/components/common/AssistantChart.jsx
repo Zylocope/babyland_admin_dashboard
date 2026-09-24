@@ -158,7 +158,7 @@ export default function AssistantChart({ spec }) {
         </div>
       ) : (
         <div className="w-full min-w-0" role="img" aria-label={t('aiChart.chartDescription', { title })}>
-          <ResponsiveContainer width="100%" height={250} minWidth={0}>
+          <ResponsiveContainer width="100%" height={250} minWidth={0} debounce={150}>
             {spec.kind === 'sales' ? (
               <AreaChart data={spec.data} margin={{ top: 8, right: 12, left: 0, bottom: 4 }}>
                 <defs>
