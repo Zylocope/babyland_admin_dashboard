@@ -116,12 +116,12 @@ export default function Orders() {
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>
-              <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
-                <th className="px-5 py-3 font-medium">{t('table.orderId')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.customer')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.date')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.amount')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.status')}</th>
+              <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
+                <th className="px-5 py-3.5 font-semibold">{t('table.orderId')}</th>
+                <th className="px-4 py-3.5 font-semibold">{t('table.customer')}</th>
+                <th className="px-4 py-3.5 font-semibold">{t('table.date')}</th>
+                <th className="px-4 py-3.5 font-semibold">{t('table.amount')}</th>
+                <th className="px-4 py-3.5 font-semibold">{t('table.status')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-app">

@@ -53,9 +53,9 @@ export default function Staff() {
       <div className="surface-card is-sheet overflow-hidden">
         <table className="w-full text-[15px]">
           <thead>
-            <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
-              <th className="px-5 py-3 font-medium">{t('table.username')}</th>
-              <th className="px-4 py-3 font-medium">{t('table.role')}</th>
+            <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
+              <th className="px-5 py-3.5 font-semibold">{t('table.username')}</th>
+              <th className="px-4 py-3.5 font-semibold">{t('table.role')}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-app">

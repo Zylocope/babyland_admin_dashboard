@@ -69,15 +69,15 @@ function Panel({ title, children }) {
 function DataTable({ columns, rows, empty, onRowClick }) {
   if (!rows.length) return <Empty label={empty} />;
   return (
-    // Same header as Products, Customers, Staff and Orders. This was the only
-    // table in the app wearing a plain grey head, which made the Sales views
-    // read as a different product from every other screen.
-    <div className="overflow-x-auto rounded-xl border border-app">
+    // Header matches the Products list: a quiet tinted strip, not a filled
+    // brand-coloured bar. The panel around this already draws the container,
+    // so the table adds no border of its own.
+    <div className="overflow-x-auto">
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
+          <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
             {columns.map(c => (
-              <th key={c.key} className={`px-4 py-3 font-medium ${c.align === 'right' ? 'text-right' : 'text-left'}`}>{c.label}</th>
+              <th key={c.key} className={`px-4 py-3.5 font-semibold ${c.align === 'right' ? 'text-right' : 'text-left'}`}>{c.label}</th>
             ))}
           </tr>
         </thead>
