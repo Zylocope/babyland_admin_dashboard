@@ -1,59 +1,116 @@
-import { useState } from 'react';
-import { IconEye, IconChevronRight, IconCircleX, IconDatabase } from '@tabler/icons-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  IconDatabase, IconChevronLeft, IconChevronRight, IconTruck, IconExternalLink,
+} from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
+import { formatShopTime } from '../utils/shopDay';
 import { useAuth } from '../context/AuthContext';
-import Badge from '../components/common/Badge';
-import SearchInput from '../components/common/SearchInput';
 import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import NotConnected from '../components/common/NotConnected';
+import { SkeletonRows, Skeleton } from '../components/common/Skeleton';
+import {
+  getOrders, getOrderDetail, advanceOrderStatus, nextStatus, ORDER_STATUSES,
+} from '../services/orderService';
 
-const STATUS_FLOW = ['Pending', 'Processing', 'Shipped', 'Delivered'];
+const PAGE_SIZE = 20;
+
+// Status colours borrowed from the shared tokens rather than invented here, so
+// an order badge means the same thing as every other status badge in the app.
+const STATUS_TONE = {
+  Pending: 'var(--status-pending)',
+  OnDelivery: 'var(--status-processing)',
+  Received: 'var(--status-delivered)',
+};
+
+function StatusBadge({ status, t }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 text-[12px] font-medium whitespace-nowrap"
+      style={{ color: STATUS_TONE[status] ?? 'var(--text-secondary)' }}>
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: 'currentColor' }} />
+      {t(`orderStatus.${status}`, status)}
+    </span>
+  );
+}
 
 export default function Orders() {
   const { t } = useTranslation();
   const { isManager } = useAuth();
-  const [orders, setOrders] = useState([]);
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [viewOrder, setViewOrder] = useState(null);
-  const [confirmCancel, setConfirmCancel] = useState(null);
 
-  const filtered = orders.filter(o => {
-    const matchSearch = o.id.includes(search) || o.customerName.toLowerCase().includes(search.toLowerCase()) || o.phone.includes(search);
-    const matchStatus = statusFilter === 'All' || o.status === statusFilter;
-    return matchSearch && matchStatus;
-  });
+  const [status, setStatus] = useState('All');
+  const [page, setPage] = useState(1);
+  const [state, setState] = useState({ key: '', rows: [], total: 0, pages: 1, error: '' });
+  const [reloadKey, setReloadKey] = useState(0);
 
-  const advanceStatus = (id) => {
-    setOrders(prev => prev.map(o => {
-      if (o.id !== id) return o;
-      const idx = STATUS_FLOW.indexOf(o.status);
-      if (idx < STATUS_FLOW.length - 1) return { ...o, status: STATUS_FLOW[idx + 1] };
-      return o;
-    }));
-  };
+  const [openId, setOpenId] = useState(null);
+  const [detail, setDetail] = useState({ id: null, status: 'loading', order: null });
+  const [advancing, setAdvancing] = useState(null);
 
-  const cancelOrder = (id) => setOrders(prev => prev.map(o => o.id === id ? { ...o, status: 'Cancelled' } : o));
+  const requestKey = `${status}|${page}|${reloadKey}`;
+  const loading = state.key !== requestKey;
 
-  const canAdvance = (status) => STATUS_FLOW.includes(status) && status !== 'Delivered';
+  useEffect(() => {
+    let active = true;
+    getOrders({ status, page, page_size: PAGE_SIZE })
+      .then(res => {
+        if (!active) return;
+        setState({
+          key: requestKey,
+          rows: Array.isArray(res?.data) ? res.data : [],
+          total: Number(res?.total_items ?? 0) || 0,
+          pages: Math.max(1, Number(res?.total_pages ?? 1) || 1),
+          error: '',
+        });
+      })
+      .catch(err => {
+        if (!active) return;
+        setState({ key: requestKey, rows: [], total: 0, pages: 1, error: err?.message || t('orders.loadFailed') });
+      });
+    return () => { active = false; };
+  }, [status, page, requestKey, t]);
+
+  // Same pattern as the receipt dialog: the id rides with the state so opening
+  // a second order shows a skeleton by comparison rather than briefly showing
+  // the previous order's items under the new one's heading.
+  useEffect(() => {
+    if (!openId) return;
+    let active = true;
+    getOrderDetail(openId)
+      .then(order => { if (active) setDetail({ id: openId, status: 'ok', order }); })
+      .catch(() => { if (active) setDetail({ id: openId, status: 'error', order: null }); });
+    return () => { active = false; };
+  }, [openId]);
+
+  const open = detail.id === openId ? detail : { status: 'loading', order: null };
+  const order = open.order;
+
+  const pickStatus = (value) => { setStatus(value); setPage(1); };
+  const reload = useCallback(() => setReloadKey(k => k + 1), []);
+
+  const { rows, total, pages, error } = state;
+
+  const filters = ['All', ...ORDER_STATUSES];
 
   return (
     <div className="space-y-5">
-      <NotConnected>{t('common.notConnected')}</NotConnected>
-
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex-1 min-w-48">
-          <SearchInput value={search} onChange={setSearch} placeholder={t('orders.search')} />
+        <div className="flex flex-wrap gap-1.5">
+          {filters.map(value => (
+            <button key={value} type="button" onClick={() => pickStatus(value)}
+              className={`px-3 py-1.5 text-xs rounded-lg border transition-colors cursor-pointer ${
+                status === value ? 'border-brand text-brand bg-brand-light' : 'border-app text-sub hover:border-brand'}`}>
+              {value === 'All' ? t('common.all', 'All') : t(`orderStatus.${value}`, value)}
+            </button>
+          ))}
         </div>
-        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}
-          className="px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
-          <option value="All">{t('common.allStatuses')}</option>
-          {[...STATUS_FLOW, 'Cancelled'].map(s => <option key={s} value={s}>{t(`badge.${s}`)}</option>)}
-        </select>
-        <span className="text-sm text-sub">{t('orders.count', { count: filtered.length })}</span>
+        <span className="text-sm text-sub ml-auto">
+          {loading ? '…' : t('orders.count', { count: total })}
+        </span>
       </div>
+
+      {error && !loading && (
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+      )}
 
       <div className="surface-card is-sheet overflow-hidden">
         <div className="overflow-x-auto">
@@ -62,124 +119,148 @@ export default function Orders() {
               <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
                 <th className="px-5 py-3 font-medium">{t('table.orderId')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.customer')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.phone')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.date')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.total')}</th>
+                <th className="px-4 py-3 font-medium">{t('table.amount')}</th>
                 <th className="px-4 py-3 font-medium">{t('table.status')}</th>
-                <th className="px-4 py-3 font-medium">{t('table.actions')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
-              {filtered.map(o => (
-                <tr key={o.id} className="hover:bg-brand-light transition-colors">
-                  <td className="px-5 py-3.5 font-mono text-xs text-brand font-semibold">{o.id}</td>
-                  <td className="px-4 py-3.5 font-medium text-ink">{o.customerName}</td>
-                  <td className="px-4 py-3.5 text-sub">{o.phone}</td>
-                  <td className="px-4 py-3.5 text-sub">{o.date}</td>
-                  <td className="px-4 py-3.5 font-semibold text-ink">{formatMMK(o.total)}</td>
-                  <td className="px-4 py-3.5"><Badge label={o.status} /></td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-1.5">
-                      <button onClick={() => setViewOrder(o)} className="p-1.5 rounded-lg text-mute hover:text-[#3B82F6] hover:bg-blue-50 transition-colors" title={t('common.view')}>
-                        <IconEye stroke={1.5} size={15} />
-                      </button>
-                      {canAdvance(o.status) && (
-                        <button onClick={() => advanceStatus(o.id)} className="p-1.5 rounded-lg text-mute hover:text-brand hover:bg-brand-light transition-colors" title={t('orders.advance')}>
-                          <IconChevronRight stroke={1.5} size={15} />
-                        </button>
-                      )}
-                      {isManager && o.status !== 'Cancelled' && (
-                        <button onClick={() => setConfirmCancel(o)} className="p-1.5 rounded-lg text-mute hover:text-[#EF4444] hover:bg-red-50 transition-colors" title={t('orders.cancel')}>
-                          <IconCircleX stroke={1.5} size={15} />
-                        </button>
-                      )}
-                    </div>
+              {loading && <SkeletonRows rows={8} cols={['45%', '60%', '55%', '40%', '50%']} />}
+              {!loading && rows.map(o => (
+                <tr key={o.id} onClick={() => setOpenId(o.id)}
+                  className="hover:bg-brand-light transition-colors cursor-pointer">
+                  <td className="px-5 py-3.5 font-mono text-xs text-brand">{o.id.slice(0, 8)}</td>
+                  {/* An order placed without a name is a fact, not a blank cell. */}
+                  <td className="px-4 py-3.5 text-ink">{o.customer || t('orders.noCustomer')}</td>
+                  <td className="px-4 py-3.5 text-sub tabular-nums whitespace-nowrap">
+                    {formatShopTime(o.created_at, 'YYYY-MM-DD HH:mm')}
                   </td>
+                  <td className="px-4 py-3.5 text-ink font-medium tabular-nums">{formatMMK(Number(o.total_amount))}</td>
+                  <td className="px-4 py-3.5"><StatusBadge status={o.delivery_status} t={t} /></td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && (
+          {!loading && rows.length === 0 && (
             <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
               <IconDatabase size={28} stroke={1.2} />
-              {t('orders.noData')}
+              {t('orders.none')}
             </div>
           )}
         </div>
       </div>
 
-      <Modal open={!!viewOrder} onClose={() => setViewOrder(null)} title={t('orders.orderTitle', { id: viewOrder?.id })} size="lg">
-        {viewOrder && (
+      {pages > 1 && (
+        <div className="flex items-center justify-center gap-4">
+          <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page <= 1 || loading}
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-app rounded-lg text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            <IconChevronLeft size={15} stroke={1.8} /> {t('products.prev')}
+          </button>
+          <span className="text-sm text-sub">{t('products.pageOf', { page, total: pages })}</span>
+          <button onClick={() => setPage(p => Math.min(pages, p + 1))} disabled={page >= pages || loading}
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm border border-app rounded-lg text-sub hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+            {t('products.next')} <IconChevronRight size={15} stroke={1.8} />
+          </button>
+        </div>
+      )}
+
+      <Modal open={!!openId} onClose={() => setOpenId(null)} title={t('orders.detailTitle')} size="md">
+        {open.status === 'loading' && (
+          <div className="space-y-3 skeleton-row">
+            <Skeleton w="50%" h={12} />
+            {Array.from({ length: 4 }, (_, i) => (
+              <Skeleton key={i} style={{ width: '100%', height: 14, '--i': i }} />
+            ))}
+          </div>
+        )}
+        {open.status === 'error' && (
+          <p role="alert" className="py-8 text-center text-sm text-mute">{t('orders.detailFailed')}</p>
+        )}
+        {open.status === 'ok' && order && (
           <div className="space-y-5">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-sub mb-1">{t('table.customer')}</p>
-                <p className="font-semibold text-ink">{viewOrder.customerName}</p>
-              </div>
-              <div>
-                <p className="text-xs text-sub mb-1">{t('table.phone')}</p>
-                <p className="font-semibold text-ink">{viewOrder.phone}</p>
-              </div>
-              <div>
-                <p className="text-xs text-sub mb-1">{t('table.date')}</p>
-                <p className="font-semibold text-ink">{viewOrder.date}</p>
-              </div>
-              <div>
-                <p className="text-xs text-sub mb-1">{t('table.status')}</p>
-                <Badge label={viewOrder.status} />
-              </div>
+            <div className="flex flex-wrap items-center gap-x-5 gap-y-1.5 text-[12px] text-sub">
+              <span className="font-mono">{order.id.slice(0, 8)}</span>
+              <span className="tabular-nums">{formatShopTime(order.created_at, 'YYYY-MM-DD HH:mm')}</span>
+              <StatusBadge status={order.delivery_status} t={t} />
             </div>
+
             <div>
-              <p className="text-xs text-sub mb-1">{t('orders.deliveryAddress')}</p>
-              <p className="text-sm text-ink">{viewOrder.address}</p>
+              <p className="text-[12px] text-sub">{t('customers.address')}</p>
+              <p className="text-sm text-ink mt-0.5">{order.shipping_address?.address_line_1 || '—'}</p>
+              <p className="text-sm text-sub tabular-nums">{order.shipping_address?.phone_number || '—'}</p>
             </div>
-            <div>
-              <p className="text-xs text-sub mb-2">{t('orders.itemsOrdered')}</p>
-              <div className="border border-app rounded-xl overflow-hidden">
-                <table className="w-full text-[15px]">
-                  <thead className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white bg-brand">
-                    <tr>
-                      <th className="px-4 py-2 text-left font-medium">{t('table.item')}</th>
-                      <th className="px-4 py-2 text-right font-medium">{t('table.qty')}</th>
-                      <th className="px-4 py-2 text-right font-medium">{t('table.price')}</th>
-                      <th className="px-4 py-2 text-right font-medium">{t('orders.subtotal')}</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-app">
-                    {viewOrder.items.map((item, i) => (
-                      <tr key={i}>
-                        <td className="px-4 py-2.5 text-ink">{item.name}</td>
-                        <td className="px-4 py-2.5 text-right text-sub">{item.qty}</td>
-                        <td className="px-4 py-2.5 text-right text-sub">{formatMMK(item.price)}</td>
-                        <td className="px-4 py-2.5 text-right font-medium text-ink">{formatMMK(item.qty * item.price)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                  <tfoot className="border-t border-app bg-base">
-                    <tr>
-                      <td colSpan={3} className="px-4 py-2.5 text-right font-semibold text-ink">{t('table.total')}</td>
-                      <td className="px-4 py-2.5 text-right font-bold text-brand">{formatMMK(viewOrder.total)}</td>
-                    </tr>
-                  </tfoot>
-                </table>
-              </div>
+
+            <div className="rounded-2xl px-4 py-3 space-y-2"
+              style={{ background: 'color-mix(in srgb, var(--text-muted) 8%, transparent)' }}>
+              {(order.items ?? []).map(item => (
+                <div key={item.id} className="flex justify-between gap-4 text-[13px]">
+                  <span className="text-sub min-w-0 truncate">
+                    {item.product_name} <span className="text-mute tabular-nums">×{item.quantity}</span>
+                  </span>
+                  <span className="tabular-nums text-ink flex-shrink-0">
+                    {formatMMK(Number(item.selling_price) * item.quantity)}
+                  </span>
+                </div>
+              ))}
             </div>
-            {canAdvance(viewOrder.status) && (
-              <div className="flex justify-end pt-2">
-                <button onClick={() => { advanceStatus(viewOrder.id); setViewOrder(o => ({ ...o, status: STATUS_FLOW[STATUS_FLOW.indexOf(o.status) + 1] })); }}
-                  className="px-4 py-2 text-sm bg-brand text-white rounded-lg hover:bg-brand-hover font-medium flex items-center gap-2">
-                  <IconChevronRight stroke={1.5} size={16} /> {t('orders.moveTo', { status: t(`badge.${STATUS_FLOW[STATUS_FLOW.indexOf(viewOrder.status) + 1]}`) })}
-                </button>
+
+            {order.order_tracking_url && (
+              <a href={order.order_tracking_url} target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1.5 text-[13px] text-brand hover:underline">
+                <IconExternalLink size={15} stroke={1.7} /> {t('orders.tracking')}
+              </a>
+            )}
+
+            {/* Every status change, oldest first — who moved it and when. */}
+            {(order.status_history?.length ?? 0) > 0 && (
+              <div>
+                <p className="text-[12px] text-sub mb-2">{t('orders.history')}</p>
+                <div className="space-y-1.5">
+                  {order.status_history.map(entry => (
+                    <div key={entry.id} className="flex items-center gap-3 text-[12px]">
+                      <StatusBadge status={entry.status} t={t} />
+                      <span className="text-mute tabular-nums">
+                        {formatShopTime(entry.created_at, 'YYYY-MM-DD HH:mm')}
+                      </span>
+                      {entry.changed_by && <span className="text-mute truncate">{entry.changed_by}</span>}
+                    </div>
+                  ))}
+                </div>
               </div>
+            )}
+
+            {isManager && nextStatus(order.delivery_status) && (
+              <button type="button" onClick={() => setAdvancing(order)}
+                className="press-spring w-full py-3 rounded-2xl bg-brand text-white font-medium hover:bg-brand-hover transition-colors cursor-pointer inline-flex items-center justify-center gap-2">
+                <IconTruck size={17} stroke={1.7} />
+                {t('orders.advanceTo', { status: t(`orderStatus.${nextStatus(order.delivery_status)}`) })}
+              </button>
             )}
           </div>
         )}
       </Modal>
 
-      <ConfirmDialog open={!!confirmCancel} onClose={() => setConfirmCancel(null)}
-        onConfirm={() => cancelOrder(confirmCancel.id)}
-        title={t('orders.cancelTitle')} message={t('orders.cancelMsg', { id: confirmCancel?.id })}
-        confirmLabel={t('orders.cancelOrder')} danger />
+      {/* The server derives the next status from the current one and takes no
+          status in the body, so a double click advances twice. Asking first is
+          the guard. */}
+      <ConfirmDialog
+        open={!!advancing} onClose={() => setAdvancing(null)}
+        title={t('orders.advanceTitle')}
+        message={t('orders.advanceMsg', {
+          status: advancing ? t(`orderStatus.${nextStatus(advancing.delivery_status)}`) : '',
+        })}
+        onConfirm={async () => {
+          const target = advancing;
+          if (!target) return;
+          try {
+            await advanceOrderStatus(target.id);
+            setOpenId(null);
+            reload();
+          } catch (err) {
+            setState(s => ({ ...s, error: err?.message || t('orders.advanceFailed') }));
+          }
+        }}
+      />
     </div>
   );
 }

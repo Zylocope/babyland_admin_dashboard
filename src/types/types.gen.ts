@@ -37,6 +37,64 @@ export type AdminInventory = {
     updated_by: string;
 };
 
+export type AdminOrderDetail = {
+    created_at: string;
+    customer?: string | null;
+    delivery_status: string;
+    id: string;
+    is_instore_sale: boolean;
+    items: Array<AdminOrderItem>;
+    order_method: string;
+    order_tracking_url?: string | null;
+    payment_method?: string | null;
+    payment_order_id?: string | null;
+    payment_provider?: string | null;
+    sale_id: string;
+    shipping_address: AdminOrderShippingAddress;
+    status_history: Array<AdminOrderStatusEntry>;
+    total_amount: string;
+};
+
+export type AdminOrderItem = {
+    cost_price: string;
+    created_at: string;
+    id: string;
+    product_id: string;
+    product_name: string;
+    quantity: number;
+    selling_price: string;
+};
+
+export type AdminOrderRow = {
+    created_at: string;
+    customer?: string | null;
+    delivery_status: string;
+    id: string;
+    order_tracking_url?: string | null;
+    sale_id: string;
+    total_amount: string;
+};
+
+export type AdminOrderShippingAddress = {
+    address_line_1: string;
+    phone_number: string;
+};
+
+export type AdminOrderStatusEntry = {
+    changed_by?: string | null;
+    created_at: string;
+    id: string;
+    status: string;
+};
+
+export type AdminOrdersQuery = {
+    end_date?: string | null;
+    page?: number | null;
+    page_size?: number | null;
+    start_date?: string | null;
+    status?: string | null;
+};
+
 export type AdminProduct = {
     barcode: string;
     category?: string | null;
@@ -149,6 +207,21 @@ export type PaginatedResponseAdminInventory = {
         unit_cost: string;
         updated_at: string;
         updated_by: string;
+    }>;
+    total_items: number;
+    total_pages: number;
+};
+
+export type PaginatedResponseAdminOrderRow = {
+    current_page: number;
+    data: Array<{
+        created_at: string;
+        customer?: string | null;
+        delivery_status: string;
+        id: string;
+        order_tracking_url?: string | null;
+        sale_id: string;
+        total_amount: string;
     }>;
     total_items: number;
     total_pages: number;
@@ -326,6 +399,39 @@ export type UserResponse = {
     id: string;
     phone_number?: string | null;
     username: string;
+};
+
+export type ChatData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/ai/chat';
+};
+
+export type ChatErrors = {
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Forbidden - Super admin role required
+     */
+    403: unknown;
+    /**
+     * Daily message limit exceeded
+     */
+    429: unknown;
+    /**
+     * Upstream Gemini request timed out
+     */
+    504: unknown;
+};
+
+export type ChatResponses = {
+    /**
+     * Gemini response relayed unchanged
+     */
+    200: unknown;
 };
 
 export type GetAllCategoriesData = {
@@ -622,6 +728,43 @@ export type AdminLogoutHandlerResponses = {
     200: unknown;
 };
 
+export type GetAllOrdersPaginatedData = {
+    body?: never;
+    path?: never;
+    query?: {
+        status?: string;
+        start_date?: string;
+        end_date?: string;
+        page?: number;
+        page_size?: number;
+    };
+    url: '/admin/orders';
+};
+
+export type GetAllOrdersPaginatedErrors = {
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Forbidden - Insufficient privileges
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetAllOrdersPaginatedResponses = {
+    /**
+     * Paginated list of orders
+     */
+    200: PaginatedResponseAdminOrderRow;
+};
+
+export type GetAllOrdersPaginatedResponse = GetAllOrdersPaginatedResponses[keyof GetAllOrdersPaginatedResponses];
+
 export type UpdateOrderDeliveryStatusData = {
     body?: never;
     path: {
@@ -657,6 +800,46 @@ export type UpdateOrderDeliveryStatusResponses = {
 };
 
 export type UpdateOrderDeliveryStatusResponse2 = UpdateOrderDeliveryStatusResponses[keyof UpdateOrderDeliveryStatusResponses];
+
+export type GetAdminOrderDetailData = {
+    body?: never;
+    path: {
+        /**
+         * Order UUID
+         */
+        order_id: string;
+    };
+    query?: never;
+    url: '/admin/orders/{order_id}';
+};
+
+export type GetAdminOrderDetailErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Order not found
+     */
+    404: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetAdminOrderDetailResponses = {
+    /**
+     * Admin order detail
+     */
+    200: AdminOrderDetail;
+};
+
+export type GetAdminOrderDetailResponse = GetAdminOrderDetailResponses[keyof GetAdminOrderDetailResponses];
 
 export type UpdateOrderTrackingUrlHandlerData = {
     body: UpdateOrderTrackingUrlPayload;

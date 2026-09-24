@@ -140,7 +140,8 @@
     "allStatuses": "All Statuses",
     "export": "Export",
     "notConnected": "This screen is not connected to the backend yet — nothing shown here is live data.",
-    "confirm": "Confirm"
+    "confirm": "Confirm",
+    "all": "All"
   },
   "badge": {
     "Pending": "Pending",
@@ -261,8 +262,8 @@
   },
   "orders": {
     "search": "Search by order ID, customer, phone...",
-    "count": "{{count}} orders",
-    "none": "No orders found.",
+    "count": "{{count}} order",
+    "none": "No orders in this view.",
     "advance": "Advance Status",
     "cancel": "Cancel",
     "orderTitle": "Order {{id}}",
@@ -273,7 +274,18 @@
     "cancelTitle": "Cancel Order",
     "cancelMsg": "Cancel order {{id}}? This cannot be undone.",
     "cancelOrder": "Cancel Order",
-    "noData": "No orders — no backend endpoint yet"
+    "noData": "No orders — no backend endpoint yet",
+    "count_plural": "{{count}} orders",
+    "noCustomer": "No name",
+    "loadFailed": "Could not load orders.",
+    "detailTitle": "Order",
+    "detailFailed": "Could not load this order.",
+    "tracking": "Open tracking link",
+    "history": "Status history",
+    "advanceTo": "Mark as {{status}}",
+    "advanceTitle": "Move this order on?",
+    "advanceMsg": "The order will be marked {{status}}. This cannot be undone from here.",
+    "advanceFailed": "Could not update the order status."
   },
   "customers": {
     "count": "{{count}} customers",
@@ -568,5 +580,10 @@
     "range": "{{start}} to {{end}}",
     "generated": "Generated {{at}}",
     "loadFailed": "Could not load the full data for one of the selected sections."
+  },
+  "orderStatus": {
+    "Pending": "Pending",
+    "OnDelivery": "On delivery",
+    "Received": "Received"
   }
 }
