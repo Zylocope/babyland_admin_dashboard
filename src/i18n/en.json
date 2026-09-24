@@ -490,6 +490,20 @@
     "sessionCount": "{{lines}} products · {{units}} units",
     "failed": "Could not add stock. Check the connection and try again."
   },
+  "barcodeCamera": {
+    "open": "Scan with camera",
+    "title": "Scan barcode",
+    "preview": "Camera preview for barcode scanning",
+    "starting": "Starting camera...",
+    "help": "Hold the barcode inside the frame until it is detected.",
+    "retry": "Try again",
+    "unsupported": "Camera barcode scanning is not supported in this browser. Use Chrome or Edge, or type the barcode.",
+    "insecure": "Camera access requires a secure HTTPS connection.",
+    "denied": "Camera permission was denied. Allow camera access in the browser and try again.",
+    "notFound": "No camera was found on this device.",
+    "busy": "The camera is being used by another application.",
+    "failed": "The camera could not be started. Check it and try again."
+  },
   "quick": {
     "title": "Instant",
     "today": "Today's sales",

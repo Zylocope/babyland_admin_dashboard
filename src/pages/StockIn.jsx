@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  IconBarcode, IconPackageImport, IconCircleCheck, IconLoader2, IconX, IconClockHour4,
+  IconBarcode, IconPackageImport, IconCircleCheck, IconLoader2, IconX, IconClockHour4, IconCamera,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import { shopToday } from '../utils/shopDay';
 import { validateStockIn } from '../utils/stockIn';
 import { searchProductsSimple, insertInventory } from '../services/productService';
+import BarcodeCameraScanner from '../components/common/BarcodeCameraScanner';
 
 // Receiving a delivery is scan-shaped work, not browse-shaped. The per-product
 // modal on Products makes you find the row first, which is fine for a one-off
@@ -24,6 +25,7 @@ export default function StockIn() {
   const [form, setForm] = useState(EMPTY);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [cameraOpen, setCameraOpen] = useState(false);
   // What this session has recorded. Staff working through a delivery need to
   // see what already went in without leaving the screen.
   const [done, setDone] = useState([]);
@@ -132,11 +134,21 @@ export default function StockIn() {
                 onChange={e => setQuery(e.target.value)}
                 placeholder={t('stockIn.scanPlaceholder')}
                 disabled={!!product}
-                className={`${field} pl-11 pr-10 disabled:opacity-60`}
+                className={`${field} pl-11 pr-20 disabled:opacity-60`}
               />
               {searching && searchOpen && (
-                <IconLoader2 size={17} className="absolute right-3.5 top-1/2 -translate-y-1/2 animate-spin text-mute" />
+                <IconLoader2 size={17} className="absolute right-12 top-1/2 -translate-y-1/2 animate-spin text-mute" />
               )}
+              <button
+                type="button"
+                disabled={!!product}
+                onClick={() => setCameraOpen(true)}
+                aria-label={t('barcodeCamera.open')}
+                title={t('barcodeCamera.open')}
+                className="control-icon absolute right-1.5 top-1/2 -translate-y-1/2 text-sub hover:text-brand hover:bg-brand-light disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <IconCamera size={19} stroke={1.6} />
+              </button>
             </div>
           </label>
           <p className="text-[12px] text-sub mt-2">{t('stockIn.scanHelp')}</p>
@@ -238,6 +250,17 @@ export default function StockIn() {
           )}
         </div>
       </div>
+
+      <BarcodeCameraScanner
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onDetected={code => {
+          setQuery(code);
+          setResults([]);
+          setError('');
+          barcodeRef.current?.focus();
+        }}
+      />
     </div>
   );
 }

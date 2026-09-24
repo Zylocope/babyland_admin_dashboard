@@ -12,6 +12,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.107.0",
     "@tabler/icons-react": "^3.44.0",
+    "@zxing/browser": "^0.2.1",
     "date-fns": "^4.4.0",
     "dayjs": "^1.11.23",
     "i18next": "^26.3.1",

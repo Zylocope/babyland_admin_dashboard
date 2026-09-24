@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Skeleton from '../components/common/Skeleton';
-import { IconSearch, IconPlus, IconMinus, IconTrash, IconShoppingCart, IconCircleCheck, IconBarcode, IconLoader2, IconAlertTriangle } from '@tabler/icons-react';
+import { IconSearch, IconPlus, IconMinus, IconTrash, IconShoppingCart, IconCircleCheck, IconBarcode, IconLoader2, IconAlertTriangle, IconCamera } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import Modal from '../components/common/Modal';
+import BarcodeCameraScanner from '../components/common/BarcodeCameraScanner';
 import { searchProductsSimple, createSale } from '../services/productService';
 
 const num = (v) => Number(v ?? 0);
@@ -33,6 +34,7 @@ export default function POS() {
   const [cart, setCart] = useState([]);          // [{ id, name, barcode, price, stock, qty }]
   const [submitting, setSubmitting] = useState(false);
   const [receipt, setReceipt] = useState(null);   // { lines, total, recorded, reason }
+  const [cameraOpen, setCameraOpen] = useState(false);
   const inputRef = useRef(null);
 
   const addToCart = useCallback((p) => {
@@ -52,7 +54,7 @@ export default function POS() {
   // Debounced live product search (real backend).
   useEffect(() => {
     const q = query.trim();
-    if (!q) { setResults([]); setSearchError(''); setSearchedFor(''); return; }
+    if (!q) return undefined;
 
     let active = true;
     const h = setTimeout(async () => {
@@ -65,7 +67,12 @@ export default function POS() {
         setSearchedFor(q);
         // Scanner behaviour: an exact barcode match auto-adds and clears.
         const exact = items.find(p => p.barcode?.toLowerCase() === q.toLowerCase());
-        if (exact && items.length === 1) { addToCart(exact); setQuery(''); setResults([]); }
+        if (exact && items.length === 1) {
+          addToCart(exact);
+          setQuery('');
+          setResults([]);
+          setSearchedFor('');
+        }
       } catch (e) {
         if (active) { setSearchError(e?.message || t('pos.searchFailed')); setResults([]); setSearchedFor(q); }
       }
@@ -100,6 +107,8 @@ export default function POS() {
       setCart([]);
       setQuery('');
       setResults([]);
+      setSearchError('');
+      setSearchedFor('');
     } catch (e) {
       // The cart is kept on purpose. The sale did not happen, and clearing it
       // made the cashier retype the whole basket just to retry.
@@ -119,10 +128,27 @@ export default function POS() {
             ref={inputRef} aria-label={t('pos.searchPlaceholder')}
             autoFocus
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={e => {
+              const value = e.target.value;
+              setQuery(value);
+              if (!value.trim()) {
+                setResults([]);
+                setSearchError('');
+                setSearchedFor('');
+              }
+            }}
             placeholder={t('pos.searchPlaceholder')}
-            className="w-full pl-11 pr-4 py-3 text-[15px] border border-app rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-brand"
+            className="w-full pl-11 pr-12 py-3 text-[15px] border border-app rounded-xl bg-card focus:outline-none focus:ring-2 focus:ring-brand"
           />
+          <button
+            type="button"
+            onClick={() => setCameraOpen(true)}
+            aria-label={t('barcodeCamera.open')}
+            title={t('barcodeCamera.open')}
+            className="control-icon absolute right-1.5 top-1/2 -translate-y-1/2 text-sub hover:text-brand hover:bg-brand-light cursor-pointer"
+          >
+            <IconCamera size={19} stroke={1.6} />
+          </button>
         </div>
 
         {searchError && (
@@ -264,6 +290,16 @@ export default function POS() {
           </div>
         )}
       </Modal>
+
+      <BarcodeCameraScanner
+        open={cameraOpen}
+        onClose={() => setCameraOpen(false)}
+        onDetected={code => {
+          setQuery(code);
+          setSearchError('');
+          inputRef.current?.focus();
+        }}
+      />
     </div>
   );
 }
