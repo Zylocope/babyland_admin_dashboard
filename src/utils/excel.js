@@ -55,3 +55,29 @@ export const downloadExcel = async (filename, columns, rows, sheetName = 'Sheet1
   XLSX.utils.book_append_sheet(book, sheet, sheetName.replace(/[:\\/?*[\]]/g, '').slice(0, 31));
   XLSX.writeFile(book, filename);
 };
+
+// Several tables in one workbook, one sheet each. A shop report is usually
+// "the summary AND the daily breakdown", and three separate files is worse than
+// three tabs.
+export const downloadExcelWorkbook = async (filename, sheets) => {
+  const XLSX = await import('xlsx');
+  const book = XLSX.utils.book_new();
+
+  for (const { name, columns, rows } of sheets) {
+    const data = [
+      columns.map(c => c.label),
+      ...rows.map(row => columns.map(c => (c.text ? String(c.value(row) ?? '') : coerce(c.value(row))))),
+    ];
+    const sheet = XLSX.utils.aoa_to_sheet(data);
+    sheet['!cols'] = columns.map(c => ({
+      wch: Math.min(40, Math.max(
+        String(c.label).length + 2,
+        ...rows.slice(0, 200).map(r => String(c.value(r) ?? '').length + 2),
+        10,
+      )),
+    }));
+    XLSX.utils.book_append_sheet(book, sheet, name.replace(/[:\\/?*[\]]/g, '').slice(0, 31));
+  }
+
+  XLSX.writeFile(book, filename);
+};

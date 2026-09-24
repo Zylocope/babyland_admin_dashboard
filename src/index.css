@@ -667,3 +667,43 @@ html[data-style="flat"] .sidebar-shell { border-radius: 8px; }
   .press-spring:active, .btn-primary:active { transform: none; }
   .sidebar-link:hover .sidebar-nav-icon, .sidebar-link:active .sidebar-nav-icon { transform: none; }
 }
+
+/* ---- Printing ----
+   The sheet is its own block rather than a restyle of the screen. Trying to
+   print the live page means fighting the sidebar, the glass surfaces, the dark
+   theme and a chart that paginates badly; a plain table on white is what a shop
+   actually wants to file. */
+.print-sheet { display: none; }
+
+@media print {
+  /* Everything except the sheet is off. visibility would still reserve the
+     space and push the sheet down a page. */
+  body > *, #root > * { display: none !important; }
+  #root, body, html { display: block !important; background: #fff !important; }
+
+  .print-sheet {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    padding: 0;
+    color: #000;
+    background: #fff;
+    font-size: 11pt;
+  }
+  .print-sheet-head { margin-bottom: 18pt; border-bottom: 1pt solid #000; padding-bottom: 8pt; }
+  .print-sheet-head h1 { margin: 0; font-size: 18pt; }
+  .print-sheet-head p { margin: 4pt 0 0; font-size: 9pt; color: #444; }
+
+  .print-sheet section { margin-bottom: 20pt; }
+  /* Keep a heading with at least the first rows of its table. */
+  .print-sheet h2 { font-size: 12pt; margin: 0 0 6pt; break-after: avoid; }
+  .print-sheet table { width: 100%; border-collapse: collapse; }
+  .print-sheet thead { display: table-header-group; }  /* repeat header per page */
+  .print-sheet tr { break-inside: avoid; }
+  .print-sheet th, .print-sheet td {
+    padding: 4pt 6pt; border-bottom: 0.5pt solid #bbb; font-size: 9.5pt;
+  }
+  .print-sheet th { border-bottom: 1pt solid #000; font-weight: 600; text-align: left; }
+
+  @page { margin: 14mm; }
+}

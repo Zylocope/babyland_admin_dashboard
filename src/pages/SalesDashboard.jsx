@@ -2,15 +2,16 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   IconCash, IconReportMoney, IconReceipt, IconShoppingBag, IconPackage,
-  IconDatabase, IconDownload, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket, IconFileSpreadsheet
+  IconDatabase, IconChartHistogram, IconCalendarStats, IconTrophy, IconTicket, IconPrinter
 } from '@tabler/icons-react';
 import { Bar, Line, ComposedChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import StatCard from '../components/common/StatCard';
 import SubBar from '../components/common/SubBar';
 import ChartLegend from '../components/common/ChartLegend';
+import ReportDialog from '../components/common/ReportDialog';
 import { formatMMK, formatMMKShort } from '../utils/currency';
-import { downloadCsv } from '../utils/csv';
-import { downloadExcel } from '../utils/excel';
+import { downloadCsvSections } from '../utils/csv';
+import { downloadExcelWorkbook } from '../utils/excel';
 import { colorAt, seriesColor } from '../utils/chartPalette';
 import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
@@ -162,6 +163,8 @@ export default function SalesDashboard() {
   const hasOnline = chart.some(row => Number(row[onlineLabel]) > 0);
   const barRadius = chart.length > 14 ? 3 : 5;
   const show = (v) => (loading ? '...' : v);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [printing, setPrinting] = useState(null);
 
   const VIEWS = [
     { key: 'channel', label: t('salesViews.channel'), icon: IconChartHistogram },
@@ -204,25 +207,65 @@ export default function SalesDashboard() {
     { _key: 'basket', label: t('posDash.basket'), field: 'avg_basket_mmk', fmt: formatMMK },
   ];
 
-  const exportable = {
-    channel: { cols: channelCols, rows: channelRows },
-    receipts: { cols: receiptCols, rows: periodReceipts },
-    daily: { cols: dailyCols, rows: s.by_day },
-    bestworst: { cols: dailyCols, rows: ranked },
-  }[view];
+  const reportSections = [
+    { key: 'channel', name: t('salesViews.channel'), columns: channelCols, rows: channelRows },
+    { key: 'daily', name: t('salesViews.daily'), columns: dailyCols, rows: s.by_day },
+    { key: 'bestworst', name: t('salesViews.bestworst'), columns: dailyCols, rows: ranked },
+    { key: 'receipts', name: t('salesViews.receipts'), columns: receiptCols, rows: periodReceipts },
+  ];
 
-  const onExport = (kind) => {
-    if (!exportable.rows.length) return;
-    const name = `appleland-${view}-${start}_${end}`;
-    if (kind === 'xlsx') {
-      downloadExcel(`${name}.xlsx`, exportable.cols, exportable.rows, t(`salesViews.${view}`));
-      return;
-    }
-    downloadCsv(`${name}.csv`, exportable.cols, exportable.rows);
+  const stamp = `appleland-${start}_${end}`;
+  const printSheet = (chosen) => {
+    // Rendered, then printed on the next frame — the browser needs the print
+    // block laid out before it can paginate it.
+    setPrinting(chosen);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.print();
+      setPrinting(null);
+    }));
   };
 
   return (
     <div className="space-y-4">
+      <ReportDialog
+        open={reportOpen} onClose={() => setReportOpen(false)} sections={reportSections}
+        onPrint={printSheet}
+        onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen.map(c => ({ name: c.name, columns: c.columns, rows: c.rows })))}
+        onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
+      />
+
+      {/* Only present while printing. Everything else on the page is hidden by
+          the print stylesheet, so this is the whole sheet: a header saying what
+          the numbers are and when they were taken, then the chosen tables. */}
+      {printing && (
+        <div className="print-sheet">
+          <header className="print-sheet-head">
+            <h1>Appleland</h1>
+            <p>{t('report.range', { start, end })} · {t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}</p>
+          </header>
+          {printing.map(section => (
+            <section key={section.key}>
+              <h2>{section.name}</h2>
+              <table>
+                <thead>
+                  <tr>{section.columns.map(c => <th key={c.key} style={{ textAlign: c.align === 'right' ? 'right' : 'left' }}>{c.label}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {section.rows.map((row, i) => (
+                    <tr key={row._key ?? row.id ?? row.date ?? i}>
+                      {section.columns.map(c => (
+                        <td key={c.key} style={{ textAlign: c.align === 'right' ? 'right' : 'left' }}>
+                          {String(c.value(row) ?? '')}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          ))}
+        </div>
+      )}
       <div className="inline-flex rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
         {[
           { key: 'retail', label: t('salesSource.retail'), icon: IconShoppingBag },
@@ -250,18 +293,11 @@ export default function SalesDashboard() {
         {/* Manager only. Export runs in the browser, so this is a UI gate, not a
             permission boundary — a server-side export would need a role check too. */}
         {isManager && (
-          <>
-            <button onClick={() => onExport('xlsx')} disabled={loading || !exportable.rows.length}
-              title={exportable.rows.length ? t('subbar.exportExcel') : t('subbar.noRows')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              <IconFileSpreadsheet size={14} stroke={1.7} /> {t('subbar.exportExcel')}
-            </button>
-            <button onClick={() => onExport('csv')} disabled={loading || !exportable.rows.length}
-              title={exportable.rows.length ? t('subbar.exportCsv') : t('subbar.noRows')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
-              <IconDownload size={14} stroke={1.7} /> {t('subbar.exportCsv')}
-            </button>
-          </>
+          <button onClick={() => setReportOpen(true)} disabled={loading}
+            title={t('report.title')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer">
+            <IconPrinter size={14} stroke={1.7} /> {t('report.button')}
+          </button>
         )}
       </SubBar>
 

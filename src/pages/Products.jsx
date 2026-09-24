@@ -2,11 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight,
-  IconDownload, IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconFileSpreadsheet } from '@tabler/icons-react';
+  IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconPrinter } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
-import { downloadCsv } from '../utils/csv';
-import { downloadExcel } from '../utils/excel';
+import { downloadCsvSections } from '../utils/csv';
+import { downloadExcelWorkbook } from '../utils/excel';
+import ReportDialog from '../components/common/ReportDialog';
 import { useAuth } from '../context/AuthContext';
 import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
@@ -55,6 +56,8 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stockFor, setStockFor] = useState(null);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [printing, setPrinting] = useState(null);
 
   // Any change to what is being filtered sends you back to page 1.
   const pickView = (v) => { setView(v); setPage(1); };
@@ -110,8 +113,60 @@ export default function Products() {
 
   const isLow = needsRestock;
 
+  // Every view is offered, not only the one on screen — "print the low stock
+  // list" is a shop errand, not a reason to navigate first. Search and category
+  // filters are deliberately NOT applied: a report of "what I happened to be
+  // searching for" is not a report.
+  const reportSections = Object.entries(VIEW_FILTERS).map(([key, match]) => ({
+    key,
+    name: t(`products.view_${key}`),
+    columns: exportCols,
+    rows: allProducts.map(normalizeProduct).filter(match),
+  }));
+
+  const stamp = `appleland-products-${new Date().toISOString().slice(0, 10)}`;
+  const printSheet = (chosen) => {
+    setPrinting(chosen);
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      window.print();
+      setPrinting(null);
+    }));
+  };
+
   return (
     <div className="space-y-4">
+      <ReportDialog
+        open={reportOpen} onClose={() => setReportOpen(false)} sections={reportSections}
+        onPrint={printSheet}
+        onExcel={chosen => downloadExcelWorkbook(`${stamp}.xlsx`, chosen)}
+        onCsv={chosen => downloadCsvSections(`${stamp}.csv`, chosen)}
+      />
+
+      {printing && (
+        <div className="print-sheet">
+          <header className="print-sheet-head">
+            <h1>Appleland</h1>
+            <p>{t('titles.products')} · {t('report.generated', { at: new Date().toISOString().slice(0, 16).replace('T', ' ') })}</p>
+          </header>
+          {printing.map(section => (
+            <section key={section.key}>
+              <h2>{section.name}</h2>
+              <table>
+                <thead>
+                  <tr>{section.columns.map(c => <th key={c.key}>{c.label}</th>)}</tr>
+                </thead>
+                <tbody>
+                  {section.rows.map(row => (
+                    <tr key={row.id}>
+                      {section.columns.map(c => <td key={c.key}>{String(c.value(row) ?? '')}</td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </section>
+          ))}
+        </div>
+      )}
       <SubBar views={VIEWS} view={view} onView={pickView}>
         <div className="w-48"><SearchInput value={search} onChange={pickSearch} placeholder={t('products.search')} /></div>
         <select
@@ -126,24 +181,12 @@ export default function Products() {
         {/* Manager only. Runs in the browser, so it is a UI gate — a server-side
             export would need the same role check that restock has. */}
         {isManager && (
-          <>
-            <button
-              onClick={() => filtered.length && downloadExcel(`appleland-products-${view}.xlsx`, exportCols, filtered, t(`products.view_${view}`))}
-              disabled={loading || !filtered.length}
-              title={filtered.length ? t('subbar.exportExcel') : t('subbar.noRows')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              <IconFileSpreadsheet size={14} stroke={1.7} /> {t('subbar.exportExcel')}
-            </button>
-            <button
-              onClick={() => filtered.length && downloadCsv(`appleland-products-${view}.csv`, exportCols, filtered)}
-              disabled={loading || !filtered.length}
-              title={filtered.length ? t('subbar.exportCsv') : t('subbar.noRows')}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-            >
-              <IconDownload size={14} stroke={1.7} /> {t('subbar.exportCsv')}
-            </button>
-          </>
+          <button onClick={() => setReportOpen(true)} disabled={loading}
+            title={t('report.title')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            <IconPrinter size={14} stroke={1.7} /> {t('report.button')}
+          </button>
         )}
         {isManager && (
           <button onClick={() => navigate('/products/new')} className="btn-primary">

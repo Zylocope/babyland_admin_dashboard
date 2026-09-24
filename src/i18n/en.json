@@ -526,5 +526,17 @@
     "entries": "Entries",
     "items": "Items",
     "critical": "Critical"
+  },
+  "report": {
+    "title": "Print or export a report",
+    "button": "Report",
+    "intro": "Choose what to include. Everything below is from the selected date range.",
+    "rows": "{{count}} row",
+    "rows_plural": "{{count}} rows",
+    "nothing": "No data in this date range to report on.",
+    "print": "Print",
+    "printHint": "Print also saves as PDF — choose \"Save as PDF\" in the print dialog.",
+    "range": "{{start}} to {{end}}",
+    "generated": "Generated {{at}}"
   }
 }

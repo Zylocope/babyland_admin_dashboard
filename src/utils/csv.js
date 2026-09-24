@@ -26,3 +26,22 @@ export const downloadCsv = (filename, columns, rows) => {
   link.remove();
   URL.revokeObjectURL(url);
 };
+
+const CRLF = '\r\n';
+
+// Several tables in one CSV, separated by a titled blank line. A browser blocks
+// a burst of downloads, and a shop report is read as one document anyway.
+export const downloadCsvSections = (filename, sections) => {
+  const body = sections
+    .map(({ name, columns, rows }) => [name, toCsv(columns, rows)].join(CRLF))
+    .join(CRLF + CRLF);
+  const blob = new Blob(['﻿' + body], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+};
