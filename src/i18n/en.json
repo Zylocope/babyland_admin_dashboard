@@ -472,7 +472,9 @@
     "noCashier": "No cashier (online)",
     "unitsSold": "Units sold",
     "productsReading": "Reading every receipt in this period — the sale list does not carry line items, so this takes a few seconds.",
-    "productsPartial": "Some receipts could not be read, so this ranking covers part of the period. Try a shorter range."
+    "productsPartial": "Some receipts could not be read, so this ranking covers part of the period. Try a shorter range.",
+    "buyPrice": "Buy",
+    "sellPrice": "Sell"
   },
   "productViews": {
     "all": "All products",

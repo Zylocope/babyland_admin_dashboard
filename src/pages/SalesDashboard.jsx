@@ -204,11 +204,29 @@ export default function SalesDashboard() {
     { key: 'products', label: t('salesViews.products'), icon: IconPackage },
   ];
 
+  // Buying and selling price per unit, averaged over what actually sold in the
+  // period. Neither is on the product record — selling_price is the current
+  // shelf price and there is no cost on it at all — so these come from the sale
+  // lines, which store both as they were at the moment of sale. That is also
+  // the only way a price change mid-period shows up honestly.
+  const perUnit = (total, units) => (units ? Math.round(total / units) : 0);
   const soldCols = [
     { key: 'name', label: t('table.item'), value: r => r.name },
     { key: 'units', label: t('salesTable.unitsSold'), align: 'right', value: r => r.units },
+    { key: 'buy', label: t('salesTable.buyPrice'), align: 'right',
+      value: r => formatMMK(perUnit(r.cost_mmk, r.units)) },
+    { key: 'sell', label: t('salesTable.sellPrice'), align: 'right',
+      value: r => formatMMK(perUnit(r.revenue_mmk, r.units)) },
     { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: r => formatMMK(Math.round(r.revenue_mmk)) },
-    { key: 'profit', label: t('posDash.grossProfit'), align: 'right', value: r => formatMMK(Math.round(r.profit_mmk)) },
+    // A product sold below cost is the whole reason to look at this table, so
+    // it is coloured rather than left as one number among six.
+    { key: 'profit', label: t('posDash.profit'), align: 'right',
+      value: r => formatMMK(Math.round(r.profit_mmk)),
+      cell: r => (
+        <span style={r.profit_mmk < 0 ? { color: 'var(--status-cancelled)', fontWeight: 600 } : undefined}>
+          {formatMMK(Math.round(r.profit_mmk))}
+        </span>
+      ) },
   ];
 
   const receiptCols = [
