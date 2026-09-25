@@ -64,8 +64,21 @@ export default function BarcodeCameraScanner({ open, onClose, onDetected }) {
         // the camera opens there; it adds nothing to the normal page bundle.
         if (!globalThis.BarcodeDetector) {
           const { BrowserMultiFormatReader } = await import('@zxing/browser');
+          const { DecodeHintType, BarcodeFormat } = await import('@zxing/library');
           if (cancelled) return;
-          const reader = new BrowserMultiFormatReader(undefined, { delayBetweenScanAttempts: 180 });
+          // Told what to look for and to work at it. Unhinted, ZXing tries every
+          // symbology it knows on every frame and gives up early on a soft one —
+          // which is exactly the frame a laptop webcam produces at close range.
+          // TRY_HARDER costs CPU we have and buys reads we do not.
+          const hints = new Map([
+            [DecodeHintType.TRY_HARDER, true],
+            [DecodeHintType.POSSIBLE_FORMATS, [
+              BarcodeFormat.CODE_128, BarcodeFormat.CODE_39, BarcodeFormat.ITF,
+              BarcodeFormat.EAN_13, BarcodeFormat.EAN_8,
+              BarcodeFormat.UPC_A, BarcodeFormat.UPC_E, BarcodeFormat.CODABAR,
+            ]],
+          ]);
+          const reader = new BrowserMultiFormatReader(hints, { delayBetweenScanAttempts: 180 });
           const controls = await reader.decodeFromConstraints(constraints, videoRef.current, (result, _error, scanControls) => {
             const value = result?.getText?.().trim();
             if (!value || cancelled || detectedRef.current) return;
