@@ -27,6 +27,18 @@ const close = (acc) => {
   };
 };
 
+// The wire says is_instore_sale, and says it positively. This read used to be
+// `r.is_online_sale`, a field the API has never sent — so it was undefined on
+// every row, every sale fell into the in-store bucket, and the online column
+// sat at zero no matter how many online sales there were. Nothing failed
+// loudly: the grand total stayed correct because it does not depend on the
+// split, which is why it survived so long.
+//
+// Anything that is not explicitly in-store counts as online, so a row that
+// stops carrying the flag lands in the smaller bucket where it is noticed
+// rather than quietly padding the larger one.
+const isOnline = (row) => row.is_instore_sale !== true;
+
 export const summarizeSales = (rows) => {
   const grand = blank();
   const inStore = blank();
@@ -35,7 +47,7 @@ export const summarizeSales = (rows) => {
 
   for (const r of rows) {
     add(grand, r);
-    add(r.is_online_sale ? online : inStore, r);
+    add(isOnline(r) ? online : inStore, r);
 
     let day = byDay.get(r.sale_date);
     if (!day) {
@@ -43,7 +55,7 @@ export const summarizeSales = (rows) => {
       byDay.set(r.sale_date, day);
     }
     add(day.all, r);
-    add(r.is_online_sale ? day.online : day.in_store, r);
+    add(isOnline(r) ? day.online : day.in_store, r);
   }
 
   return {

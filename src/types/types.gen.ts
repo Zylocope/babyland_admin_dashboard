@@ -43,26 +43,16 @@ export type AdminOrderDetail = {
     delivery_status: string;
     id: string;
     is_instore_sale: boolean;
-    items: Array<AdminOrderItem>;
+    items: Array<OrderItem>;
     order_method: string;
     order_tracking_url?: string | null;
     payment_method?: string | null;
     payment_order_id?: string | null;
     payment_provider?: string | null;
     sale_id: string;
-    shipping_address: AdminOrderShippingAddress;
-    status_history: Array<AdminOrderStatusEntry>;
+    shipping_address: OrderShippingAddress;
+    status_history: Array<OrderStatusEntry>;
     total_amount: string;
-};
-
-export type AdminOrderItem = {
-    cost_price: string;
-    created_at: string;
-    id: string;
-    product_id: string;
-    product_name: string;
-    quantity: number;
-    selling_price: string;
 };
 
 export type AdminOrderRow = {
@@ -75,24 +65,31 @@ export type AdminOrderRow = {
     total_amount: string;
 };
 
-export type AdminOrderShippingAddress = {
-    address_line_1: string;
-    phone_number: string;
-};
-
-export type AdminOrderStatusEntry = {
-    changed_by?: string | null;
-    created_at: string;
-    id: string;
-    status: string;
-};
-
 export type AdminOrdersQuery = {
     end_date?: string | null;
     page?: number | null;
     page_size?: number | null;
     start_date?: string | null;
     status?: string | null;
+};
+
+export type AdminPlaygroundPurchase = {
+    created_at: string;
+    id: string;
+    is_free_redemption: boolean;
+    line_total: string;
+    quantity: number;
+    unit_price: string;
+    user_id: string;
+    username: string;
+};
+
+export type AdminPlaygroundPurchasesQuery = {
+    end_date?: string | null;
+    is_free_redemption?: boolean | null;
+    page?: number | null;
+    page_size?: number | null;
+    start_date?: string | null;
 };
 
 export type AdminProduct = {
@@ -193,6 +190,28 @@ export type NewInventoryPayload = {
     unit_cost: string;
 };
 
+export type OrderItem = {
+    cost_price: string;
+    created_at: string;
+    id: string;
+    product_id: string;
+    product_name: string;
+    quantity: number;
+    selling_price: string;
+};
+
+export type OrderShippingAddress = {
+    address_line_1: string;
+    phone_number: string;
+};
+
+export type OrderStatusEntry = {
+    changed_by?: string | null;
+    created_at: string;
+    id: string;
+    status: string;
+};
+
 export type PaginatedResponseAdminInventory = {
     current_page: number;
     data: Array<{
@@ -222,6 +241,22 @@ export type PaginatedResponseAdminOrderRow = {
         order_tracking_url?: string | null;
         sale_id: string;
         total_amount: string;
+    }>;
+    total_items: number;
+    total_pages: number;
+};
+
+export type PaginatedResponseAdminPlaygroundPurchase = {
+    current_page: number;
+    data: Array<{
+        created_at: string;
+        id: string;
+        is_free_redemption: boolean;
+        line_total: string;
+        quantity: number;
+        unit_price: string;
+        user_id: string;
+        username: string;
     }>;
     total_items: number;
     total_pages: number;
@@ -916,6 +951,47 @@ export type GetCheckoutDataAdminResponses = {
 };
 
 export type GetCheckoutDataAdminResponse = GetCheckoutDataAdminResponses[keyof GetCheckoutDataAdminResponses];
+
+export type GetAdminPurchasesPaginatedData = {
+    body?: never;
+    path?: never;
+    query?: {
+        start_date?: string;
+        end_date?: string;
+        is_free_redemption?: boolean;
+        page?: number;
+        page_size?: number;
+    };
+    url: '/admin/playground/purchases';
+};
+
+export type GetAdminPurchasesPaginatedErrors = {
+    /**
+     * Bad request - invalid or inverted date range
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Forbidden - Insufficient privileges
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetAdminPurchasesPaginatedResponses = {
+    /**
+     * Paginated list of playground purchases
+     */
+    200: PaginatedResponseAdminPlaygroundPurchase;
+};
+
+export type GetAdminPurchasesPaginatedResponse = GetAdminPurchasesPaginatedResponses[keyof GetAdminPurchasesPaginatedResponses];
 
 export type GetTicketSaleSummaryData = {
     body?: never;

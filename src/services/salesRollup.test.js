@@ -4,9 +4,9 @@ import { summarizeSales, rankDays } from './salesRollup.js';
 
 // Two days, both channels. API sends money as strings.
 const rows = [
-  { sale_date: '2026-08-01', is_online_sale: false, total_sale: '100000', total_cost: '75000', transactions: 4, items_sold: 10 },
-  { sale_date: '2026-08-01', is_online_sale: true, total_sale: '50000', total_cost: '40000', transactions: 1, items_sold: 2 },
-  { sale_date: '2026-08-02', is_online_sale: false, total_sale: '50000', total_cost: '35000', transactions: 5, items_sold: 8 },
+  { sale_date: '2026-08-01', is_instore_sale: true, total_sale: '100000', total_cost: '75000', transactions: 4, items_sold: 10 },
+  { sale_date: '2026-08-01', is_instore_sale: false, total_sale: '50000', total_cost: '40000', transactions: 1, items_sold: 2 },
+  { sale_date: '2026-08-02', is_instore_sale: true, total_sale: '50000', total_cost: '35000', transactions: 5, items_sold: 8 },
 ];
 
 const out = summarizeSales(rows);
@@ -24,6 +24,24 @@ assert.equal(
   out.by_channel.in_store.revenue_mmk + out.by_channel.online.revenue_mmk,
   out.totals.revenue_mmk
 );
+
+// The regression this file missed for weeks. The rollup read `is_online_sale`,
+// which the API has never sent, so every row was undefined-therefore-in-store
+// and the online column read zero however many online sales there were. The
+// fixtures said `is_online_sale` too, so they agreed with the bug and passed.
+//
+// Two guards. The field has to be the one the wire actually uses, and a row
+// carrying only the OLD name must not be mistaken for an in-store sale — if
+// someone reintroduces that spelling, this fails instead of silently swinging
+// the whole split back.
+assert.ok(out.by_channel.online.revenue_mmk > 0, 'online revenue must not be zero on mixed rows');
+{
+  const stale = summarizeSales([
+    { sale_date: '2026-08-03', is_online_sale: false, total_sale: '10000', total_cost: '5000', transactions: 1, items_sold: 1 },
+  ]);
+  assert.equal(stale.by_channel.in_store.revenue_mmk, 0, 'the old field name must not mark a sale in-store');
+  assert.equal(stale.by_channel.online.revenue_mmk, 10000);
+}
 
 // Same date across channels collapses into one day, sorted ascending.
 assert.equal(out.by_day.length, 2);
@@ -51,7 +69,7 @@ assert.equal(empty.by_day.length, 0);
 // row, so a longer range produced a chart that disagreed with its own headline.
 const long = Array.from({ length: 40 }, (_, i) => {
   const d = new Date(Date.UTC(2026, 6, 1) + i * 86400000).toISOString().slice(0, 10);
-  return { sale_date: d, is_online_sale: false, total_sale: '100', total_cost: '60', transactions: 1, items_sold: 1 };
+  return { sale_date: d, is_instore_sale: true, total_sale: '100', total_cost: '60', transactions: 1, items_sold: 1 };
 });
 const wide = summarizeSales(long);
 assert.equal(wide.by_day.length, 40, 'every date in the range must be kept');
