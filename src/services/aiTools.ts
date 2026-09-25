@@ -4,11 +4,13 @@
 import { parseISO, getDay } from "date-fns";
 import { shopToday, shopDaysAgo } from "../utils/shopDay";
 import { LOW_STOCK_AT } from "../utils/stock";
-import { getSaleSummary } from "./salesService";
+import { getSaleSummary, getSales, getSaleDetail } from "./salesService";
 import { getAllProducts, searchProductsSimple } from "./productService";
 import { getCategories } from "./categoryService";
 // @ts-expect-error plain-JS reducer, kept untyped so it runs under bare node in its test
 import { summarizeSales } from "./salesRollup.js";
+// @ts-expect-error same reason: plain JS so its test runs under bare node
+import { productSales, categorySales } from "./productSales.js";
 import type { AdminProduct } from "../types";
 
 // The shop's day, not the device's. These ranges are what the assistant quotes
@@ -24,6 +26,54 @@ const slim = (p: AdminProduct) => ({
   category: p.category ?? null,
   visible_to_customers: p.is_shown_online,
 });
+
+// Best sellers, and what sold by category. Both walk receipts — see
+// productSales.js for why, and for the cap that comes back with the answer.
+const soldRange = (start_date?: string, end_date?: string) => ({
+  start: start_date || shopDaysAgo(29),
+  end: end_date || today(),
+});
+
+const topProducts = async (
+  { start_date, end_date, limit }: { start_date?: string; end_date?: string; limit?: number }
+) => {
+  const { start, end } = soldRange(start_date, end_date);
+  const out = await productSales({ start, end, listSales: getSales, loadSale: getSaleDetail });
+  return {
+    range: { start_date: start, end_date: end },
+    receipts_read: out.receipts,
+    receipts_unreadable: out.failed,
+    covers_whole_range: !out.truncated,
+    products: out.rows.slice(0, Math.max(1, Math.min(50, Number(limit) || 10))).map(r => ({
+      name: r.name,
+      units_sold: r.units,
+      revenue_mmk: Math.round(r.revenue_mmk),
+      profit_mmk: Math.round(r.profit_mmk),
+    })),
+  };
+};
+
+const salesByCategory = async (
+  { start_date, end_date }: { start_date?: string; end_date?: string }
+) => {
+  const { start, end } = soldRange(start_date, end_date);
+  const [out, products] = await Promise.all([
+    productSales({ start, end, listSales: getSales, loadSale: getSaleDetail }),
+    getAllProducts(),
+  ]);
+  return {
+    range: { start_date: start, end_date: end },
+    receipts_read: out.receipts,
+    receipts_unreadable: out.failed,
+    covers_whole_range: !out.truncated,
+    categories: categorySales(out.rows, products).map((c: Record<string, number | string>) => ({
+      category: c.category,
+      units_sold: c.units,
+      revenue_mmk: Math.round(c.revenue_mmk as number),
+      profit_mmk: Math.round(c.profit_mmk as number),
+    })),
+  };
+};
 
 const salesSummary = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {
   const start = start_date || shopDaysAgo(29);
@@ -157,6 +207,8 @@ const TOOLS = {
   low_stock: lowStock,
   search_products: productSearch,
   list_categories: categoryList,
+  top_products: topProducts,
+  sales_by_category: salesByCategory,
 } as const;
 
 export const toolDeclarations = [
@@ -221,6 +273,31 @@ export const toolDeclarations = [
     parameters: { type: "object", properties: {} },
   },
   {
+    name: "top_products",
+    description:
+      "Best-selling products in a date range: units sold, revenue and profit for each, ranked by units. Use for best seller, worst seller, what sells most, and what to reorder. Defaults to the last 30 days. Reads every receipt in the range, so keep the range to a month or less. If covers_whole_range is false the range was too large and the answer is partial — say so.",
+    parameters: {
+      type: "object",
+      properties: {
+        start_date: { type: "string", description: "Inclusive start date, YYYY-MM-DD." },
+        end_date: { type: "string", description: "Inclusive end date, YYYY-MM-DD." },
+        limit: { type: "number", description: "How many products to return. Default 10." },
+      },
+    },
+  },
+  {
+    name: "sales_by_category",
+    description:
+      "What actually SOLD grouped by category in a date range: units, revenue and profit, ranked by revenue. Use for which category sells most or makes the most money. This is sales, not stock on hand — use stock_by_category for what is sitting on the shelf. Defaults to the last 30 days. If covers_whole_range is false the answer is partial — say so.",
+    parameters: {
+      type: "object",
+      properties: {
+        start_date: { type: "string", description: "Inclusive start date, YYYY-MM-DD." },
+        end_date: { type: "string", description: "Inclusive end date, YYYY-MM-DD." },
+      },
+    },
+  },
+  {
     name: "list_categories",
     description: "All product category names.",
     parameters: { type: "object", properties: {} },
@@ -252,5 +329,6 @@ Rules:
 - Be brief. Lead with the number the manager asked for, then at most two lines of context.
 - Write plain text. No markdown — no **bold**, no ##headings, no tables. Use "-" for lists.
 - The shop does not handle product returns or refunds; there is no returns data.
-- Payments breakdown, per-cashier sales and best-selling products are not available yet — say so plainly instead of estimating.
+- Payments breakdown and per-cashier sales are not available yet — say so plainly instead of estimating.
+- top_products and sales_by_category read every receipt in the range, so they take a few seconds. If covers_whole_range is false, the range was too big: say the answer covers only part of it and suggest a shorter range.
 - Reply in the language the manager writes in (English or Burmese).`;
