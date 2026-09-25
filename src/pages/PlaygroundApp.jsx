@@ -25,9 +25,19 @@ const readPrice = () => {
 };
 
 
-// Slow enough not to spend the customer's data standing at a door, fast enough
-// that the amount lands before they have put their phone away.
-const POLL_MS = 3000;
+// A customer who is going to scan does it in the first half minute — they are
+// standing there with the QR in front of them. After that the code is usually
+// sitting on a counter while staff do something else, and asking every three
+// seconds for minutes on end is just noise in the server log.
+//
+// So: quick while it matters, then back off. A code left open for ten minutes
+// costs about 70 requests instead of 200, and the fast window is unchanged for
+// the case that actually happens.
+const POLL_FAST_MS = 3000;
+const POLL_SLOW_MS = 10000;
+const FAST_WINDOW_MS = 30000;
+const pollDelay = (startedAt) =>
+  Date.now() - startedAt < FAST_WINDOW_MS ? POLL_FAST_MS : POLL_SLOW_MS;
 
 // Watches one claim token until it is scanned or dies.
 //
@@ -46,13 +56,14 @@ function useCheckout(tokenId) {
     if (!tokenId) return;
     let alive = true;
     let timer;
+    const startedAt = Date.now();
 
     const tick = async () => {
       if (!alive) return;
       // A pocketed phone should not keep hitting the rate limiter. Skip the
       // request but keep the timer, so it resumes the moment it is looked at.
       if (typeof document !== 'undefined' && document.visibilityState === 'hidden') {
-        timer = setTimeout(tick, POLL_MS);
+        timer = setTimeout(tick, pollDelay(startedAt));
         return;
       }
       try {
@@ -65,7 +76,7 @@ function useCheckout(tokenId) {
         // message; it is only reported if nothing ever succeeds.
         if (alive) setState(prev => (prev.data ? prev : { id: tokenId, data: null, failed: true }));
       }
-      if (alive) timer = setTimeout(tick, POLL_MS);
+      if (alive) timer = setTimeout(tick, pollDelay(startedAt));
     };
 
     tick();
