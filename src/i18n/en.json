@@ -445,7 +445,8 @@
     "receipts": "Receipts",
     "daily": "Daily revenue",
     "bestworst": "Best & worst days",
-    "weekday": "By weekday"
+    "weekday": "By weekday",
+    "products": "Top products"
   },
   "salesTable": {
     "receipt": "Receipt",
@@ -468,7 +469,10 @@
     "weekdayCount_plural": "{{count}} days",
     "receiptTitle": "Receipt",
     "receiptFailed": "Could not load this receipt.",
-    "noCashier": "No cashier (online)"
+    "noCashier": "No cashier (online)",
+    "unitsSold": "Units sold",
+    "productsReading": "Reading every receipt in this period — the sale list does not carry line items, so this takes a few seconds.",
+    "productsPartial": "Some receipts could not be read, so this ranking covers part of the period. Try a shorter range."
   },
   "productViews": {
     "all": "All products",

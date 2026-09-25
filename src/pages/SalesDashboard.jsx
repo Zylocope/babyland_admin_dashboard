@@ -18,8 +18,9 @@ import { colorAt, seriesColor } from '../utils/chartPalette';
 import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
-import { getSaleSummary, getSales } from '../services/salesService';
+import { getSaleSummary, getSales, getSaleDetail } from '../services/salesService';
 import ReceiptDialog from '../components/common/ReceiptDialog';
+import { productSales } from '../services/productSales';
 import { summarizeSales, rankDays, byWeekday } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
@@ -109,6 +110,10 @@ export default function SalesDashboard() {
   const [records, setRecords] = useState([]);
   const [receipts, setReceipts] = useState({ data: [], total: 0 });
   const [openReceipt, setOpenReceipt] = useState(null);
+  // What actually sold, as opposed to how much came in. The sale list carries
+  // no line items, so this opens every receipt in the period — which is why it
+  // only runs when the view is actually looked at, not on page load.
+  const [sold, setSold] = useState({ key: '', rows: [], partial: false, error: '' });
   const [loading, setLoading] = useState(true);
 
   const { start, end } = useMemo(() => periodToDates(period), [period]);
@@ -151,6 +156,21 @@ export default function SalesDashboard() {
   }, [s, period, end, inStoreLabel, onlineLabel]);
 
   // The sales list has no date filter server-side, so the period is applied here.
+  const soldKey = `${start}|${end}`;
+  useEffect(() => {
+    if (view !== 'products' || sold.key === soldKey) return undefined;
+    let active = true;
+    productSales({ start, end, listSales: getSales, loadSale: getSaleDetail })
+      .then(out => {
+        if (!active) return;
+        setSold({ key: soldKey, rows: out.rows, partial: out.truncated || out.failed > 0, error: '' });
+      })
+      .catch(err => {
+        if (active) setSold({ key: soldKey, rows: [], partial: false, error: err?.message || '' });
+      });
+    return () => { active = false; };
+  }, [view, soldKey, sold.key, start, end]);
+
   const periodReceipts = useMemo(() => {
     const from = shopDayStart(start);
     const to = shopDayStart(shopDaysAgo(-1, shopDayStart(end)));
@@ -181,6 +201,14 @@ export default function SalesDashboard() {
     { key: 'daily', label: t('salesViews.daily'), icon: IconCalendarStats },
     { key: 'bestworst', label: t('salesViews.bestworst'), icon: IconTrophy },
     { key: 'weekday', label: t('salesViews.weekday'), icon: IconCalendarWeek },
+    { key: 'products', label: t('salesViews.products'), icon: IconPackage },
+  ];
+
+  const soldCols = [
+    { key: 'name', label: t('table.item'), value: r => r.name },
+    { key: 'units', label: t('salesTable.unitsSold'), align: 'right', value: r => r.units },
+    { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: r => formatMMK(Math.round(r.revenue_mmk)) },
+    { key: 'profit', label: t('posDash.grossProfit'), align: 'right', value: r => formatMMK(Math.round(r.profit_mmk)) },
   ];
 
   const receiptCols = [
@@ -481,6 +509,43 @@ export default function SalesDashboard() {
           </Panel>
         );
       })()}
+
+      {view === 'products' && (
+        <Panel title={t('salesViews.products')}>
+          {sold.error ? (
+            <p className="py-10 text-center text-sm text-mute">{sold.error}</p>
+          ) : sold.key !== soldKey ? (
+            <>
+              {/* This one genuinely waits on a request per receipt, so it says
+                  what it is doing instead of shimmering silently for ten
+                  seconds and looking stuck. */}
+              <p className="text-[13px] text-sub mb-4">{t('salesTable.productsReading')}</p>
+              <div className="space-y-2.5 skeleton-row">
+                {Array.from({ length: 6 }, (_, i) => (
+                  <div key={i} className="flex items-center gap-3" style={{ '--i': i }}>
+                    <div className="skeleton h-3 flex-1 rounded" />
+                    <div className="skeleton h-3 w-14 rounded" />
+                    <div className="skeleton h-3 w-24 rounded" />
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : sold.rows.length === 0 ? (
+            <p className="py-10 text-center text-sm text-mute">{t('posDash.noData')}</p>
+          ) : (
+            <>
+              {/* Never let a partial answer pass as a complete one. */}
+              {sold.partial && (
+                <p className="text-[12px] mb-3" style={{ color: 'var(--status-pending)' }}>
+                  {t('salesTable.productsPartial')}
+                </p>
+              )}
+              <DataTable columns={soldCols} rows={sold.rows.map((r, i) => ({ ...r, _key: r.product_id ?? i }))}
+                empty={t('posDash.noData')} />
+            </>
+          )}
+        </Panel>
+      )}
 
       {view === 'bestworst' && (
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
