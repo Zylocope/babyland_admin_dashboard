@@ -5,6 +5,7 @@ import { toolDeclarations, runTool, systemPrompt } from '../services/aiTools';
 import { QUICK_ACTIONS, runQuickAction } from '../services/quickActions';
 import { chartFromTool } from '../services/aiCharts';
 import { finishInterruptedTools, withSignal } from '../services/assistantSession.js';
+import { askGeminiViaBackend, AiError } from '../services/aiService';
 import AssistantChart from '../components/common/AssistantChart';
 
 const MAX_TOOL_ROUNDS = 5;
@@ -15,20 +16,14 @@ const MAX_TOOL_ROUNDS = 5;
 const GEMINI_TIMEOUT_MS = 45_000;
 const TOOL_TIMEOUT_MS = 90_000;
 const deadline = (signal, ms) => AbortSignal.any([signal, AbortSignal.timeout(ms)]);
-const askGemini = async (contents, signal) => {
-  const res = await fetch('/api/chat', {
-    method: 'POST', signal, headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ systemInstruction: { parts: [{ text: systemPrompt() }] }, tools: [{ functionDeclarations: toolDeclarations }], contents }),
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    if (data?.error?.status === 'RESOURCE_EXHAUSTED' || res.status === 429) throw new Error('QUOTA');
-    throw new Error(data?.error?.message || data?.error || `AI request failed (${res.status})`);
-  }
-  const content = data?.candidates?.[0]?.content;
-  if (!content) throw new Error(data?.promptFeedback?.blockReason || 'Empty response from AI');
-  return content;
-};
+// Goes to the backend now, not the public Vercel function. Same body, same
+// response — the relay passes both through untouched — so everything below
+// this line is unchanged.
+const askGemini = (contents, signal) => askGeminiViaBackend({
+  systemInstruction: { parts: [{ text: systemPrompt() }] },
+  tools: [{ functionDeclarations: toolDeclarations }],
+  contents,
+}, signal);
 
 export default function Assistant() {
   const { t } = useTranslation();
@@ -108,9 +103,16 @@ export default function Assistant() {
     } catch (err) {
       if (abortRef.current !== abort) return;
       setContents(finishInterruptedTools(next, 'Report interrupted; do not infer values from this call.'));
+      // The backend refuses before Gemini is ever reached, so those cases get
+      // their own words — "AI request failed (403)" tells a manager nothing
+      // about what to do next.
       setError(abort.signal.aborted ? t('assistant.stopped')
         : err.name === 'TimeoutError' ? t('assistant.timeout')
-        : err.message === 'QUOTA' ? t('assistant.quota') : err.message);
+        : err instanceof AiError && err.kind === 'quota' ? t('assistant.quota')
+        : err instanceof AiError && err.kind === 'auth' ? t('assistant.signedOut')
+        : err instanceof AiError && err.kind === 'role' ? t('assistant.managerOnly')
+        : err instanceof AiError && err.kind === 'timeout' ? t('assistant.timeout')
+        : err.message);
       setRetry(question);
     } finally {
       if (abortRef.current === abort) {

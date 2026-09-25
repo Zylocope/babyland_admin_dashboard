@@ -9,7 +9,7 @@ import {
   Tooltip, Legend, ResponsiveContainer,
 } from 'recharts';
 import StatCard from '../common/StatCard';
-import { getPlaygroundSummary } from '../../services/playgroundAdminService';
+import { getPlaygroundSummary, getPlaygroundPurchases } from '../../services/playgroundAdminService';
 import { formatMMK, formatMMKShort } from '../../utils/currency';
 import { formatShopTime, shopDayStart, shopDaysAgo } from '../../utils/shopDay';
 import { colorAt, seriesColor } from '../../utils/chartPalette';
@@ -62,6 +62,10 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
   const chartId = useId().replace(/:/g, '');
   const [result, setResult] = useState(() => ({ key: '', summary: normalizeSummary(null), error: '' }));
   const [reloadKey, setReloadKey] = useState(0);
+  // Individual sales, loaded separately from the summary: the daily totals are
+  // what the page is mostly about, and they should not wait on a second page
+  // of rows to arrive.
+  const [sales, setSales] = useState({ key: '', rows: [], total: 0, error: '' });
   const requestKey = `${start}|${end}|${reloadKey}`;
   const loading = result.key !== requestKey;
   const summary = loading ? normalizeSummary(null) : result.summary;
@@ -90,6 +94,22 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
       });
     return () => { active = false; };
   }, [start, end, requestKey, t]);
+
+  useEffect(() => {
+    let active = true;
+    getPlaygroundPurchases(start, end, 1, 20)
+      .then(res => {
+        if (!active) return;
+        setSales({
+          key: requestKey,
+          rows: Array.isArray(res?.data) ? res.data : [],
+          total: Number(res?.total_items ?? 0) || 0,
+          error: '',
+        });
+      })
+      .catch(err => { if (active) setSales({ key: requestKey, rows: [], total: 0, error: err?.message || '' }); });
+    return () => { active = false; };
+  }, [start, end, requestKey]);
 
   const pg = summary.totals;
   const combined = mode === 'combined';
@@ -228,6 +248,69 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
             </div>
           ) : (
             <div className="py-10 text-center text-sm text-mute">{t('playgroundAnalytics.noPurchases')}</div>
+          )}
+        </div>
+      )}
+
+      {/* Every sale in the range, not just the daily totals — the question a
+          customer asks is about one purchase, and the summary cannot answer it.
+          The username is the customer's; the endpoint joins users, not admins,
+          so which staff member sold it is not available yet. */}
+      {mode !== 'combined' && (
+        <div className="surface-card p-5">
+          <h3 className="text-[13px] font-semibold text-ink mb-4">
+            {t('playgroundAnalytics.salesTitle')}
+            {sales.total > sales.rows.length && (
+              <span className="ml-2 font-normal text-mute">
+                {t('playgroundAnalytics.showingOf', { count: sales.rows.length, total: sales.total })}
+              </span>
+            )}
+          </h3>
+          {sales.key !== requestKey ? (
+            <div className="space-y-2.5 skeleton-row">
+              {Array.from({ length: 5 }, (_, i) => (
+                <div key={i} className="flex items-center gap-3" style={{ '--i': i }}>
+                  <div className="skeleton h-3 flex-1 rounded" />
+                  <div className="skeleton h-3 w-16 rounded" />
+                </div>
+              ))}
+            </div>
+          ) : sales.rows.length === 0 ? (
+            <div className="py-10 text-center text-sm text-mute">{t('playgroundAnalytics.noPurchases')}</div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
+                    <th className="px-4 py-3.5 font-semibold">{t('table.date')}</th>
+                    <th className="px-4 py-3.5 font-semibold">{t('table.customer')}</th>
+                    <th className="px-4 py-3.5 text-right font-semibold">{t('table.qty')}</th>
+                    <th className="px-4 py-3.5 text-right font-semibold">{t('table.total')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-app">
+                  {sales.rows.map(row => (
+                    <tr key={row.id} className="hover:bg-brand-light transition-colors">
+                      <td className="px-4 py-3 text-sub tabular-nums whitespace-nowrap">
+                        {formatShopTime(row.created_at, 'MMM D, HH:mm')}
+                      </td>
+                      <td className="px-4 py-3 text-ink">
+                        {row.username}
+                        {/* A redeemed coupon is why a row reads 0 MMK. Without
+                            this it looks like a mistake. */}
+                        {row.is_free_redemption && (
+                          <span className="ml-2 text-[11px]" style={{ color: 'var(--status-delivered)' }}>
+                            {t('playgroundAnalytics.freeTag')}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-right text-ink tabular-nums">{row.quantity}</td>
+                      <td className="px-4 py-3 text-right text-ink tabular-nums">{formatMMK(num(row.line_total))}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       )}

@@ -1,4 +1,4 @@
-const baseURL: string =
+export const baseURL: string =
   import.meta.env.VITE_APP_BASE_URL ||
   "https://appleland-backend-1.onrender.com";
 

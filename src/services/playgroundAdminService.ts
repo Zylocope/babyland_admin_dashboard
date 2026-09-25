@@ -66,3 +66,38 @@ export const getPlaygroundSummary = (
       },
     };
   });
+
+export interface AdminPlaygroundPurchaseRow {
+  id: string;
+  created_at: string;
+  username: string;
+  user_id: string;
+  quantity: number;
+  unit_price: string;
+  line_total: string;
+  is_free_redemption: boolean;
+}
+
+export interface PlaygroundPurchasePage {
+  data: AdminPlaygroundPurchaseRow[];
+  total_items: number;
+  total_pages: number;
+  current_page: number;
+}
+
+// Every playground sale in the range, one row each.
+//
+// The summary answers "Tuesday made 40,000" and this answers "made up of
+// what" — which is the question staff get asked when a customer disputes a
+// charge. `username` here is the CUSTOMER: the endpoint joins users, not
+// admins, so the staff member who sold the ticket is not in the response yet.
+export const getPlaygroundPurchases = (
+  start_date: string,
+  end_date: string,
+  page = 1,
+  page_size = 20
+): Promise<PlaygroundPurchasePage> =>
+  request(
+    `/admin/playground/purchases?${dateQuery(start_date, end_date)}&page=${page}&page_size=${page_size}`,
+    { method: "GET" }
+  );

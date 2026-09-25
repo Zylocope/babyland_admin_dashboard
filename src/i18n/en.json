@@ -371,7 +371,10 @@
     "retail": "Retail",
     "playground": "Playground",
     "ticketsPerPurchase": "Avg tickets per purchase",
-    "freeShare": "Free ticket share"
+    "freeShare": "Free ticket share",
+    "salesTitle": "Individual sales",
+    "showingOf": "showing {{count}} of {{total}}",
+    "freeTag": "free"
   },
   "salesSource": {
     "label": "Sales source",
@@ -425,7 +428,9 @@
       "sales_by_weekday": "day-of-week sales",
       "stock_by_category": "stock by category"
     },
-    "quota": "Daily AI limit reached. The instant buttons below still work — they read your data directly without the AI."
+    "quota": "Daily AI limit reached. The instant buttons below still work — they read your data directly without the AI.",
+    "signedOut": "Your session has expired. Sign in again to use the assistant.",
+    "managerOnly": "The assistant is available to managers only."
   },
   "subbar": {
     "view": "View",
