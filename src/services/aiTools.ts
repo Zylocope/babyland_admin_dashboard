@@ -13,8 +13,7 @@ import { getCustomers } from "./customerService";
 import { getStaff } from "./staffService";
 // @ts-expect-error plain-JS reducer, kept untyped so it runs under bare node in its test
 import { summarizeSales } from "./salesRollup.js";
-// @ts-expect-error same reason: plain JS so its test runs under bare node
-import { productSales, categorySales } from "./productSales.js";
+import { getProductSales, getCategorySales } from "./analyticsService";
 import type { AdminProduct } from "../types";
 
 // The shop's day, not the device's. These ranges are what the assistant quotes
@@ -67,20 +66,17 @@ const salesByCategory = async (
   { start_date, end_date }: { start_date?: string; end_date?: string }
 ) => {
   const { start, end } = soldRange(start_date, end_date);
-  const [out, products] = await Promise.all([
-    productSales({ start, end, listSales: getSales, loadSale: getSaleDetail }),
-    getAllProducts(),
-  ]);
+  const out = await getCategorySales(start, end);
   return {
     range: { start_date: start, end_date: end },
-    receipts_read: out.receipts,
-    receipts_unreadable: out.failed,
-    covers_whole_range: !out.truncated,
-    categories: categorySales(out.rows, products).map((c: Record<string, number | string>) => ({
+    receipts_read: out.receipts_read,
+    receipts_unreadable: out.receipts_unreadable,
+    covers_whole_range: out.complete,
+    categories: out.rows.map(c => ({
       category: c.category,
       units_sold: c.units,
-      revenue_mmk: Math.round(c.revenue_mmk as number),
-      profit_mmk: Math.round(c.profit_mmk as number),
+      revenue_mmk: Math.round(c.revenue_mmk),
+      profit_mmk: Math.round(c.profit_mmk),
     })),
   };
 };

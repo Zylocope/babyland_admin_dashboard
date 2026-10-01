@@ -18,9 +18,9 @@ import { colorAt, seriesColor } from '../utils/chartPalette';
 import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
-import { getSaleSummary, getSales, getSaleDetail } from '../services/salesService';
+import { getSaleSummary, getSales } from '../services/salesService';
 import ReceiptDialog from '../components/common/ReceiptDialog';
-import { productSales } from '../services/productSales';
+import { getProductSales } from '../services/analyticsService';
 import { summarizeSales, rankDays, byWeekday } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
@@ -160,10 +160,10 @@ export default function SalesDashboard() {
   useEffect(() => {
     if (view !== 'products' || sold.key === soldKey) return undefined;
     let active = true;
-    productSales({ start, end, listSales: getSales, loadSale: getSaleDetail })
+    getProductSales(start, end)
       .then(out => {
         if (!active) return;
-        setSold({ key: soldKey, rows: out.rows, partial: out.truncated || out.failed > 0, error: '' });
+        setSold({ key: soldKey, rows: out.rows, partial: !out.complete, error: '' });
       })
       .catch(err => {
         if (active) setSold({ key: soldKey, rows: [], partial: false, error: err?.message || '' });
