@@ -147,6 +147,12 @@ Cash sitting on a shelf. Products with stock that have not sold in N days.
 Needs `last_sold_at` per product. Doing it in the browser means walking 90 days
 of receipts — far too slow.
 
+Value it as `SUM(quantity_remaining × unit_cost)` over the batches still in
+`inventory`, not quantity × the latest cost. Under FIFO a product can be holding
+stock from several batches at different costs, and the latest one is often the
+least representative — the shelf may be mostly old cheap stock with one
+expensive batch on top.
+
 ### 2.2 Cost change alert — BACKEND (urgent)
 
 The one that caught Set Kaung's T-shirt. A product whose new batch costs more
@@ -157,6 +163,18 @@ than the old one while the shelf price stays put.
 | Set Kaung's T-shirt | 10,000 MMK | 50,000 MMK | +400% | 13,300 MMK | **−73%** |
 
 This should be a notification the day it happens, not a discovery a month later.
+
+Two different numbers live here and the endpoint should return the first:
+
+- **Forward risk** — the new batch cost against the current shelf price. What
+  the next sale will lose. This is what an alert is for.
+- **Realised loss** — `SUM(quantity × sale_items.cost_price)` against revenue,
+  over units already sold. That column records the cost of the specific batch
+  each sale consumed, so it is the real figure, not a projection. The −437,100
+  MMK above is this one.
+
+Under FIFO they disagree for as long as old stock is still selling, and quoting
+the forward number as a loss overstates it.
 
 ### 2.3 Low stock — READY (BUILT)
 
