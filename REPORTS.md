@@ -83,7 +83,7 @@ Live on Sales → Receipts, and a row opens the line items.
 Channel and cashier are only on the detail today. **BACKEND** to get them on the
 list rows — the oldest item outstanding.
 
-### 1.7 Hour of day — BACKEND
+### 1.7 Hour of day — BACKEND (one query, no new data)
 
 When the shop is actually busy, for staffing and opening hours.
 
@@ -92,10 +92,10 @@ When the shop is actually busy, for staffing and opening hours.
 | 17:00–18:00 | 34 | 612,000 MMK | 18% |
 | 10:00–11:00 | 6 | 88,400 MMK | 3% |
 
-Needs sale timestamps grouped by hour in Asia/Yangon. The summary endpoint only
-groups by day.
+`sales.created_at` is a timestamptz, so this is a GROUP BY away. Nothing new has
+to be stored — the summary endpoint just groups by day and nothing offers hour.
 
-### 1.8 Payment methods — BACKEND
+### 1.8 Payment methods — BACKEND (data partly there)
 
 | Method | Transactions | Amount | Share |
 |---|---|---|---|
@@ -103,7 +103,12 @@ groups by day.
 | KPay | 39 | 1,502,000 MMK | 32% |
 | Wave | 7 | 284,000 MMK | 6% |
 
-Not recorded at all. `POST /admin/sales` takes no payment method.
+Correction after reading the schema: `sales.payment_method` and
+`sales.payment_provider` exist (migration 0042) and are already read by the
+order endpoints. What is missing is that **in-store sales never set them** —
+`CreateAdminSalePayload` is only `sale_products`. So online sales can be broken
+down today and POS sales cannot. Needs the field on the POS payload, not a new
+table.
 
 ### 1.9 Discounts given — BACKEND
 
@@ -111,7 +116,9 @@ Not recorded at all. `POST /admin/sales` takes no payment method.
 |---|---|---|---|---|---|
 | 2026-09-24 | 924027eb | 50,000 MMK | 5,000 MMK | 45,000 MMK | cyclops |
 
-Not recorded. Same gap as payment method.
+Genuinely not stored — there is no discount column on `sales` or `sale_items`,
+and no way to derive one. This is the only report in this file that needs a new
+column rather than a new query.
 
 ### 1.10 Sales by cashier — BACKEND
 
@@ -196,8 +203,10 @@ Every change to a product's quantity and why.
 | 2026-09-24 | Fountain LAMY | −3 | Sale 924027eb | cyclops | 85 |
 | 2026-09-23 | Fountain LAMY | −2 | Damaged | cyclops | 38 |
 
-There is no adjustments/write-off concept at all. Without it, stock silently
-drifts from reality and nobody can explain the gap.
+Half of this is already there: `sale_items.inventory_id` points at the batch a
+sale consumed, so sale-side movement is traceable per batch today. What does not
+exist anywhere is an adjustment — damaged, expired, miscounted — so stock can
+only ever go down by being sold. That part needs new storage.
 
 ### 2.7 Stock-in history — READY
 
@@ -222,13 +231,15 @@ Two rows like these are exactly how the T-shirt problem would have been caught.
 
 `created_at` is not returned — **BACKEND**, already asked.
 
-### 3.2 Top customers — BACKEND
+### 3.2 Top customers — BACKEND (one query, no new data)
 
 | Customer | Orders | Items | Spent | Last order |
 |---|---|---|---|---|
 | Kar Mine | 4 | 11 | 141,800 MMK | 2026-09-25 |
 
-Needs sales joined to users. Nothing exposes per-customer spend.
+`user_sales` joins `users` to `sales` (it gained `sale_id` in a later migration),
+so spend per customer is a join away. Nothing exposes it, but nothing is missing
+from the database either.
 
 ### 3.3 Customer detail — BACKEND
 
