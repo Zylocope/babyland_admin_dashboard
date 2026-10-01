@@ -206,7 +206,12 @@ export default function POS() {
                     <p className="font-medium text-ink text-sm leading-snug line-clamp-2">{p.name}</p>
                     <p className="text-[11px] text-mute font-mono mt-0.5">{p.barcode}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-semibold text-brand text-sm">{formatMMK(num(p.selling_price))}</span>
+                      <span className="text-right">
+                        {p.original_price != null && (
+                          <span className="block text-[10px] leading-none text-mute line-through">{formatMMK(num(p.original_price))}</span>
+                        )}
+                        <span className="block font-semibold text-brand text-sm">{formatMMK(num(p.selling_price))}</span>
+                      </span>
                       <span className={`text-[11px] ${out ? 'text-red-600' : 'text-sub'}`}>
                         {out ? t('pos.outOfStock') : t('pos.inStock', { n: stock })}
                       </span>

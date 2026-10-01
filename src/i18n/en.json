@@ -199,6 +199,10 @@
     "addStock": "Add Stock Record",
     "quantityReceived": "Quantity Received",
     "unitCost": "Unit Cost (MMK)",
+    "originalPrice": "Original price (optional)",
+    "originalPricePlaceholder": "Price before discount",
+    "originalPriceHelp": "Use only for a discount. It must be higher than the selling price.",
+    "originalPriceError": "Original price must be higher than the selling price.",
     "image": "Product image",
     "imageHelp": "Upload a JPEG, PNG, WebP or GIF, or paste an image link. Large photos are resized automatically before upload.",
     "imageChoose": "Choose image",
@@ -426,7 +430,11 @@
       "list_categories": "categories",
       "compare_periods": "period comparison",
       "sales_by_weekday": "day-of-week sales",
-      "stock_by_category": "stock by category"
+      "stock_by_category": "stock by category",
+      "playground_summary": "playground data",
+      "order_summary": "order data",
+      "customer_count": "customer count",
+      "staff_summary": "staff count"
     },
     "quota": "Daily AI limit reached. The instant buttons below still work — they read your data directly without the AI.",
     "signedOut": "Your session has expired. Sign in again to use the assistant.",
@@ -553,7 +561,8 @@
       "compare_periods": "Sales comparison",
       "sales_by_weekday": "Sales by weekday",
       "stock_by_category": "Retail stock value by category",
-      "low_stock": "Low-stock products"
+      "low_stock": "Low-stock products",
+      "playground_summary": "Playground revenue"
     },
     "title": "Report",
     "retailValue": "Retail stock value",

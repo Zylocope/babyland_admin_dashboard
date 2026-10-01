@@ -199,6 +199,10 @@
     "addStock": "လက်ကျန် မှတ်တမ်း ထည့်ရန်",
     "quantityReceived": "လက်ခံရရှိသည့် အရေအတွက်",
     "unitCost": "တစ်ယူနစ် အရင်းအနှီး (MMK)",
+    "originalPrice": "မူရင်းဈေး (ရွေးချယ်နိုင်)",
+    "originalPricePlaceholder": "လျှော့ဈေးမတိုင်မီ ဈေးနှုန်း",
+    "originalPriceHelp": "ဈေးလျှော့ထားမှသာ ထည့်ပါ။ ရောင်းဈေးထက် ပိုမြင့်ရမည်။",
+    "originalPriceError": "မူရင်းဈေးသည် ရောင်းဈေးထက် ပိုမြင့်ရမည်။",
     "image": "ပစ္စည်းပုံ",
     "imageHelp": "JPEG, PNG, WebP သို့မဟုတ် GIF ပုံတင်ပါ၊ သို့မဟုတ် ပုံ link ထည့်ပါ။ ပုံကြီးများကို မတင်မီ အလိုအလျောက် ချုံ့ပေးပါသည်။",
     "imageChoose": "ပုံရွေးရန်",
@@ -426,7 +430,11 @@
       "list_categories": "category များ",
       "compare_periods": "ကာလ နှိုင်းယှဉ်ချက်",
       "sales_by_weekday": "ရက်အလိုက် အရောင်း",
-      "stock_by_category": "Category အလိုက် Stock"
+      "stock_by_category": "Category အလိုက် Stock",
+      "playground_summary": "ကစားကွင်း data",
+      "order_summary": "အော်ဒါ data",
+      "customer_count": "ဖောက်သည် အရေအတွက်",
+      "staff_summary": "ဝန်ထမ်း အရေအတွက်"
     },
     "quota": "ယနေ့ AI ကန့်သတ်ချက် ပြည့်သွားပါပြီ။ အောက်က အမြန်ခလုတ်များက AI မလိုဘဲ data ကို တိုက်ရိုက် ဖတ်ပေးပါသည်။",
     "signedOut": "သင့် session သက်တမ်းကုန်သွားပါပြီ။ လက်ထောက်ကို သုံးရန် ပြန်လည် ဝင်ရောက်ပါ။",
@@ -553,7 +561,8 @@
       "compare_periods": "အရောင်းနှိုင်းယှဉ်ချက်",
       "sales_by_weekday": "ရက်အလိုက် အရောင်း",
       "stock_by_category": "Category အလိုက် လက်လီ Stock တန်ဖိုး",
-      "low_stock": "လက်ကျန်နည်းသော ပစ္စည်းများ"
+      "low_stock": "လက်ကျန်နည်းသော ပစ္စည်းများ",
+      "playground_summary": "ကစားကွင်း ဝင်ငွေ"
     },
     "title": "အစီရင်ခံစာ",
     "retailValue": "လက်လီစျေးနှုန်းအရ Stock တန်ဖိုး",

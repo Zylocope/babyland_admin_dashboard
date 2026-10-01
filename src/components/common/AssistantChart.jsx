@@ -83,10 +83,14 @@ export default function AssistantChart({ spec }) {
   const maxValue = Math.max(1, ...spec.data.map(row => Number(row.stock ?? row.value ?? 0)));
   const period = row => rangeLabel({ start: row.date, end: row.endDate ?? row.date });
   const columns = spec.kind === 'sales'
-    ? [t('aiChart.period'), revenue, t('posDash.chInstore'), t('posDash.chOnline')]
+    ? spec.hasChannels === false
+      ? [t('aiChart.period'), revenue]
+      : [t('aiChart.period'), revenue, t('posDash.chInstore'), t('posDash.chOnline')]
     : spec.kind === 'compare' ? [t('aiChart.metric'), previous, current] : [t('aiChart.item'), metric];
   const rows = allRows.map(row => spec.kind === 'sales'
-    ? [period(row), row.revenue, row.inStore, row.online]
+    ? spec.hasChannels === false
+      ? [period(row), row.revenue]
+      : [period(row), row.revenue, row.inStore, row.online]
     : spec.kind === 'compare' ? [t(`posDash.${row.metric}`), row.previous, row.current]
       : [row.name ?? row.fullLabel ?? row.label, row.stock ?? row.value]);
   // Summary tiles read allRows, never spec.data. spec.data is capped for the

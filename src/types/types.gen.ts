@@ -104,6 +104,7 @@ export type AdminProduct = {
     is_perishable: boolean;
     is_shown_online: boolean;
     name: string;
+    original_price?: string | null;
     quantity_in_stock: number;
     selling_price: string;
     sub_category?: string | null;
@@ -161,6 +162,7 @@ export type CreateProductPayload = {
     is_perishable: boolean;
     is_shown_online: boolean;
     name: string;
+    original_price?: string | null;
     selling_price: string;
     sub_category_id?: string | null;
 };
@@ -276,6 +278,7 @@ export type PaginatedResponseAdminProduct = {
         is_perishable: boolean;
         is_shown_online: boolean;
         name: string;
+        original_price?: string | null;
         quantity_in_stock: number;
         selling_price: string;
         sub_category?: string | null;
@@ -421,6 +424,7 @@ export type UpdateProductPayload = {
     is_perishable: boolean;
     is_shown_online: boolean;
     name: string;
+    original_price?: string | null;
     selling_price: string;
     sub_category_id?: string | null;
 };

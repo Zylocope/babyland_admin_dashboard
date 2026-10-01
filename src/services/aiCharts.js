@@ -41,6 +41,15 @@ export const chartFromTool = (tool, result) => {
     if (!buckets || buckets.data.length < 2) return null;
     return { ...meta, kind: 'sales', ...buckets, hasOnline: buckets.data.some(d => d.online !== 0) };
   }
+  if (tool === 'playground_summary') {
+    if (!result.range || !result.by_day?.length) return null;
+    const buckets = salesBuckets(result.range, result.by_day.map(row => ({
+      date: row.date,
+      revenue_mmk: row.revenue_mmk,
+    })));
+    if (!buckets || buckets.data.length < 2) return null;
+    return { ...meta, kind: 'sales', ...buckets, hasChannels: false, hasOnline: false };
+  }
   if (tool === 'compare_periods') {
     const { current: c, previous: p } = result;
     if (!c || !p) return null;

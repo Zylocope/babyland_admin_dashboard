@@ -1,6 +1,11 @@
 import { request } from "./baseService";
 import type { TicketSaleSummary } from "../types";
 
+// Older servers may already include this optional aggregate before it appears
+// in the published schema. Keep it optional so a missing value never becomes a
+// made-up zero in the UI.
+type TicketSaleSummaryWire = TicketSaleSummary & { purchases?: number };
+
 export interface PlaygroundTotals {
   revenue_mmk: number;
   paid_tickets: number;
@@ -32,7 +37,7 @@ export const getPlaygroundSummary = (
   start_date: string,
   end_date: string
 ): Promise<PlaygroundSummary> =>
-  request<TicketSaleSummary[]>(`/admin/playground/summary?${dateQuery(start_date, end_date)}`, {
+  request<TicketSaleSummaryWire[]>(`/admin/playground/summary?${dateQuery(start_date, end_date)}`, {
     method: "GET",
   }).then(rows => {
     const by_day = (Array.isArray(rows) ? rows : []).map(row => ({

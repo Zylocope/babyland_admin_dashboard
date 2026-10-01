@@ -35,6 +35,7 @@ const normalizeProduct = (product) => ({
   sub_category_id: product.sub_category_id,
   quantity_in_stock: Number(product.quantity_in_stock ?? 0),
   selling_price: Number(product.selling_price ?? 0),
+  original_price: product.original_price == null ? null : Number(product.original_price),
   image_url: product.image_url ?? null,
   is_shown_online: product.is_shown_online ?? true,
   is_perishable: product.is_perishable ?? false,
@@ -258,7 +259,12 @@ export default function Products() {
                       <span className={`font-semibold ${isLow(p) ? 'text-red-600' : 'text-ink'}`}>{p.quantity_in_stock}</span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-right font-semibold tabular-nums text-ink whitespace-nowrap">{formatMMK(p.selling_price)}</td>
+                  <td className="px-4 py-3 text-right tabular-nums whitespace-nowrap">
+                    {p.original_price != null && (
+                      <p className="text-[11px] font-normal text-mute line-through">{formatMMK(p.original_price)}</p>
+                    )}
+                    <p className="font-semibold text-ink">{formatMMK(p.selling_price)}</p>
+                  </td>
                   <td className="px-4 py-3 text-center"><Badge label={p.is_shown_online ? 'Active' : 'Hidden'} /></td>
                   {isManager && (
                     <td className="px-5 py-3">
@@ -326,7 +332,10 @@ export default function Products() {
               </div>
               <div className="text-right">
                 <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.price')}</dt>
-                <dd className="mt-1 text-xs font-semibold tabular-nums text-ink whitespace-nowrap">{formatMMK(p.selling_price)}</dd>
+                <dd className="mt-1 tabular-nums whitespace-nowrap">
+                  {p.original_price != null && <span className="block text-[10px] text-mute line-through">{formatMMK(p.original_price)}</span>}
+                  <span className="text-xs font-semibold text-ink">{formatMMK(p.selling_price)}</span>
+                </dd>
               </div>
             </dl>
 

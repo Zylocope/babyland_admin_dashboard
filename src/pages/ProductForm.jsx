@@ -8,7 +8,7 @@ import { getProductById, createProduct, updateProduct, insertInventory } from '.
 import { uploadProductImage, validateProductImage, ImageTooLargeError } from '../services/uploadService';
 import { useAuth } from '../context/AuthContext';
 
-const EMPTY = { barcode: '', name: '', selling_price: '', category_id: '', sub_category_id: '', is_shown_online: true, is_perishable: false, description: '', image_url: '' };
+const EMPTY = { barcode: '', name: '', selling_price: '', original_price: '', category_id: '', sub_category_id: '', is_shown_online: true, is_perishable: false, description: '', image_url: '' };
 
 export default function ProductForm() {
   const { id } = useParams();
@@ -48,6 +48,7 @@ export default function ProductForm() {
               barcode: found.barcode ?? '',
               name: found.name ?? '',
               selling_price: found.selling_price ?? '',
+              original_price: found.original_price ?? '',
               category_id: found.category_id ?? '',
               sub_category_id: found.sub_category_id ?? '',
               is_shown_online: found.is_shown_online ?? true,
@@ -99,6 +100,10 @@ export default function ProductForm() {
     e.preventDefault();
     setError('');
     if (!form.category_id) { setError(t('productForm.categoryRequired')); return; }
+    if (form.original_price !== '' && Number(form.original_price) <= Number(form.selling_price)) {
+      setError(t('productForm.originalPriceError'));
+      return;
+    }
 
     const hasInventory = addInventory && quantityReceived && unitCost;
 
@@ -108,6 +113,9 @@ export default function ProductForm() {
       category_id: form.category_id,
       sub_category_id: form.sub_category_id || null,
       selling_price: String(form.selling_price || 0),
+      // PUT is a full replacement. Echoing this field preserves an existing
+      // discount; null deliberately removes it.
+      original_price: form.original_price === '' ? null : String(form.original_price),
       is_shown_online: form.is_shown_online,
       is_perishable: form.is_perishable,
       description: form.description.trim() || null,
@@ -187,6 +195,13 @@ export default function ProductForm() {
               <label className="block text-xs font-medium text-ink mb-1">{t('products.sellingPrice')}</label>
               <input type="number" min="0" step="1" value={form.selling_price} onChange={e => set('selling_price', e.target.value)} required
                 className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-ink mb-1">{t('productForm.originalPrice')}</label>
+              <input type="number" min="0" step="1" value={form.original_price} onChange={e => set('original_price', e.target.value)}
+                placeholder={t('productForm.originalPricePlaceholder')}
+                className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+              <p className="text-[11px] text-mute mt-1">{t('productForm.originalPriceHelp')}</p>
             </div>
             <div>
               <label className="block text-xs font-medium text-ink mb-1">{t('table.category')}</label>

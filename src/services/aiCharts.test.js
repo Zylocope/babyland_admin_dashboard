@@ -12,6 +12,14 @@ assert.equal(sparse.data.length, 5, 'every day in the range gets a point');
 assert.deepEqual(sparse.data.map(d => d.revenue), [0, 0, 29800, 0, 0]);
 assert.equal(sparse.hasOnline, false, 'no online sales means no second series');
 
+const playground = chartFromTool('playground_summary', {
+  range: { start: '2026-08-01', end: '2026-08-03' },
+  by_day: [{ date: '2026-08-02', revenue_mmk: 12000, paid_tickets: 6, free_tickets: 1 }],
+});
+assert.equal(playground.kind, 'sales');
+assert.equal(playground.hasChannels, false);
+assert.deepEqual(playground.data.map(row => row.revenue), [0, 12000, 0]);
+
 // Month boundaries must not be skipped or duplicated.
 const across = chartFromTool('sales_summary', {
   range: { start: '2026-07-30', end: '2026-08-02' },
