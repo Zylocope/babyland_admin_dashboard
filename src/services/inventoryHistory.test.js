@@ -76,6 +76,34 @@ assert.ok(lamy.margin_pct > 0);
 // Nothing clears an absurd threshold.
 assert.equal(costChanges(batches, { minPct: 500 }).length, 0);
 
+// A cost that collapses to almost nothing is flagged as probably mistyped, and
+// a margin check alone cannot catch it — a cost of 1 against a 4,500 price
+// looks like a wonderful margin. Real data had exactly this.
+{
+  const typo = [
+    { product_id: 'e', name: 'City Fire Egg', selling_price: 4500, unit_cost: 1, received_at: '2026-09-20' },
+    { product_id: 'e', name: 'City Fire Egg', selling_price: 4500, unit_cost: 3073, received_at: '2026-09-01' },
+  ];
+  const [row] = costChanges(typo);
+  assert.equal(row.suspect, true, 'a 100% collapse is not a negotiation');
+  assert.ok(row.margin_pct > 0, 'and it reads as a great margin, which is why suspect exists');
+}
+
+// A product repriced above its new cost stops being a decision. The T-shirt was
+// bought at 50,000 and the shelf price moved to 60,000, so it ranks below
+// anything still selling at a loss.
+{
+  const fixed = [
+    { product_id: 'p1', name: 'Fixed', selling_price: 60000, unit_cost: 50000, received_at: '2026-09-24' },
+    { product_id: 'p1', name: 'Fixed', selling_price: 60000, unit_cost: 10000, received_at: '2026-09-11' },
+    { product_id: 'p9', name: 'Still losing', selling_price: 22500, unit_cost: 50000, received_at: '2026-09-24' },
+    { product_id: 'p9', name: 'Still losing', selling_price: 22500, unit_cost: 15097, received_at: '2026-09-01' },
+  ];
+  const ranked = costChanges(fixed);
+  assert.equal(ranked[0].name, 'Still losing', 'below cost outranks a bigger percentage');
+  assert.ok(ranked.find(c => c.name === 'Fixed').margin_pct > 0);
+}
+
 // A previous cost of zero would make the percentage meaningless, so it is
 // skipped rather than reported as an infinite rise.
 {

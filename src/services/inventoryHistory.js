@@ -60,7 +60,17 @@ export const loadBatches = async ({ products, fetchRecords }) => {
 // stock is still being sold, so the margin only turns once that runs out — the
 // realised figure lives on the sale lines and is a different number. Saying
 // otherwise overstates it, which is the mistake worth not making in an alert.
-export const costChanges = (batches, { minPct = 10 } = {}) => {
+// 10% surfaced fifteen of thirty-three products on real data — supplier prices
+// move, and an alert that fires on half the catalogue is wallpaper. 25% is the
+// line between routine drift and something worth looking at.
+//
+// A move past 90% in either direction is flagged separately as `suspect`: that
+// is the signature of a typo, not a negotiation. Real data had a cost go from
+// 3,073 to 1 MMK, which a margin check cannot catch because a cost of 1 looks
+// like a wonderful margin.
+const SUSPECT_PCT = 90;
+
+export const costChanges = (batches, { minPct = 25 } = {}) => {
   const perProduct = new Map();
   for (const b of batches) {
     if (!perProduct.has(b.product_id)) perProduct.set(b.product_id, []);
@@ -88,16 +98,19 @@ export const costChanges = (batches, { minPct = 10 } = {}) => {
       selling_price: latest.selling_price,
       // Negative means the next sale loses money at the current shelf price.
       margin_pct: margin,
+      // Probably mistyped rather than renegotiated.
+      suspect: Math.abs(changePct) >= SUSPECT_PCT,
       received_at: latest.received_at,
     });
   }
 
-  // Losing money first, then the biggest jumps. A rise that still leaves a
-  // healthy margin is information; one that goes negative is a decision.
+  // Decisions first, then likely typos, then the biggest genuine moves. A rise
+  // that still leaves a healthy margin is information; one that goes negative,
+  // or a cost that cannot be real, is something to do today.
+  const rank = (c) => (c.margin_pct != null && c.margin_pct < 0 ? 0 : c.suspect ? 1 : 2);
   return changes.sort((a, b) => {
-    const aBad = a.margin_pct != null && a.margin_pct < 0;
-    const bBad = b.margin_pct != null && b.margin_pct < 0;
-    if (aBad !== bBad) return aBad ? -1 : 1;
+    const byRank = rank(a) - rank(b);
+    if (byRank !== 0) return byRank;
     return Math.abs(b.change_pct) - Math.abs(a.change_pct);
   });
 };

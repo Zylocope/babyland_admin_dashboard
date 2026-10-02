@@ -301,6 +301,13 @@ export default function StockIn() {
                     })}
                   </span>
                 )}
+                {/* Said separately from the margin, because a cost of 1 MMK
+                    reads as a wonderful margin and would otherwise hide. */}
+                {a.suspect && !(a.margin_pct != null && a.margin_pct < 0) && (
+                  <span className="text-[11px] w-full" style={{ color: 'var(--status-pending)' }}>
+                    {t('stockIn.suspectCost')}
+                  </span>
+                )}
               </div>
             ))}
           </div>

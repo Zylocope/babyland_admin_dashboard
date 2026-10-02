@@ -526,7 +526,8 @@
     "historyTitle": "လက်ခံရရှိသော stock",
     "historyEmpty": "stock လက်ခံမှု မရှိသေးပါ။",
     "historyPartial": "ပစ္စည်း {{count}} ခုအတွက် inventory မဖတ်နိုင်၍ အောက်ပါစာရင်း မပြည့်စုံပါ။",
-    "historyPartial_plural": "ပစ္စည်း {{count}} ခုအတွက် inventory မဖတ်နိုင်၍ အောက်ပါစာရင်း မပြည့်စုံပါ။"
+    "historyPartial_plural": "ပစ္စည်း {{count}} ခုအတွက် inventory မဖတ်နိုင်၍ အောက်ပါစာရင်း မပြည့်စုံပါ။",
+    "suspectCost": "အလွန်ကြီးမားသော ပြောင်းလဲမှုဖြစ်သည် — မှန်ကန်စွာ ရိုက်ထည့်ခြင်း ရှိမရှိ စစ်ဆေးသင့်သည်။"
   },
   "barcodeCamera": {
     "open": "ကင်မရာဖြင့် စကင်ဖတ်ရန်",
