@@ -50,7 +50,7 @@ export default function Staff() {
         </div>
       )}
 
-      <div className="surface-card is-sheet overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden hidden lg:block">
         <table className="w-full text-[15px]">
           <thead>
             <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
@@ -78,6 +78,31 @@ export default function Staff() {
         {/* The skeleton above already covers the waiting case. */}
         {!loading && !filtered.length && (
           <div className="flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+            <IconDatabase size={28} stroke={1.2} />
+            {t('staff.none')}
+          </div>
+        )}
+      </div>
+
+      {/* Two columns survive a narrow screen better than five, but the row still
+          squeezes the badge against the name. Cards for consistency with every
+          other list. */}
+      <div className="lg:hidden space-y-2.5">
+        {loading ? Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="surface-card is-sheet p-4">
+            <div className="skeleton h-4 w-1/2 rounded" />
+          </div>
+        )) : filtered.map(s => (
+          <article key={s.id} className="surface-card is-sheet p-4 flex items-center gap-3">
+            <div className="w-11 h-11 rounded-full bg-brand-light flex items-center justify-center text-brand flex-shrink-0">
+              <IconUserCog stroke={1.5} size={18} />
+            </div>
+            <span className="font-semibold text-sm text-ink min-w-0 flex-1 truncate">{s.username}</span>
+            <Badge label={toUiRole(s.role)} />
+          </article>
+        ))}
+        {!loading && !filtered.length && (
+          <div className="surface-card is-sheet flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
             <IconDatabase size={28} stroke={1.2} />
             {t('staff.none')}
           </div>

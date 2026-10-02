@@ -34,6 +34,19 @@ const ticketsPerPurchase = (totals) =>
 const freeShare = (totals) =>
   totals.total_tickets ? (totals.free_tickets / totals.total_tickets) * 100 : 0;
 
+// What the loyalty scheme cost over the period: the free tickets priced at what
+// a paid one actually went for. The summary carries no unit price, so the rate
+// comes from the period's own takings — revenue over paid tickets — which also
+// means a price change mid-period is reflected rather than assumed away.
+//
+// Null when nothing was paid for: with no paid tickets there is no rate to
+// price the free ones at, and inventing one would put a number on screen that
+// the data does not support.
+const freeTicketValue = (totals) => {
+  if (!totals.paid_tickets || !totals.free_tickets) return null;
+  return (totals.revenue_mmk / totals.paid_tickets) * totals.free_tickets;
+};
+
 const num = value => Number(value ?? 0) || 0;
 
 const normalizeSummary = value => ({
@@ -178,6 +191,15 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
               ? ticketsPerPurchase(pg).toFixed(1)
               : `${freeShare(pg).toFixed(0)}%`)} />
       </div>
+
+      {!combined && freeTicketValue(pg) != null && (
+        <p className="text-[12px] text-sub -mt-1">
+          {t('playgroundAnalytics.freeCost', {
+            count: pg.free_tickets,
+            value: formatMMK(Math.round(freeTicketValue(pg))),
+          })}
+        </p>
+      )}
 
       <div className="surface-card p-5">
         <h3 className="text-[13px] font-semibold text-ink mb-4">{combined ? t('playgroundAnalytics.combinedTrend') : t('playgroundAnalytics.trend')}</h3>

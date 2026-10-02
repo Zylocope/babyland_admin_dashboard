@@ -55,7 +55,7 @@ export default function Customers() {
         </div>
       )}
 
-      <div className="surface-card is-sheet overflow-hidden">
+      <div className="surface-card is-sheet overflow-hidden hidden lg:block">
         <div className="overflow-x-auto">
           <table className="w-full text-[15px]">
             <thead>
@@ -95,6 +95,42 @@ export default function Customers() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* Records rather than a squeezed three-column table on a phone, the same
+          trade Products and Orders make. */}
+      <div className="lg:hidden space-y-2.5">
+        {loading ? Array.from({ length: 5 }, (_, i) => (
+          <div key={i} className="surface-card is-sheet p-4 space-y-3">
+            <div className="skeleton h-4 w-2/3 rounded" />
+            <div className="skeleton h-3 w-1/2 rounded" />
+          </div>
+        )) : rows.map(c => (
+          <article key={c.id} className="surface-card is-sheet p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-full bg-brand-light flex items-center justify-center font-semibold text-brand flex-shrink-0">
+                {(c.username || '?')[0].toUpperCase()}
+              </div>
+              <p className="font-semibold text-sm text-ink min-w-0 truncate">{c.username}</p>
+            </div>
+            <dl className="grid grid-cols-2 gap-3 py-3.5 mt-3 border-t border-app">
+              <div className="min-w-0">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('table.phone')}</dt>
+                <dd className="mt-1 text-xs font-medium text-ink tabular-nums truncate">{c.phone_number || '—'}</dd>
+              </div>
+              <div className="min-w-0 text-right">
+                <dt className="text-[10px] uppercase tracking-wide text-mute">{t('customers.address')}</dt>
+                <dd className="mt-1 text-xs text-ink truncate">{c.address_line_1 || '—'}</dd>
+              </div>
+            </dl>
+          </article>
+        ))}
+        {!loading && rows.length === 0 && (
+          <div className="surface-card is-sheet flex flex-col items-center justify-center py-12 text-mute text-sm gap-2">
+            <IconDatabase size={28} stroke={1.2} />
+            {t('customers.none')}
+          </div>
+        )}
       </div>
 
       {pages > 1 && (

@@ -378,7 +378,9 @@
     "freeShare": "Free ticket share",
     "salesTitle": "Individual sales",
     "showingOf": "showing {{count}} of {{total}}",
-    "freeTag": "free"
+    "freeTag": "free",
+    "freeCost": "{{count}} free ticket given away this period, worth {{value}} at the going rate.",
+    "freeCost_plural": "{{count}} free tickets given away this period, worth {{value}} at the going rate."
   },
   "salesSource": {
     "label": "Sales source",
