@@ -23,6 +23,11 @@ export type AdminCategory = {
     updated_by: string;
 };
 
+export type AdminCheckoutClaimData = {
+    claimed_by: string;
+    total_price: string;
+};
+
 export type AdminInventory = {
     created_at: string;
     created_by: string;
@@ -319,11 +324,9 @@ export type PaginationQuery = {
 };
 
 export type PlaygroundCheckoutDataAdmin = {
-    available_coupons: Array<string>;
-    claimed_by?: string | null;
+    claim?: null | AdminCheckoutClaimData;
     expired: boolean;
     expires_at: string;
-    total_price?: string | null;
     total_quantity: number;
     unit_price: string;
 };
@@ -949,7 +952,7 @@ export type GetCheckoutDataAdminErrors = {
 
 export type GetCheckoutDataAdminResponses = {
     /**
-     * Claimed Response
+     * Checkout Response
      */
     200: PlaygroundCheckoutDataAdmin;
 };
