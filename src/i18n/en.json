@@ -519,7 +519,14 @@
     "sessionTitle": "Added in this session",
     "sessionEmpty": "Nothing added yet. Scan a product to start.",
     "sessionCount": "{{lines}} products · {{units}} units",
-    "failed": "Could not add stock. Check the connection and try again."
+    "failed": "Could not add stock. Check the connection and try again.",
+    "costAlertTitle": "Cost changes",
+    "costAlertHelp": "Products whose newest batch cost differs from the one before it. This is the risk on the next sale, not a loss already made - older stock may still be selling at the old cost.",
+    "sellingBelowCost": "Selling at {{price}} - that is a {{margin}}% margin on the new batch.",
+    "historyTitle": "Stock received",
+    "historyEmpty": "No stock has been received yet.",
+    "historyPartial": "Could not read inventory for {{count}} product, so the list below is incomplete.",
+    "historyPartial_plural": "Could not read inventory for {{count}} products, so the list below is incomplete."
   },
   "barcodeCamera": {
     "open": "Scan with camera",

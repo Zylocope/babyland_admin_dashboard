@@ -1,12 +1,15 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   IconBarcode, IconPackageImport, IconCircleCheck, IconLoader2, IconX, IconClockHour4, IconCamera,
+  IconAlertTriangle, IconHistory,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
-import { shopToday } from '../utils/shopDay';
+import { shopToday, formatShopTime } from '../utils/shopDay';
 import { validateStockIn } from '../utils/stockIn';
-import { searchProductsSimple, insertInventory } from '../services/productService';
+import { searchProductsSimple, insertInventory, getAllProducts, getInventoryRecords } from '../services/productService';
+import { loadBatches, costChanges } from '../services/inventoryHistory';
+import { Skeleton } from '../components/common/Skeleton';
 import BarcodeCameraScanner from '../components/common/BarcodeCameraScanner';
 
 // Receiving a delivery is scan-shaped work, not browse-shaped. The per-product
@@ -18,6 +21,10 @@ const EMPTY = { quantity: '', unitCost: '', expiry: '' };
 
 export default function StockIn() {
   const { t } = useTranslation();
+  // Every batch in the catalogue, loaded once. One request per product, which
+  // is 34 today - acceptable, and the reason this sits below the scan field
+  // rather than blocking it.
+  const [history, setHistory] = useState({ status: 'loading', batches: [], failed: 0 });
   const [query, setQuery] = useState('');
   const [results, setResults] = useState([]);
   const [searching, setSearching] = useState(false);
@@ -119,6 +126,20 @@ export default function StockIn() {
 
   const field = 'w-full px-4 py-3 text-[15px] border border-app rounded-xl bg-card text-ink focus:outline-none focus:ring-2 focus:ring-brand';
   const totalUnits = done.reduce((sum, d) => sum + d.quantity, 0);
+
+  useEffect(() => {
+    let active = true;
+    getAllProducts()
+      .then(products => loadBatches({
+        products: Array.isArray(products) ? products : [],
+        fetchRecords: getInventoryRecords,
+      }))
+      .then(out => { if (active) setHistory({ status: 'ok', ...out }); })
+      .catch(() => { if (active) setHistory({ status: 'error', batches: [], failed: 0 }); });
+    return () => { active = false; };
+  }, []);
+
+  const alerts = history.status === 'ok' ? costChanges(history.batches) : [];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
@@ -249,6 +270,99 @@ export default function StockIn() {
             </div>
           )}
         </div>
+      </div>
+
+      {/* The alert first, because it is the thing someone acts on. A rise that
+          still leaves a healthy margin is information; one that turns the
+          margin negative is a decision. */}
+      {alerts.length > 0 && (
+        <div className="surface-card is-sheet p-5">
+          <h3 className="text-[13px] font-semibold text-ink mb-1 flex items-center gap-2">
+            <IconAlertTriangle size={16} stroke={1.7} style={{ color: 'var(--status-pending)' }} />
+            {t('stockIn.costAlertTitle')}
+          </h3>
+          <p className="text-[12px] text-sub mb-4">{t('stockIn.costAlertHelp')}</p>
+          <div className="space-y-3">
+            {alerts.map(a => (
+              <div key={a.product_id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                <span className="text-sm font-medium text-ink min-w-0 flex-1 truncate">{a.name}</span>
+                <span className="text-[12px] text-sub tabular-nums">
+                  {formatMMK(a.old_cost)} &rarr; <strong className="text-ink">{formatMMK(a.new_cost)}</strong>
+                </span>
+                <span className="text-[12px] tabular-nums font-semibold"
+                  style={{ color: a.margin_pct != null && a.margin_pct < 0 ? 'var(--status-cancelled)' : 'var(--status-pending)' }}>
+                  {a.change_pct > 0 ? '+' : ''}{a.change_pct.toFixed(0)}%
+                </span>
+                {a.margin_pct != null && a.margin_pct < 0 && (
+                  <span className="text-[11px] w-full" style={{ color: 'var(--status-cancelled)' }}>
+                    {t('stockIn.sellingBelowCost', {
+                      price: formatMMK(a.selling_price),
+                      margin: a.margin_pct.toFixed(0),
+                    })}
+                  </span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* The batches themselves. Two rows for the same product at different
+          costs is how a cost change gets noticed in the first place. */}
+      <div className="surface-card is-sheet p-5">
+        <h3 className="text-[13px] font-semibold text-ink mb-4 flex items-center gap-2">
+          <IconHistory size={16} stroke={1.7} className="text-brand" />
+          {t('stockIn.historyTitle')}
+        </h3>
+        {history.status === 'loading' ? (
+          <div className="space-y-2.5 skeleton-row">
+            {Array.from({ length: 5 }, (_, i) => (
+              <div key={i} className="flex items-center gap-3" style={{ '--i': i }}>
+                <Skeleton style={{ flex: 1, height: 13 }} />
+                <Skeleton w={60} h={13} />
+                <Skeleton w={80} h={13} />
+              </div>
+            ))}
+          </div>
+        ) : history.batches.length === 0 ? (
+          <p className="text-sm text-mute py-8 text-center">{t('stockIn.historyEmpty')}</p>
+        ) : (
+          <>
+            {history.failed > 0 && (
+              <p className="text-[12px] mb-3" style={{ color: 'var(--status-pending)' }}>
+                {t('stockIn.historyPartial', { count: history.failed })}
+              </p>
+            )}
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
+                    <th className="px-4 py-3.5 font-semibold">{t('table.date')}</th>
+                    <th className="px-4 py-3.5 font-semibold">{t('table.item')}</th>
+                    <th className="px-4 py-3.5 text-right font-semibold">{t('table.qty')}</th>
+                    <th className="px-4 py-3.5 text-right font-semibold">{t('salesTable.buyPrice')}</th>
+                    <th className="px-4 py-3.5 text-right font-semibold">{t('table.total')}</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-app">
+                  {history.batches.slice(0, 40).map(b => (
+                    <tr key={b.id} className="hover:bg-brand-light transition-colors">
+                      <td className="px-4 py-3 text-sub tabular-nums whitespace-nowrap">
+                        {b.received_at ? formatShopTime(b.received_at, 'MMM D, YYYY') : '-'}
+                      </td>
+                      <td className="px-4 py-3 text-ink min-w-0 truncate">{b.name}</td>
+                      <td className="px-4 py-3 text-right text-ink tabular-nums">{b.quantity_received}</td>
+                      <td className="px-4 py-3 text-right text-sub tabular-nums">{formatMMK(b.unit_cost)}</td>
+                      <td className="px-4 py-3 text-right text-ink font-medium tabular-nums">
+                        {formatMMK(b.unit_cost * b.quantity_received)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </div>
 
       <BarcodeCameraScanner
