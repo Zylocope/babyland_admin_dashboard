@@ -529,6 +529,34 @@
     "historyPartial_plural": "Could not read inventory for {{count}} products, so the list below is incomplete.",
     "suspectCost": "That is a very large change - worth checking it was typed correctly."
   },
+  "adjustStock": {
+    "open": "Adjust stock",
+    "title": "Adjust stock: {{name}}",
+    "direction": "Adjustment type",
+    "remove": "Remove stock",
+    "add": "Add stock back",
+    "reason": "Reason",
+    "reasons": {
+      "damaged": "Damaged",
+      "expired": "Expired",
+      "miscounted": "Miscounted",
+      "corrected": "Correction"
+    },
+    "batch": "Batch",
+    "oldestFirst": "Oldest batch first (automatic)",
+    "pickBatch": "Choose a batch",
+    "batchOption": "{{id}} · received {{date}} · {{remaining}} of {{received}} left",
+    "removeHelp": "Leave on automatic to take from the oldest stock first, as a sale would.",
+    "addHelp": "Added stock goes back into the batch you choose.",
+    "note": "Note (optional)",
+    "submit": "Save adjustment",
+    "saving": "Saving…",
+    "failed": "Could not save the adjustment",
+    "errQty": "Enter a whole number greater than 0.",
+    "errReason": "Choose a reason.",
+    "errBatch": "Choose the batch to add the stock back into.",
+    "errTooMany": "Only {{available}} in stock to remove."
+  },
   "barcodeCamera": {
     "open": "Scan with camera",
     "title": "Scan barcode",

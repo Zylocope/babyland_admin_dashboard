@@ -4,6 +4,9 @@ import type {
   AdminProduct,
   CreateProductPayload,
   CreateAdminSalePayload,
+  CreateAdjustmentPayload,
+  InventoryAdjustment,
+  InventoryBatchInfo,
   UpdateProductPayload,
   ProductSearchParamsAdmin,
   PaginatedResponseAdminProduct,
@@ -124,6 +127,22 @@ export const insertInventory = (
   body: StockInPayload
 ): Promise<AdminInventory> =>
   request(`/admin/inventory/${productId}`, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+
+export const getProductBatches = (
+  productId: string,
+  availableOnly = false
+): Promise<InventoryBatchInfo[]> =>
+  request(`/admin/inventory/${productId}/batches?available_only=${availableOnly}`, {
+    method: "GET",
+  });
+
+export const createAdjustment = (
+  body: CreateAdjustmentPayload
+): Promise<InventoryAdjustment> =>
+  request("/admin/inventory/adjustments", {
     method: "POST",
     body: JSON.stringify(body),
   });

@@ -4,6 +4,13 @@ export type ClientOptions = {
     baseUrl: `${string}://openapi.yaml` | (string & {});
 };
 
+export enum AdjustmentReason {
+    DAMAGED = 'damaged',
+    EXPIRED = 'expired',
+    MISCOUNTED = 'miscounted',
+    CORRECTED = 'corrected'
+}
+
 export type Admin = {
     delivery_status_values: Array<string>;
     id: string;
@@ -125,8 +132,10 @@ export enum AdminRole {
 }
 
 export type AdminSale = {
+    by_admin?: null | SaleAdminDetail;
     created_at: string;
     id: string;
+    is_instore_sale: boolean;
     total_amount: string;
 };
 
@@ -145,7 +154,16 @@ export type AdminStaff = {
     username: string;
 };
 
+export type CreateAdjustmentPayload = {
+    inventory_id?: string | null;
+    note?: string | null;
+    product_id: string;
+    quantity_change: number;
+    reason: AdjustmentReason;
+};
+
 export type CreateAdminSalePayload = {
+    payment_method?: string | null;
     sale_products: Array<SaleProduct>;
 };
 
@@ -184,6 +202,25 @@ export enum DeliveryStatus {
     ON_DELIVERY = 'OnDelivery',
     RECEIVED = 'Received'
 }
+
+export type InventoryAdjustment = {
+    created_at: string;
+    id: string;
+    inventory_id?: string | null;
+    note?: string | null;
+    product_id: string;
+    quantity_change: number;
+    reason: AdjustmentReason;
+    recorded_by: string;
+};
+
+export type InventoryBatchInfo = {
+    id: string;
+    quantity_received: number;
+    quantity_remaining: number;
+    received_at: string;
+    short_id: string;
+};
 
 export type LoginRequest = {
     password: string;
@@ -298,8 +335,10 @@ export type PaginatedResponseAdminProduct = {
 export type PaginatedResponseAdminSale = {
     current_page: number;
     data: Array<{
+        by_admin?: null | SaleAdminDetail;
         created_at: string;
         id: string;
+        is_instore_sale: boolean;
         total_amount: string;
     }>;
     total_items: number;
@@ -606,6 +645,41 @@ export type UpdateCategoryResponses = {
 
 export type UpdateCategoryResponse = UpdateCategoryResponses[keyof UpdateCategoryResponses];
 
+export type CreateAdjustmentData = {
+    body: CreateAdjustmentPayload;
+    path?: never;
+    query?: never;
+    url: '/admin/inventory/adjustments';
+};
+
+export type CreateAdjustmentErrors = {
+    /**
+     * Bad request
+     */
+    400: unknown;
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Product not found
+     */
+    404: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type CreateAdjustmentResponses = {
+    /**
+     * Adjustment recorded
+     */
+    201: InventoryAdjustment;
+};
+
+export type CreateAdjustmentResponse = CreateAdjustmentResponses[keyof CreateAdjustmentResponses];
+
 export type GetProductInventoryStockLevelData = {
     body?: never;
     path?: never;
@@ -717,6 +791,44 @@ export type InsertInventoryRecordResponses = {
 };
 
 export type InsertInventoryRecordResponse = InsertInventoryRecordResponses[keyof InsertInventoryRecordResponses];
+
+export type GetProductBatchesData = {
+    body?: never;
+    path: {
+        /**
+         * Product UUID
+         */
+        product_id: string;
+    };
+    query?: {
+        available_only?: boolean;
+    };
+    url: '/admin/inventory/{product_id}/batches';
+};
+
+export type GetProductBatchesErrors = {
+    /**
+     * Unauthorized - Missing or invalid session
+     */
+    401: unknown;
+    /**
+     * Product not found
+     */
+    404: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetProductBatchesResponses = {
+    /**
+     * Inventory batches
+     */
+    200: Array<InventoryBatchInfo>;
+};
+
+export type GetProductBatchesResponse = GetProductBatchesResponses[keyof GetProductBatchesResponses];
 
 export type AdminLoginHandlerData = {
     body: LoginRequest;

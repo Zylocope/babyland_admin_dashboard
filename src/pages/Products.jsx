@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight,
-  IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconPrinter,
+  IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconAdjustmentsHorizontal, IconPrinter,
   IconTrash } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
@@ -16,6 +16,7 @@ import Badge from '../components/common/Badge';
 import SearchInput from '../components/common/SearchInput';
 import SubBar from '../components/common/SubBar';
 import StockInModal from '../components/common/StockInModal';
+import AdjustStockModal from '../components/common/AdjustStockModal';
 import { SkeletonRows } from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { getAllProducts, deleteProduct } from '../services/productService';
@@ -63,6 +64,7 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [stockFor, setStockFor] = useState(null);
+  const [adjustFor, setAdjustFor] = useState(null);
   const [reportOpen, setReportOpen] = useState(false);
   const [printing, setPrinting] = useState(null);
   const [deleting, setDeleting] = useState(null);
@@ -272,6 +274,9 @@ export default function Products() {
                         <button onClick={() => setStockFor(p)} className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-app text-xs font-medium text-sub hover:text-brand hover:border-brand hover:bg-brand-light transition-colors cursor-pointer">
                           <IconPackageImport stroke={1.6} size={14} /> {t('stockIn.addStock')}
                         </button>
+                        <button aria-label={`${t('adjustStock.open')} ${p.name}`} onClick={() => setAdjustFor(p)} className="control-icon text-mute hover:text-brand hover:bg-brand-light cursor-pointer" title={t('adjustStock.open')}>
+                          <IconAdjustmentsHorizontal stroke={1.5} size={16} />
+                        </button>
                         <button aria-label={`${t('common.edit')} ${p.name}`} onClick={() => navigate(`/products/${p.id}/edit`)} className="control-icon text-mute hover:text-brand hover:bg-brand-light cursor-pointer" title={t('common.edit')}>
                           <IconPencil stroke={1.5} size={16} />
                         </button>
@@ -344,6 +349,9 @@ export default function Products() {
                 <button onClick={() => setStockFor(p)} className="btn-primary flex-1 justify-center py-2 text-xs">
                   <IconPackageImport stroke={1.6} size={15} /> {t('stockIn.addStock')}
                 </button>
+                <button aria-label={`${t('adjustStock.open')} ${p.name}`} onClick={() => setAdjustFor(p)} className="control-icon border border-app text-sub hover:text-brand hover:bg-brand-light cursor-pointer">
+                  <IconAdjustmentsHorizontal stroke={1.5} size={16} />
+                </button>
                 <button aria-label={`${t('common.edit')} ${p.name}`} onClick={() => navigate(`/products/${p.id}/edit`)} className="control-icon border border-app text-sub hover:text-brand hover:bg-brand-light cursor-pointer">
                   <IconPencil stroke={1.5} size={16} />
                 </button>
@@ -365,6 +373,14 @@ export default function Products() {
         open={!!stockFor}
         onClose={() => setStockFor(null)}
         onAdded={reload}
+      />
+
+      <AdjustStockModal
+        key={`adjust-${adjustFor?.id ?? 'none'}`}
+        product={adjustFor}
+        open={!!adjustFor}
+        onClose={() => setAdjustFor(null)}
+        onSaved={reload}
       />
 
       {totalPages > 1 && (
