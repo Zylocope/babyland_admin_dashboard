@@ -108,7 +108,9 @@ export default function SalesDashboard() {
   const [view, setView] = useState('channel');
   const [period, setPeriod] = useState('week');
   const [records, setRecords] = useState([]);
-  const [receipts, setReceipts] = useState({ data: [], total: 0 });
+  const [receipts, setReceipts] = useState({ data: [], total: 0, failed: false });
+  // A failed load is not an empty period: zeros here would read as "nothing sold".
+  const [summaryFailed, setSummaryFailed] = useState(false);
   const [openReceipt, setOpenReceipt] = useState(null);
   // What actually sold, as opposed to how much came in. The sale list carries
   // no line items, so this opens every receipt in the period — which is why it
@@ -122,13 +124,14 @@ export default function SalesDashboard() {
     let active = true;
     setLoading(true);
     Promise.all([
-      getSaleSummary({ start_date: start, end_date: end }).catch(() => []),
-      getSales(1, RECEIPT_PAGE).catch(() => ({ data: [], total_items: 0 })),
+      getSaleSummary({ start_date: start, end_date: end }).catch(() => null),
+      getSales(1, RECEIPT_PAGE).catch(() => null),
     ])
       .then(([summary, sales]) => {
         if (!active) return;
+        setSummaryFailed(summary === null);
         setRecords(Array.isArray(summary) ? summary : []);
-        setReceipts({ data: sales?.data ?? [], total: sales?.total_items ?? 0 });
+        setReceipts({ data: sales?.data ?? [], total: sales?.total_items ?? 0, failed: sales === null });
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -375,6 +378,10 @@ export default function SalesDashboard() {
         )}
       </SubBar>
 
+      {summaryFailed && (
+        <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{t('posDash.summaryFailed')}</div>
+      )}
+
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard icon={IconCash}        tone="store"     label={t('posDash.sales')}  value={show(formatMMKShort(totals.revenue_mmk))} />
         <StatCard icon={IconReportMoney} tone="completed" label={t('posDash.profit')} value={show(formatMMKShort(totals.profit_mmk))} trend={{ dir: 'up', value: t('posDash.margin', { n: totals.margin_pct }) }} />
@@ -470,7 +477,7 @@ export default function SalesDashboard() {
 
       {view === 'receipts' && (
         <Panel title={t('salesViews.receipts')}>
-          <DataTable columns={receiptCols} rows={periodReceipts} empty={t('salesTable.noReceipts')}
+          <DataTable columns={receiptCols} rows={periodReceipts} empty={receipts.failed ? t('salesTable.receiptsFailed') : t('salesTable.noReceipts')}
             onRowClick={setOpenReceipt} />
           {receipts.total > RECEIPT_PAGE && (
             <p className="mt-3 text-[11px] text-mute">{t('salesTable.showing', { count: receipts.data.length, total: receipts.total })}</p>

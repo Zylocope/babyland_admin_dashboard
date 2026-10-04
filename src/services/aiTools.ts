@@ -2,10 +2,12 @@
 // never from the model's memory. Tools run in the browser so they reuse the
 // existing admin session. Tool results then pass through /api/chat to Gemini.
 import { parseISO, getDay } from "date-fns";
-import { shopToday, shopDaysAgo } from "../utils/shopDay";
+import { shopToday, shopDaysAgo, shopDayStart } from "../utils/shopDay";
+// @ts-expect-error plain-JS helper without a declaration file
+import { parseApiDate } from "../utils/apiDate";
 import { LOW_STOCK_AT } from "../utils/stock";
-import { getSaleSummary } from "./salesService";
-import { getAllProducts, searchProductsSimple } from "./productService";
+import { getSaleSummary, getSales } from "./salesService";
+import { getAllProducts, getInventoryRecords, searchProductsSimple } from "./productService";
 import { getCategories } from "./categoryService";
 import { getPlaygroundSummary } from "./playgroundAdminService";
 import { getOrders, ORDER_STATUSES } from "./orderService";
@@ -13,6 +15,8 @@ import { getCustomers } from "./customerService";
 import { getStaff } from "./staffService";
 // @ts-expect-error plain-JS reducer, kept untyped so it runs under bare node in its test
 import { summarizeSales } from "./salesRollup.js";
+// @ts-expect-error plain-JS reducers, kept untyped so they run under bare node in their test
+import { stockDetail, salesBreakdown } from "./assistantReports.js";
 import { getProductSales, getCategorySales } from "./analyticsService";
 import type { AdminProduct } from "../types";
 
@@ -121,6 +125,66 @@ const lowStock = async ({ threshold = LOW_STOCK_AT }: { threshold?: number }) =>
 const productSearch = async ({ query }: { query: string }) => {
   const res = await searchProductsSimple(query, { page_size: 20 });
   return { query, count: res.data?.length ?? 0, products: (res.data ?? []).map(slim) };
+};
+
+// Pages are read until the list runs out; a cap that is hit is reported, never hidden.
+const MAX_PAGES = 30;
+
+const productStockDetail = async ({ query }: { query: string }) => {
+  const q = String(query ?? "").trim();
+  const res = await searchProductsSimple(q, { page_size: 10 });
+  const found = res.data ?? [];
+  const lower = q.toLowerCase();
+  const product = found.find(p => p.barcode === q || p.name.toLowerCase() === lower)
+    ?? (found.length === 1 ? found[0] : null);
+  if (!product) {
+    return found.length
+      ? { query: q, note: "Several products match. Ask which one.", matches: found.map(p => p.name) }
+      : { query: q, note: "No product matches." };
+  }
+
+  const records = [];
+  let page = 1;
+  let pages = 1;
+  do {
+    const r = await getInventoryRecords(product.id, { page, page_size: 100 });
+    records.push(...(r?.data ?? []));
+    pages = Number(r?.total_pages ?? 1) || 1;
+    page += 1;
+  } while (page <= pages && page <= MAX_PAGES);
+
+  return {
+    product: { name: product.name, barcode: product.barcode, category: product.category ?? null, perishable: product.is_perishable },
+    covers_all_batches: pages <= MAX_PAGES,
+    ...stockDetail(product, records, today()),
+  };
+};
+
+const salesBreakdownTool = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {
+  const start = start_date || today();
+  const end = end_date || today();
+  const rows = [];
+  let page = 1;
+  let pages = 1;
+  let reachedStart = false;
+  // The list is newest first, so the walk stops at the first page that reaches
+  // back past the start of the range.
+  do {
+    const r = await getSales(page, 100);
+    const data = r?.data ?? [];
+    rows.push(...data);
+    pages = Number(r?.total_pages ?? 1) || 1;
+    const oldest = data[data.length - 1];
+    const oldestAt = oldest ? parseApiDate(oldest.created_at) : null;
+    reachedStart = !oldestAt || oldestAt < shopDayStart(start);
+    page += 1;
+  } while (!reachedStart && page <= pages && page <= MAX_PAGES);
+
+  return {
+    range: { start_date: start, end_date: end },
+    covers_whole_range: reachedStart || page > pages,
+    ...salesBreakdown(rows, start, end),
+  };
 };
 
 const categoryList = async () => {
@@ -272,6 +336,8 @@ const TOOLS = {
   search_products: productSearch,
   list_categories: categoryList,
   product_performance: productPerformance,
+  product_stock_detail: productStockDetail,
+  sales_breakdown: salesBreakdownTool,
   sales_by_category: salesByCategory,
   playground_summary: playgroundSummary,
   order_summary: orderSummary,
@@ -356,6 +422,28 @@ export const toolDeclarations = [
     },
   },
   {
+    name: "product_stock_detail",
+    description:
+      "One product's stock batch by batch: units left in each delivery, what each cost, when it arrived and when it expires, plus stock value at cost, the latest unit cost against the selling price (margin, and whether it now sells below cost), and the next expiry. units_without_expiry_date counts stock with no expiry recorded; mention it rather than implying all stock shares one date. Use for when does X expire, what did we pay for X, is X losing money, how old is the stock of X. Takes a product name or barcode; if several products match, ask the manager which one.",
+    parameters: {
+      type: "object",
+      properties: { query: { type: "string", description: "Product name or barcode." } },
+      required: ["query"],
+    },
+  },
+  {
+    name: "sales_breakdown",
+    description:
+      "Sales in a date range split by channel (in-store vs online) and by cashier (the staff login that rang up each in-store sale): number of sales, revenue and average sale for each. Use for who sold the most, how busy each cashier was, and in-store vs online. Defaults to today. Payment method is not included in the sales list, so it cannot split cash from mobile payment.",
+    parameters: {
+      type: "object",
+      properties: {
+        start_date: { type: "string", description: "Inclusive start date, YYYY-MM-DD." },
+        end_date: { type: "string", description: "Inclusive end date, YYYY-MM-DD." },
+      },
+    },
+  },
+  {
     name: "sales_by_category",
     description:
       "What actually SOLD grouped by category in a date range: units, revenue and profit, ranked by revenue. Use for which category sells most or makes the most money. This is sales, not stock on hand — use stock_by_category for what is sitting on the shelf. Defaults to the last 30 days. If covers_whole_range is false the answer is partial — say so.",
@@ -433,7 +521,7 @@ Rules:
 - Be brief. Lead with the number the manager asked for, then at most two lines of context.
 - Write plain text. No markdown — no **bold**, no ##headings, no tables. Use "-" for lists.
 - The shop does not handle product returns or refunds; there is no returns data.
-- Payments breakdown and per-cashier sales are not available yet — say so plainly instead of estimating.
-- Customer contact details and individual staff identities are deliberately not available to you. You can report only their aggregate counts.
+- A payment-method split (cash vs mobile) is not available yet — say so plainly instead of estimating.
+- Customer names and contact details are deliberately not available to you; report only counts. Staff appear only as login names, and only in sales_breakdown.
 - If a tool returns covers_whole_range false, say the answer covers only part of the range.
 - Reply in the language the manager writes in (English or Burmese).`;

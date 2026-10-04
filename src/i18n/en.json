@@ -406,7 +406,8 @@
     "chInstore": "In-store",
     "chOnline": "Online",
     "compareTrend": "In-store vs online",
-    "shareToday": "Revenue share"
+    "shareToday": "Revenue share",
+    "summaryFailed": "Sales figures could not be loaded, so the numbers below are not real. Try again shortly."
   },
   "assistant": {
     "send": "Send question",
@@ -484,7 +485,8 @@
     "productsReading": "Reading every receipt in this period — the sale list does not carry line items, so this takes a few seconds.",
     "productsPartial": "Some receipts could not be read, so this ranking covers part of the period. Try a shorter range.",
     "buyPrice": "Buy",
-    "sellPrice": "Sell"
+    "sellPrice": "Sell",
+    "receiptsFailed": "Receipts could not be loaded. This is a loading error, not an empty period."
   },
   "productViews": {
     "all": "All products",
@@ -555,7 +557,8 @@
     "errQty": "Enter a whole number greater than 0.",
     "errReason": "Choose a reason.",
     "errBatch": "Choose the batch to add the stock back into.",
-    "errTooMany": "Only {{available}} in stock to remove."
+    "errTooMany": "Only {{available}} in stock to remove.",
+    "quantity": "Quantity"
   },
   "barcodeCamera": {
     "open": "Scan with camera",

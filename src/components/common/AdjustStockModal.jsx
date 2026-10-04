@@ -78,7 +78,7 @@ export default function AdjustStockModal({ product, open, onClose, onSaved }) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label htmlFor="adjust-qty" className="block text-xs text-sub mb-1">{t('stockIn.quantity')}</label>
+            <label htmlFor="adjust-qty" className="block text-xs text-sub mb-1">{t('adjustStock.quantity')}</label>
             <input id="adjust-qty" type="number" min="1" step="1" value={form.quantity} onChange={set('quantity')} className={field} required />
           </div>
           <div>
