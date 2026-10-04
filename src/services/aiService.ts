@@ -19,13 +19,10 @@ import { baseURL } from "./baseService";
 // any non-2xx into a generic Error, and this call has to tell a daily limit
 // from an upstream timeout from a role refusal.
 //
-// NOT SWITCHED ON YET. The backend hardcodes models/gemini-2.5-flash
-// (src/ai/service.rs:13), which Google has retired — calling it returns a 404
-// saying to move to gemini-3.8-flash. The Vercel proxy runs a current model,
-// so it still works and stays in use until that line changes. Verified against
-// the live endpoint: the session and role checks pass and the relay is
-// faithful, so the only thing standing between this and production is that
-// model name. Flip the constant when it lands.
+// The model comes from the backend's GEMINI_MODEL setting on Render (its code
+// default, gemini-2.5-flash, is retired and answers 404). If every question
+// fails with a 404 message, that setting is missing; flipping this back to
+// false falls back to the Vercel proxy.
 
 export class AiError extends Error {
   kind: "auth" | "role" | "quota" | "timeout" | "blocked" | "other";
@@ -40,7 +37,7 @@ export interface GeminiContent {
   parts: unknown[];
 }
 
-const USE_BACKEND = false;
+const USE_BACKEND = true;
 
 export const askGeminiViaBackend = async (
   body: unknown,

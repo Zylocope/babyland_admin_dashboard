@@ -13,8 +13,11 @@ import { request } from "./baseService";
 // behind a shape that matches what the endpoints will return, so switching is
 // deleting a branch rather than rewriting callers.
 
-// Flip when the endpoints are live. Nothing else in the app needs touching.
-const USE_BACKEND = false;
+// One switch per endpoint, because they land separately. Product performance
+// is live under /admin/analytics/ai/; by-category is not built yet, and its
+// browser path below already reads products through the backend.
+const PRODUCTS_FROM_BACKEND = true;
+const CATEGORIES_FROM_BACKEND = false;
 
 export interface ProductSalesRow {
   product_id: string;
@@ -51,6 +54,7 @@ export type ProductSalesResult = Coverage & { rows: ProductSalesRow[] };
 export type CategorySalesResult = Coverage & { rows: CategorySalesRow[] };
 
 const num = (v: unknown) => Number(v ?? 0) || 0;
+const MAX_PAGES = 20;
 
 interface BackendProductRow {
   product_id: string;
@@ -73,16 +77,29 @@ export const getProductSales = async (
   start: string,
   end: string
 ): Promise<ProductSalesResult> => {
-  if (USE_BACKEND) {
-    const res = await request<{ data: BackendProductRow[] }>(
-      `/admin/analytics/product-performance?start_date=${start}&end_date=${end}&sort=units`,
-      { method: "GET" }
-    );
+  if (PRODUCTS_FROM_BACKEND) {
+    // Every page, not the first: a ranking from page one presenting itself as
+    // the whole range is the truncation bug this file exists to prevent.
+    // ponytail: the server sort has no tiebreak, so equal rows could shift
+    // between pages; one page of 100 covers today's catalogue, and the dedupe
+    // only stops a repeat, it cannot recover a skipped row.
+    const seen = new Map<string, BackendProductRow>();
+    let page = 1;
+    let pages = 1;
+    do {
+      const res = await request<{ data: BackendProductRow[]; total_pages: number }>(
+        `/admin/analytics/ai/product-performance?start_date=${start}&end_date=${end}&sort=units&page=${page}&page_size=100`,
+        { method: "GET" }
+      );
+      for (const r of res?.data ?? []) seen.set(r.product_id, r);
+      pages = num(res?.total_pages);
+      page += 1;
+    } while (page <= pages && page <= MAX_PAGES);
     return {
-      complete: true,
+      complete: pages <= MAX_PAGES,
       receipts_read: 0,
       receipts_unreadable: 0,
-      rows: (res?.data ?? []).map(r => ({
+      rows: [...seen.values()].map(r => ({
         product_id: r.product_id,
         name: r.name,
         units: num(r.units_sold),
@@ -108,9 +125,9 @@ export const getCategorySales = async (
   start: string,
   end: string
 ): Promise<CategorySalesResult> => {
-  if (USE_BACKEND) {
+  if (CATEGORIES_FROM_BACKEND) {
     const res = await request<{ data: BackendCategoryRow[] }>(
-      `/admin/analytics/by-category?start_date=${start}&end_date=${end}`,
+      `/admin/analytics/ai/by-category?start_date=${start}&end_date=${end}`,
       { method: "GET" }
     );
     return {

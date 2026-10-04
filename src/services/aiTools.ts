@@ -4,7 +4,7 @@
 import { parseISO, getDay } from "date-fns";
 import { shopToday, shopDaysAgo } from "../utils/shopDay";
 import { LOW_STOCK_AT } from "../utils/stock";
-import { getSaleSummary, getSales, getSaleDetail } from "./salesService";
+import { getSaleSummary } from "./salesService";
 import { getAllProducts, searchProductsSimple } from "./productService";
 import { getCategories } from "./categoryService";
 import { getPlaygroundSummary } from "./playgroundAdminService";
@@ -31,34 +31,47 @@ const slim = (p: AdminProduct) => ({
   visible_to_customers: p.is_shown_online,
 });
 
-// Best sellers, and what sold by category. Both walk receipts — see
-// productSales.js for why, and for the cap that comes back with the answer.
+// What sold, per product and per category. Both go through analyticsService,
+// which reports whether it saw the whole range.
 const soldRange = (start_date?: string, end_date?: string) => ({
   start: start_date || shopDaysAgo(29),
   end: end_date || today(),
 });
 
-const topProducts = async (
-  { start_date, end_date, limit }: { start_date?: string; end_date?: string; limit?: number }
-) => {
+const PERF_SORTS = {
+  units: "units_sold",
+  revenue: "revenue_mmk",
+  profit: "profit_mmk",
+  margin: "margin_pct",
+} as const;
+
+const productPerformance = async ({ start_date, end_date, sort, order, limit }: {
+  start_date?: string;
+  end_date?: string;
+  sort?: keyof typeof PERF_SORTS;
+  order?: "desc" | "asc";
+  limit?: number;
+}) => {
   const { start, end } = soldRange(start_date, end_date);
-  const out = await productSales({ start, end, listSales: getSales, loadSale: getSaleDetail });
-  return {
-    range: { start_date: start, end_date: end },
-    receipts_read: out.receipts,
-    receipts_unreadable: out.failed,
-    covers_whole_range: !out.truncated,
-    products: out.rows.slice(0, Math.max(1, Math.min(50, Number(limit) || 10))).map((r: {
-      name: string;
-      units: number;
-      revenue_mmk: number;
-      profit_mmk: number;
-    }) => ({
+  const out = await getProductSales(start, end);
+  const key = PERF_SORTS[sort ?? "units"] ?? "units_sold";
+  const sign = order === "asc" ? 1 : -1;
+  const rows = out.rows
+    .map(r => ({
       name: r.name,
       units_sold: r.units,
       revenue_mmk: Math.round(r.revenue_mmk),
+      cost_mmk: Math.round(r.cost_mmk),
       profit_mmk: Math.round(r.profit_mmk),
-    })),
+      margin_pct: r.revenue_mmk > 0 ? Math.round((r.profit_mmk / r.revenue_mmk) * 1000) / 10 : 0,
+    }))
+    .sort((a, b) => sign * (a[key] - b[key]) || a.name.localeCompare(b.name));
+  return {
+    range: { start_date: start, end_date: end },
+    sorted_by: `${sort ?? "units"} ${order ?? "desc"}`,
+    covers_whole_range: out.complete,
+    products_sold: rows.length,
+    products: rows.slice(0, Math.max(1, Math.min(50, Number(limit) || 10))),
   };
 };
 
@@ -258,7 +271,7 @@ const TOOLS = {
   low_stock: lowStock,
   search_products: productSearch,
   list_categories: categoryList,
-  top_products: topProducts,
+  product_performance: productPerformance,
   sales_by_category: salesByCategory,
   playground_summary: playgroundSummary,
   order_summary: orderSummary,
@@ -328,15 +341,17 @@ export const toolDeclarations = [
     parameters: { type: "object", properties: {} },
   },
   {
-    name: "top_products",
+    name: "product_performance",
     description:
-      "Best-selling products in a date range: units sold, revenue and profit for each, ranked by units. Use for best seller, worst seller, what sells most, and what to reorder. Defaults to the last 30 days. Reads every receipt in the range, so keep the range to a month or less. If covers_whole_range is false the range was too large and the answer is partial — say so.",
+      "Sales performance per product in a date range: units sold, revenue, cost, profit and margin %. Cost is the real FIFO cost of the stock each sale used. Sort by units, revenue, profit or margin; order desc for best (best seller, most profitable) or asc for worst (slowest seller, lowest margin, losing money). Only products that sold at least once in the range appear, so it cannot list products with no sales. Defaults to the last 30 days, units, desc, top 10.",
     parameters: {
       type: "object",
       properties: {
         start_date: { type: "string", description: "Inclusive start date, YYYY-MM-DD." },
         end_date: { type: "string", description: "Inclusive end date, YYYY-MM-DD." },
-        limit: { type: "number", description: "How many products to return. Default 10." },
+        sort: { type: "string", enum: ["units", "revenue", "profit", "margin"], description: "What to rank by. Default units." },
+        order: { type: "string", enum: ["desc", "asc"], description: "desc = highest first, asc = lowest first. Default desc." },
+        limit: { type: "number", description: "How many products to return, up to 50. Default 10." },
       },
     },
   },
@@ -420,5 +435,5 @@ Rules:
 - The shop does not handle product returns or refunds; there is no returns data.
 - Payments breakdown and per-cashier sales are not available yet — say so plainly instead of estimating.
 - Customer contact details and individual staff identities are deliberately not available to you. You can report only their aggregate counts.
-- top_products and sales_by_category read every receipt in the range, so they take a few seconds. If covers_whole_range is false, the range was too big: say the answer covers only part of it and suggest a shorter range.
+- If a tool returns covers_whole_range false, say the answer covers only part of the range.
 - Reply in the language the manager writes in (English or Burmese).`;
