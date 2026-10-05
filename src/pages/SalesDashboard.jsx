@@ -19,6 +19,7 @@ import { useTheme } from '../context/ThemeContext';
 import { parseApiDate } from '../utils/apiDate';
 import { useAuth } from '../context/AuthContext';
 import { getSaleSummary, getSales } from '../services/salesService';
+import { salesSince } from '../services/salesWalk';
 import ReceiptDialog from '../components/common/ReceiptDialog';
 import { getProductSales } from '../services/analyticsService';
 import { summarizeSales, rankDays, byWeekday } from '../services/salesRollup';
@@ -27,7 +28,6 @@ import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
 
 const PERIODS = ['today', 'week', 'month'];
 const PERIOD_DAYS = { today: 1, week: 7, month: 30 };
-const RECEIPT_PAGE = 100;
 function SalesTooltip({ active, payload, label, inStoreLabel, onlineLabel, totalLabel }) {
   if (!active || !payload?.length) return null;
   const row = payload[0]?.payload ?? {};
@@ -108,7 +108,7 @@ export default function SalesDashboard() {
   const [view, setView] = useState('channel');
   const [period, setPeriod] = useState('week');
   const [records, setRecords] = useState([]);
-  const [receipts, setReceipts] = useState({ data: [], total: 0, failed: false });
+  const [receipts, setReceipts] = useState({ data: [], total: 0, complete: true, failed: false });
   // A failed load is not an empty period: zeros here would read as "nothing sold".
   const [summaryFailed, setSummaryFailed] = useState(false);
   const [openReceipt, setOpenReceipt] = useState(null);
@@ -125,13 +125,13 @@ export default function SalesDashboard() {
     setLoading(true);
     Promise.all([
       getSaleSummary({ start_date: start, end_date: end }).catch(() => null),
-      getSales(1, RECEIPT_PAGE).catch(() => null),
+      salesSince({ listSales: getSales, since: shopDayStart(start) }).catch(() => null),
     ])
       .then(([summary, sales]) => {
         if (!active) return;
         setSummaryFailed(summary === null);
         setRecords(Array.isArray(summary) ? summary : []);
-        setReceipts({ data: sales?.data ?? [], total: sales?.total_items ?? 0, failed: sales === null });
+        setReceipts({ data: sales?.rows ?? [], total: sales?.totalItems ?? 0, complete: sales?.complete ?? true, failed: sales === null });
       })
       .finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
@@ -479,8 +479,8 @@ export default function SalesDashboard() {
         <Panel title={t('salesViews.receipts')}>
           <DataTable columns={receiptCols} rows={periodReceipts} empty={receipts.failed ? t('salesTable.receiptsFailed') : t('salesTable.noReceipts')}
             onRowClick={setOpenReceipt} />
-          {receipts.total > RECEIPT_PAGE && (
-            <p className="mt-3 text-[11px] text-mute">{t('salesTable.showing', { count: receipts.data.length, total: receipts.total })}</p>
+          {!receipts.complete && (
+            <p className="mt-3 text-[11px] text-amber-600">{t('salesTable.receiptsPartial', { count: periodReceipts.length })}</p>
           )}
         </Panel>
       )}

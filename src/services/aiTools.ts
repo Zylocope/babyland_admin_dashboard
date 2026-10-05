@@ -3,8 +3,6 @@
 // existing admin session. Tool results then pass through /api/chat to Gemini.
 import { parseISO, getDay } from "date-fns";
 import { shopToday, shopDaysAgo, shopDayStart } from "../utils/shopDay";
-// @ts-expect-error plain-JS helper without a declaration file
-import { parseApiDate } from "../utils/apiDate";
 import { LOW_STOCK_AT } from "../utils/stock";
 import { getSaleSummary, getSales } from "./salesService";
 import { getAllProducts, getInventoryRecords, searchProductsSimple } from "./productService";
@@ -17,6 +15,8 @@ import { getStaff } from "./staffService";
 import { summarizeSales } from "./salesRollup.js";
 // @ts-expect-error plain-JS reducers, kept untyped so they run under bare node in their test
 import { stockDetail, salesBreakdown } from "./assistantReports.js";
+// @ts-expect-error plain-JS walk, kept untyped so it runs under bare node in its test
+import { salesSince } from "./salesWalk.js";
 import { getProductSales, getCategorySales } from "./analyticsService";
 import type { AdminProduct } from "../types";
 
@@ -163,27 +163,12 @@ const productStockDetail = async ({ query }: { query: string }) => {
 const salesBreakdownTool = async ({ start_date, end_date }: { start_date?: string; end_date?: string }) => {
   const start = start_date || today();
   const end = end_date || today();
-  const rows = [];
-  let page = 1;
-  let pages = 1;
-  let reachedStart = false;
-  // The list is newest first, so the walk stops at the first page that reaches
-  // back past the start of the range.
-  do {
-    const r = await getSales(page, 100);
-    const data = r?.data ?? [];
-    rows.push(...data);
-    pages = Number(r?.total_pages ?? 1) || 1;
-    const oldest = data[data.length - 1];
-    const oldestAt = oldest ? parseApiDate(oldest.created_at) : null;
-    reachedStart = !oldestAt || oldestAt < shopDayStart(start);
-    page += 1;
-  } while (!reachedStart && page <= pages && page <= MAX_PAGES);
+  const walk = await salesSince({ listSales: getSales, since: shopDayStart(start), maxPages: MAX_PAGES });
 
   return {
     range: { start_date: start, end_date: end },
-    covers_whole_range: reachedStart || page > pages,
-    ...salesBreakdown(rows, start, end),
+    covers_whole_range: walk.complete,
+    ...salesBreakdown(walk.rows, start, end),
   };
 };
 

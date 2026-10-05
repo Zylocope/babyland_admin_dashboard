@@ -486,7 +486,8 @@
     "productsPartial": "Some receipts could not be read, so this ranking covers part of the period. Try a shorter range.",
     "buyPrice": "Buy",
     "sellPrice": "Sell",
-    "receiptsFailed": "Receipts could not be loaded. This is a loading error, not an empty period."
+    "receiptsFailed": "Receipts could not be loaded. This is a loading error, not an empty period.",
+    "receiptsPartial": "Only the newest {{count}} receipts in this period could be loaded; older ones are not shown."
   },
   "productViews": {
     "all": "All products",
