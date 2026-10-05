@@ -600,7 +600,11 @@
     "compareRevenue": "ဝင်ငွေ {{current}} / ယခင် {{previous}} {{change}}",
     "compareProfit": "အမြတ် {{current}} / ယခင် {{previous}} {{change}}",
     "compareTxns": "အရောင်း {{current}} ကြိမ် / ယခင် {{previous}} ကြိမ် {{change}}",
-    "stockValueLine": "ပစ္စည်း {{products}} မျိုး၊ စျေးနှုန်းအရ {{total}}:"
+    "stockValueLine": "ပစ္စည်း {{products}} မျိုး၊ စျေးနှုန်းအရ {{total}}:",
+    "profit": "အမြတ်အများဆုံး (ရက် ၃၀)",
+    "profitTop": "အမြတ် အများဆုံး:",
+    "profitLosing": "အရှုံးဖြင့် ရောင်းခဲ့သည် ({{count}}):",
+    "partial": "ဤအဖြေသည် ကာလ၏ တစ်စိတ်တစ်ပိုင်းကိုသာ ဖော်ပြသည်။"
   },
   "aiChart": {
     "titles": {

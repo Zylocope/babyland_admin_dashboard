@@ -307,6 +307,16 @@ export default function SalesDashboard() {
     { key: 'bestworst', name: t('salesViews.bestworst'), columns: dailyCols, rows: ranked },
     { key: 'receipts', name: t('salesViews.receipts'), columns: receiptCols, rows: periodReceipts },
     { key: 'monthly', name: t('salesTable.monthly'), columns: monthlyCols, rows: monthlyRows },
+    // What sold, per product. Reuses the Products view's rows when they are
+    // already loaded for this period; otherwise fetched only when ticked.
+    {
+      key: 'products',
+      name: t('salesViews.products'),
+      columns: soldCols,
+      rows: [],
+      count: sold.key === soldKey ? sold.rows.length : (totals.transactions > 0 ? null : 0),
+      load: async () => (sold.key === soldKey ? sold.rows : (await getProductSales(start, end)).rows),
+    },
     // Every receipt the shop has, not the page currently on screen. Loaded only
     // when ticked, because it walks the pagination and that is many requests.
     {

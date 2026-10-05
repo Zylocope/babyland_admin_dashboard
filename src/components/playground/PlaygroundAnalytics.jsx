@@ -111,15 +111,26 @@ export default function PlaygroundAnalytics({ start, end, mode = 'playground', r
 
   useEffect(() => {
     let active = true;
-    getPlaygroundPurchases(start, end, 1, 20)
-      .then(res => {
+    // Every page of the period, not the first 20: the list is the record of
+    // each sale, and a "20 of 43" with no way to the rest hides most of it.
+    // The cap is reported by the "showing X of Y" note below, never silent.
+    (async () => {
+      const rows = [];
+      let page = 1;
+      let pages;
+      let total;
+      do {
+        const res = await getPlaygroundPurchases(start, end, page, 100);
+        rows.push(...(Array.isArray(res?.data) ? res.data : []));
+        pages = Number(res?.total_pages ?? 1) || 1;
+        total = Number(res?.total_items ?? 0) || 0;
+        page += 1;
+      } while (active && page <= pages && page <= 30);
+      return { rows, total };
+    })()
+      .then(({ rows, total }) => {
         if (!active) return;
-        setSales({
-          key: requestKey,
-          rows: Array.isArray(res?.data) ? res.data : [],
-          total: Number(res?.total_items ?? 0) || 0,
-          error: '',
-        });
+        setSales({ key: requestKey, rows, total, error: '' });
       })
       .catch(err => { if (active) setSales({ key: requestKey, rows: [], total: 0, error: err?.message || '' }); });
     return () => { active = false; };

@@ -72,6 +72,23 @@ const stockValueLine = (res, t) => {
   return [t('quick.stockValueLine', { total: mmk(total), products: res.total_products }), ...rows].join('\n');
 };
 
+// Most profitable first, then anything sold at a loss: the two things an owner
+// acts on. Loss-makers are listed even when they are not in the top five.
+const profitLine = (res, t) => {
+  if (isFailed(res)) return t('quick.failed');
+  const rows = res.products ?? [];
+  if (!rows.length) return t('quick.noSales');
+  const line = p => `- ${p.name} — ${mmk(p.profit_mmk)} (${p.margin_pct}%)`;
+  const losing = rows.filter(p => p.profit_mmk < 0);
+  const out = [
+    t('quick.profitTop'),
+    ...rows.filter(p => p.profit_mmk >= 0).slice(0, 5).map(line),
+  ];
+  if (losing.length) out.push(t('quick.profitLosing', { count: losing.length }), ...losing.map(line));
+  if (res.covers_whole_range === false) out.push(t('quick.partial'));
+  return out.join('\n');
+};
+
 const categoriesLine = (res, t) =>
   isFailed(res) ? t('quick.failed') : t('quick.categoriesLine', { count: res.count, list: res.categories.join(', ') });
 
@@ -96,6 +113,13 @@ export const QUICK_ACTIONS = [
     tool: 'sales_summary',
     args: () => ({ start_date: day(29), end_date: day(0) }),
     render: salesLine,
+  },
+  {
+    key: 'profit',
+    labelKey: 'quick.profit',
+    tool: 'product_performance',
+    args: () => ({ start_date: day(29), end_date: day(0), sort: 'profit', order: 'desc', limit: 50 }),
+    render: profitLine,
   },
   {
     key: 'lowStock',
@@ -132,7 +156,8 @@ export const runQuickAction = async (action, t) => {
   // status travels with the text so the caller can offer Retry on a failure
   // without re-parsing the rendered string to guess what happened.
   return {
-    text: [result.range ? `${result.range.start} – ${result.range.end}` : '', action.render(result, t)].filter(Boolean).join('\n'),
+    // Tools name the range either start/end or start_date/end_date.
+    text: [result.range ? `${result.range.start ?? result.range.start_date} – ${result.range.end ?? result.range.end_date}` : '', action.render(result, t)].filter(Boolean).join('\n'),
     chart: chartFromTool(action.tool, result),
     status: classifyReport(result),
   };

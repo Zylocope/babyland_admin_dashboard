@@ -13,8 +13,9 @@ export default function ReportDialog({ open, onClose, sections, onPrint, onExcel
   const { t } = useTranslation();
   // A section either carries its rows already, or knows how to fetch them. The
   // second kind reports a count up front so the list is honest about size
-  // without paying for the request until it is wanted.
-  const available = sections.filter(s => (s.load ? s.count > 0 : s.rows.length > 0));
+  // without paying for the request until it is wanted. A null count means the
+  // size is unknown until loaded: the section is offered without a number.
+  const available = sections.filter(s => (s.load ? s.count == null || s.count > 0 : s.rows.length > 0));
   const [picked, setPicked] = useState(() => available.filter(s => !s.load).map(s => s.key));
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -53,9 +54,11 @@ export default function ReportDialog({ open, onClose, sections, onPrint, onExcel
             <input type="checkbox" checked={picked.includes(section.key)}
               onChange={() => toggle(section.key)} className="w-4 h-4 accent-[var(--orange-primary)]" />
             <span className="flex-1 min-w-0 text-sm text-ink">{section.name}</span>
-            <span className="text-[11px] text-mute tabular-nums flex-shrink-0">
-              {t('report.rows', { count: section.load ? section.count : section.rows.length })}
-            </span>
+            {!(section.load && section.count == null) && (
+              <span className="text-[11px] text-mute tabular-nums flex-shrink-0">
+                {t('report.rows', { count: section.load ? section.count : section.rows.length })}
+              </span>
+            )}
           </label>
         ))}
       </div>

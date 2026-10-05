@@ -600,7 +600,11 @@
     "compareRevenue": "Revenue {{current}} vs {{previous}} {{change}}",
     "compareProfit": "Profit {{current}} vs {{previous}} {{change}}",
     "compareTxns": "Transactions {{current}} vs {{previous}} {{change}}",
-    "stockValueLine": "{{products}} products on hand, {{total}} at retail:"
+    "stockValueLine": "{{products}} products on hand, {{total}} at retail:",
+    "profit": "Most profitable (30 days)",
+    "profitTop": "Most profit:",
+    "profitLosing": "Sold at a loss ({{count}}):",
+    "partial": "This covers only part of the period."
   },
   "aiChart": {
     "titles": {
