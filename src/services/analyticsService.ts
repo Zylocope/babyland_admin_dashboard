@@ -13,11 +13,10 @@ import { request } from "./baseService";
 // behind a shape that matches what the endpoints will return, so switching is
 // deleting a branch rather than rewriting callers.
 
-// One switch per endpoint, because they land separately. Product performance
-// is live under /admin/analytics/ai/; by-category is not built yet, and its
-// browser path below already reads products through the backend.
+// One switch per endpoint, because they land separately. Both live under
+// /admin/analytics/ai/; the browser path for categories stays as the fallback.
 const PRODUCTS_FROM_BACKEND = true;
-const CATEGORIES_FROM_BACKEND = false;
+const CATEGORIES_FROM_BACKEND = true;
 
 export interface ProductSalesRow {
   product_id: string;
@@ -33,7 +32,8 @@ export interface CategorySalesRow {
   units: number;
   revenue_mmk: number;
   profit_mmk: number;
-  products: number;
+  // Only the browser path counts products per category; the backend does not.
+  products?: number;
 }
 
 // Every report carries how much of the range it actually saw.
@@ -66,11 +66,10 @@ interface BackendProductRow {
 }
 
 interface BackendCategoryRow {
-  category: string;
+  category?: string | null;
   units_sold: number;
   revenue: string;
   profit: string;
-  products?: number;
 }
 
 export const getProductSales = async (
@@ -126,20 +125,29 @@ export const getCategorySales = async (
   end: string
 ): Promise<CategorySalesResult> => {
   if (CATEGORIES_FROM_BACKEND) {
-    const res = await request<{ data: BackendCategoryRow[] }>(
-      `/admin/analytics/ai/by-category?start_date=${start}&end_date=${end}`,
-      { method: "GET" }
-    );
+    const rows: BackendCategoryRow[] = [];
+    let page = 1;
+    let pages = 1;
+    do {
+      const res = await request<{ data: BackendCategoryRow[]; total_pages: number }>(
+        `/admin/analytics/ai/by-category?start_date=${start}&end_date=${end}&sort=revenue&page=${page}&page_size=100`,
+        { method: "GET" }
+      );
+      rows.push(...(res?.data ?? []));
+      pages = num(res?.total_pages);
+      page += 1;
+    } while (page <= pages && page <= MAX_PAGES);
     return {
-      complete: true,
+      complete: pages <= MAX_PAGES,
       receipts_read: 0,
       receipts_unreadable: 0,
-      rows: (res?.data ?? []).map(r => ({
-        category: r.category,
+      // A product whose category was deleted comes back with no name; it is
+      // grouped the way the browser path groups it rather than dropped.
+      rows: rows.map(r => ({
+        category: r.category ?? "Uncategorised",
         units: num(r.units_sold),
         revenue_mmk: num(r.revenue),
         profit_mmk: num(r.profit),
-        products: num(r.products),
       })),
     };
   }
@@ -160,3 +168,16 @@ export const getCategorySales = async (
     rows: categorySales(sold.rows, products),
   };
 };
+
+export interface ExpiringBatch {
+  product_id: string;
+  product_name: string;
+  batch_id: string;
+  quantity_remaining: number;
+  expiry_date: string;
+}
+
+// Batches with stock left that expire from today to today + days, shop dates.
+// Already-expired stock is not included by the backend.
+export const getExpiringSoon = (days = 30): Promise<ExpiringBatch[]> =>
+  request(`/admin/analytics/ai/expiring-soon?days=${days}`, { method: "GET" });

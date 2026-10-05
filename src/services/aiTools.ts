@@ -14,10 +14,10 @@ import { getStaff } from "./staffService";
 // @ts-expect-error plain-JS reducer, kept untyped so it runs under bare node in its test
 import { summarizeSales } from "./salesRollup.js";
 // @ts-expect-error plain-JS reducers, kept untyped so they run under bare node in their test
-import { stockDetail, salesBreakdown } from "./assistantReports.js";
+import { stockDetail, salesBreakdown, expiringSoon } from "./assistantReports.js";
 // @ts-expect-error plain-JS walk, kept untyped so it runs under bare node in its test
 import { salesSince } from "./salesWalk.js";
-import { getProductSales, getCategorySales } from "./analyticsService";
+import { getProductSales, getCategorySales, getExpiringSoon } from "./analyticsService";
 import type { AdminProduct } from "../types";
 
 // The shop's day, not the device's. These ranges are what the assistant quotes
@@ -172,6 +172,19 @@ const salesBreakdownTool = async ({ start_date, end_date }: { start_date?: strin
   };
 };
 
+const expiringSoonTool = async ({ days }: { days?: number }) => {
+  const window = Math.max(0, Math.min(365, Math.round(Number(days ?? 30)) || 0));
+  const rows = await getExpiringSoon(window);
+  const out = expiringSoon(Array.isArray(rows) ? rows : [], today());
+  return {
+    range: { start_date: today(), end_date: shopDaysAgo(-window) },
+    days: window,
+    ...(out.batches ? {} : { note: "No stock expires in this window." }),
+    ...out,
+    items: out.items.slice(0, 50),
+  };
+};
+
 const categoryList = async () => {
   const cats = await getCategories();
   return { count: cats.length, categories: cats.map((c) => c.name) };
@@ -323,6 +336,7 @@ const TOOLS = {
   product_performance: productPerformance,
   product_stock_detail: productStockDetail,
   sales_breakdown: salesBreakdownTool,
+  expiring_soon: expiringSoonTool,
   sales_by_category: salesByCategory,
   playground_summary: playgroundSummary,
   order_summary: orderSummary,
@@ -426,6 +440,15 @@ export const toolDeclarations = [
         start_date: { type: "string", description: "Inclusive start date, YYYY-MM-DD." },
         end_date: { type: "string", description: "Inclusive end date, YYYY-MM-DD." },
       },
+    },
+  },
+  {
+    name: "expiring_soon",
+    description:
+      "Stock that expires soon: every batch with units left whose expiry date falls between today and today + days (shop calendar), soonest first, with product, batch, units left, expiry date and days left. Use for what expires this week/month, what to sell or discount first. Defaults to 30 days. It does NOT include stock that has already expired, and products not marked perishable have no expiry dates, so they never appear: say so when the answer is empty.",
+    parameters: {
+      type: "object",
+      properties: { days: { type: "number", description: "How many days ahead to look, 0 = today only. Default 30." } },
     },
   },
   {

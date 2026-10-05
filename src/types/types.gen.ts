@@ -154,6 +154,17 @@ export type AdminStaff = {
     username: string;
 };
 
+export type CategoryPerformanceRow = {
+    category?: string | null;
+    category_id?: string | null;
+    cost: string;
+    margin_pct: string;
+    profit: string;
+    revenue: string;
+    share_pct?: string | null;
+    units_sold: number;
+};
+
 export type CreateAdjustmentPayload = {
     inventory_id?: string | null;
     note?: string | null;
@@ -202,6 +213,17 @@ export enum DeliveryStatus {
     ON_DELIVERY = 'OnDelivery',
     RECEIVED = 'Received'
 }
+
+export type ExpiringSoonRow = {
+    /**
+     * Inventory record ID identifying the batch.
+     */
+    batch_id: string;
+    expiry_date: string;
+    product_id: string;
+    product_name: string;
+    quantity_remaining: number;
+};
 
 export type InventoryAdjustment = {
     created_at: string;
@@ -345,6 +367,40 @@ export type PaginatedResponseAdminSale = {
     total_pages: number;
 };
 
+export type PaginatedResponseCategoryPerformanceRow = {
+    current_page: number;
+    data: Array<{
+        category?: string | null;
+        category_id?: string | null;
+        cost: string;
+        margin_pct: string;
+        profit: string;
+        revenue: string;
+        share_pct?: string | null;
+        units_sold: number;
+    }>;
+    total_items: number;
+    total_pages: number;
+};
+
+export type PaginatedResponseProductPerformanceRow = {
+    current_page: number;
+    data: Array<{
+        category?: string | null;
+        cost: string;
+        last_sold_at: string;
+        margin_pct: string;
+        name: string;
+        product_id: string;
+        profit: string;
+        revenue: string;
+        share_pct?: string | null;
+        units_sold: number;
+    }>;
+    total_items: number;
+    total_pages: number;
+};
+
 export type PaginatedResponseUserResponse = {
     current_page: number;
     data: Array<{
@@ -373,6 +429,19 @@ export type PlaygroundCheckoutDataAdmin = {
 export type ProductFilter = {
     category_id?: string | null;
     query: string;
+};
+
+export type ProductPerformanceRow = {
+    category?: string | null;
+    cost: string;
+    last_sold_at: string;
+    margin_pct: string;
+    name: string;
+    product_id: string;
+    profit: string;
+    revenue: string;
+    share_pct?: string | null;
+    units_sold: number;
 };
 
 export type ProductSearchParams = {
@@ -514,6 +583,108 @@ export type ChatResponses = {
      */
     200: unknown;
 };
+
+export type GetCategoryPerformanceData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        page_size?: number;
+        start_date?: string;
+        end_date?: string;
+        sort?: string;
+    };
+    url: '/admin/analytics/ai/by-category';
+};
+
+export type GetCategoryPerformanceErrors = {
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetCategoryPerformanceResponses = {
+    /**
+     * Paginated category performance
+     */
+    200: PaginatedResponseCategoryPerformanceRow;
+};
+
+export type GetCategoryPerformanceResponse = GetCategoryPerformanceResponses[keyof GetCategoryPerformanceResponses];
+
+export type GetExpiringSoonData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Days ahead from today in Asia/Yangon, inclusive. Zero means today only.
+         */
+        days?: number;
+    };
+    url: '/admin/analytics/ai/expiring-soon';
+};
+
+export type GetExpiringSoonErrors = {
+    /**
+     * Invalid days query parameter; must be an integer from 0 to 65535
+     */
+    400: unknown;
+    /**
+     * Forbidden - Requires a SuperAdmin session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetExpiringSoonResponses = {
+    /**
+     * All matching inventory batches
+     */
+    200: Array<ExpiringSoonRow>;
+};
+
+export type GetExpiringSoonResponse = GetExpiringSoonResponses[keyof GetExpiringSoonResponses];
+
+export type GetProductPerformanceData = {
+    body?: never;
+    path?: never;
+    query?: {
+        page?: number;
+        page_size?: number;
+        start_date?: string;
+        end_date?: string;
+        sort?: string;
+    };
+    url: '/admin/analytics/ai/product-performance';
+};
+
+export type GetProductPerformanceErrors = {
+    /**
+     * Forbidden - Missing or invalid session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetProductPerformanceResponses = {
+    /**
+     * Paginated product performance
+     */
+    200: PaginatedResponseProductPerformanceRow;
+};
+
+export type GetProductPerformanceResponse = GetProductPerformanceResponses[keyof GetProductPerformanceResponses];
 
 export type GetAllCategoriesData = {
     body?: never;

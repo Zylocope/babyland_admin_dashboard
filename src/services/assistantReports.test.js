@@ -1,6 +1,6 @@
 // node src/services/assistantReports.test.js
 import assert from 'node:assert/strict';
-import { stockDetail, salesBreakdown } from './assistantReports.js';
+import { stockDetail, salesBreakdown, expiringSoon } from './assistantReports.js';
 
 const product = { selling_price: '22500' };
 const batches = [
@@ -30,5 +30,16 @@ assert.equal(b.sales, 3);
 assert.equal(b.revenue_mmk, 45000);
 assert.deepEqual(b.by_channel.map(c => [c.channel, c.sales]), [['in_store', 2], ['online', 1]]);
 assert.deepEqual(b.by_cashier.map(c => [c.cashier, c.revenue_mmk]), [['cashier2', 30000], ['cashier1', 10000]]);
+
+// Soonest first; an expiry at 00:00 UTC is already that day in Yangon.
+const e = expiringSoon([
+  { product_id: 'p1', product_name: 'Milk', batch_id: 'aaaaaaaa-1', quantity_remaining: 4, expiry_date: '2026-10-20T00:00:00Z' },
+  { product_id: 'p2', product_name: 'Biscuit', batch_id: 'bbbbbbbb-2', quantity_remaining: 6, expiry_date: '2026-10-07T00:00:00Z' },
+  { product_id: 'p1', product_name: 'Milk', batch_id: 'cccccccc-3', quantity_remaining: 2, expiry_date: '2026-10-06T00:00:00Z' },
+], '2026-10-06');
+assert.deepEqual(e.items.map(i => [i.product, i.days_left]), [['Milk', 0], ['Biscuit', 1], ['Milk', 14]]);
+assert.equal(e.units, 12);
+assert.equal(e.products, 2);
+assert.equal(e.items[0].batch, 'cccccccc');
 
 console.log('assistantReports ok');

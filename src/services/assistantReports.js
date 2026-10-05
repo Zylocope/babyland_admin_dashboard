@@ -78,3 +78,26 @@ export const salesBreakdown = (sales, start, end) => {
     by_cashier: rows(cashiers, 'cashier'),
   };
 };
+
+// Batches about to expire, soonest first, each with the shop days left. The
+// backend already filters to batches with stock that expire within the window.
+export const expiringSoon = (rows, today) => {
+  const batches = rows
+    .map(r => {
+      const expiry = shopDay(r.expiry_date);
+      return {
+        product: r.product_name,
+        batch: String(r.batch_id).slice(0, 8),
+        units_left: r.quantity_remaining,
+        expiry_date: expiry,
+        days_left: expiry ? daysBetween(today, expiry) : null,
+      };
+    })
+    .sort((a, b) => (a.days_left ?? 1e9) - (b.days_left ?? 1e9));
+  return {
+    batches: batches.length,
+    units: batches.reduce((n, b) => n + b.units_left, 0),
+    products: new Set(rows.map(r => r.product_id)).size,
+    items: batches,
+  };
+};

@@ -604,7 +604,12 @@
     "profit": "Most profitable (30 days)",
     "profitTop": "Most profit:",
     "profitLosing": "Sold at a loss ({{count}}):",
-    "partial": "This covers only part of the period."
+    "partial": "This covers only part of the period.",
+    "expiring": "Expiring soon (30 days)",
+    "expiringLine": "{{batches}} batches ({{units}} units) expire within {{days}} days:",
+    "noExpiring": "Nothing with an expiry date expires within {{days}} days. Products not marked perishable have no expiry date.",
+    "daysLeft_one": "{{count}} day left",
+    "daysLeft_other": "{{count}} days left"
   },
   "aiChart": {
     "titles": {

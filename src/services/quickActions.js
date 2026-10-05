@@ -89,6 +89,13 @@ const profitLine = (res, t) => {
   return out.join('\n');
 };
 
+const expiringLine = (res, t) => {
+  if (isFailed(res)) return t('quick.failed');
+  if (!res.batches) return t('quick.noExpiring', { days: res.days });
+  const rows = res.items.map(b => `- ${b.product} — ${b.units_left} (${b.expiry_date}, ${t('quick.daysLeft', { count: b.days_left })})`);
+  return [t('quick.expiringLine', { batches: res.batches, units: res.units, days: res.days }), ...rows].join('\n');
+};
+
 const categoriesLine = (res, t) =>
   isFailed(res) ? t('quick.failed') : t('quick.categoriesLine', { count: res.count, list: res.categories.join(', ') });
 
@@ -120,6 +127,13 @@ export const QUICK_ACTIONS = [
     tool: 'product_performance',
     args: () => ({ start_date: day(29), end_date: day(0), sort: 'profit', order: 'desc', limit: 50 }),
     render: profitLine,
+  },
+  {
+    key: 'expiring',
+    labelKey: 'quick.expiring',
+    tool: 'expiring_soon',
+    args: () => ({ days: 30 }),
+    render: expiringLine,
   },
   {
     key: 'lowStock',
