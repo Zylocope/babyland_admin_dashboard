@@ -59,6 +59,17 @@ export default function Orders() {
     return () => { active = false; };
   }, [isManager]);
 
+  // Rows and cards open an order by click, Enter or Space, so the list works
+  // from the keyboard too, not only with a mouse or a finger.
+  const openable = (id) => ({
+    role: 'button',
+    tabIndex: 0,
+    onClick: () => setOpenId(id),
+    onKeyDown: (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(id); }
+    },
+  });
+
   const requestKey = `${status}|${page}|${reloadKey}`;
   const loading = state.key !== requestKey;
 
@@ -140,8 +151,8 @@ export default function Orders() {
             <tbody className="divide-y divide-app">
               {loading && <SkeletonRows rows={8} cols={['45%', '60%', '55%', '40%', '50%']} />}
               {!loading && rows.map(o => (
-                <tr key={o.id} onClick={() => setOpenId(o.id)}
-                  className="hover:bg-brand-light transition-colors cursor-pointer">
+                <tr key={o.id} {...openable(o.id)}
+                  className="hover:bg-brand-light transition-colors cursor-pointer focus-visible:outline-2 focus-visible:outline-[var(--orange-primary)]">
                   <td className="px-5 py-3.5 font-mono text-xs text-brand">{o.id.slice(0, 8)}</td>
                   {/* An order placed without a name is a fact, not a blank cell. */}
                   <td className="px-4 py-3.5 text-ink">{o.customer || t('orders.noCustomer')}</td>
@@ -174,8 +185,8 @@ export default function Orders() {
             <div className="skeleton h-8 w-full rounded-lg" />
           </div>
         )) : rows.map(o => (
-          <article key={o.id} onClick={() => setOpenId(o.id)}
-            className="surface-card is-sheet p-4 cursor-pointer">
+          <article key={o.id} {...openable(o.id)}
+            className="surface-card is-sheet p-4 cursor-pointer focus-visible:outline-2 focus-visible:outline-[var(--orange-primary)]">
             <div className="flex items-start gap-3">
               <div className="w-11 h-11 rounded-lg bg-brand-light flex items-center justify-center flex-shrink-0">
                 <IconTruck stroke={1.5} size={19} className="text-brand" />
