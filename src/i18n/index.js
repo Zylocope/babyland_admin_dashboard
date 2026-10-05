@@ -1,6 +1,8 @@
 import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
+import dayjs from 'dayjs';
+import 'dayjs/locale/my';
 import en from './en.json';
 import my from './my.json';
 
@@ -34,8 +36,12 @@ i18n
     },
   });
 
-// Keep <html lang> in sync so font / line-height rules apply
-const applyLang = (lng) => { document.documentElement.lang = lng; };
+// Keep <html lang> in sync so font / line-height rules apply, and dayjs too so
+// month and weekday names in charts follow the UI language.
+const applyLang = (lng) => {
+  document.documentElement.lang = lng;
+  dayjs.locale(lng === 'my' ? 'my' : 'en');
+};
 applyLang(i18n.resolvedLanguage || 'en');
 i18n.on('languageChanged', applyLang);
 

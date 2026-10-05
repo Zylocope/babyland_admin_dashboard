@@ -177,7 +177,7 @@ export default function Dashboard() {
                       {/* Always drawn, never hover-only: this is used on a phone
                           at the counter, where there is no hover. */}
                       <span className={`text-[10px] tabular-nums leading-none transition-colors ${isBest ? 'font-bold text-ink' : 'text-mute'}`}>
-                        {d.revenue ? formatMMKCompact(d.revenue) : '—'}
+                        {formatMMKCompact(d.revenue)}
                       </span>
                       <div className="w-full flex-1 flex items-end rounded-t-lg"
                         style={{ background: 'color-mix(in srgb, var(--text-muted) 9%, transparent)' }}>

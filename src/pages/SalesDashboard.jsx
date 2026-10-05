@@ -11,7 +11,7 @@ import SubBar from '../components/common/SubBar';
 import ChartLegend from '../components/common/ChartLegend';
 import ReportDialog from '../components/common/ReportDialog';
 import PrintSheet from '../components/common/PrintSheet';
-import { formatMMK, formatMMKShort } from '../utils/currency';
+import { formatMMK, formatMMKShort, formatMMKCompact } from '../utils/currency';
 import { downloadCsvSections } from '../utils/csv';
 import { downloadExcelWorkbook } from '../utils/excel';
 import { colorAt, seriesColor } from '../utils/chartPalette';
@@ -25,9 +25,10 @@ import { getProductSales } from '../services/analyticsService';
 import { summarizeSales, rankDays, byWeekday } from '../services/salesRollup';
 import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/shopDay';
 import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
+import PeriodPicker from '../components/common/PeriodPicker';
+import { periodRange, chartBuckets, bucketOf } from '../utils/periods';
+import dayjs from 'dayjs';
 
-const PERIODS = ['today', 'week', 'month'];
-const PERIOD_DAYS = { today: 1, week: 7, month: 30 };
 function SalesTooltip({ active, payload, label, inStoreLabel, onlineLabel, totalLabel }) {
   if (!active || !payload?.length) return null;
   const row = payload[0]?.payload ?? {};
@@ -43,10 +44,6 @@ function SalesTooltip({ active, payload, label, inStoreLabel, onlineLabel, total
   );
 }
 
-function periodToDates(period) {
-  const end = shopToday();
-  return { start: shopDaysAgo(PERIOD_DAYS[period] - 1, shopDayStart(end)), end };
-}
 
 function Empty({ label }) {
   return (
@@ -101,7 +98,7 @@ function DataTable({ columns, rows, empty, onRowClick }) {
 }
 
 export default function SalesDashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isManager } = useAuth();
   const { darkMode } = useTheme();
   const [source, setSource] = useState('retail');
@@ -118,7 +115,7 @@ export default function SalesDashboard() {
   const [sold, setSold] = useState({ key: '', rows: [], partial: false, error: '' });
   const [loading, setLoading] = useState(true);
 
-  const { start, end } = useMemo(() => periodToDates(period), [period]);
+  const { start, end } = useMemo(() => periodRange(period, shopToday()), [period]);
 
   useEffect(() => {
     let active = true;
@@ -144,19 +141,24 @@ export default function SalesDashboard() {
   const onlineLabel = t('posDash.chOnline');
 
   const chart = useMemo(() => {
-    const byDate = new Map(s.by_day.map(d => [d.date, d]));
-    const days = PERIOD_DAYS[period];
-    return Array.from({ length: days }, (_, i) => {
-      const date = shopDaysAgo(days - 1 - i, shopDayStart(end));
-      const row = byDate.get(date);
-      return {
-        day: formatShopTime(shopDayStart(date), 'MMM D'),
-        [inStoreLabel]: row?.in_store_mmk ?? 0,
-        [onlineLabel]: row?.online_mmk ?? 0,
-        total: row?.revenue_mmk ?? 0,
-      };
-    });
-  }, [s, period, end, inStoreLabel, onlineLabel]);
+    const { unit, keys } = chartBuckets(start, end);
+    const sums = new Map(keys.map(k => [k, { in_store: 0, online: 0, total: 0 }]));
+    for (const d of s.by_day) {
+      const b = sums.get(bucketOf(d.date, unit));
+      if (!b) continue;
+      b.in_store += d.in_store_mmk ?? 0;
+      b.online += d.online_mmk ?? 0;
+      b.total += d.revenue_mmk ?? 0;
+    }
+    return keys.map(k => ({
+      day: formatShopTime(shopDayStart(unit === 'month' ? `${k}-01` : k), unit === 'month' ? 'MMMM YYYY' : 'MMM D'),
+      [inStoreLabel]: sums.get(k).in_store,
+      [onlineLabel]: sums.get(k).online,
+      total: sums.get(k).total,
+    }));
+    // i18n.language: the month and day names follow the UI language.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [s, start, end, inStoreLabel, onlineLabel, i18n.language]);
 
   // The sales list has no date filter server-side, so the period is applied here.
   const soldKey = `${start}|${end}`;
@@ -359,14 +361,7 @@ export default function SalesDashboard() {
         <>
       <ReceiptDialog saleId={openReceipt?.id ?? null} onClose={() => setOpenReceipt(null)} />
       <SubBar views={VIEWS} view={view} onView={setView}>
-        <div className="inline-flex rounded-lg border border-app overflow-hidden">
-          {PERIODS.map(p => (
-            <button key={p} onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 text-xs cursor-pointer transition-colors ${period === p ? 'bg-brand text-white' : 'bg-card text-sub hover:bg-brand-light'}`}>
-              {t(`posDash.period_${p}`)}
-            </button>
-          ))}
-        </div>
+        <PeriodPicker value={period} onChange={setPeriod} />
         {/* Manager only. Export runs in the browser, so this is a UI gate, not a
             permission boundary — a server-side export would need a role check too. */}
         {isManager && (
@@ -406,7 +401,7 @@ export default function SalesDashboard() {
                 <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }}
                   axisLine={false} tickLine={false} minTickGap={28} dy={6} />
                 <YAxis tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false}
-                  width={44} tickFormatter={v => `${(v / 1000).toFixed(0)}K`} />
+                  width={52} tickFormatter={formatMMKCompact} />
                 <Tooltip content={<SalesTooltip inStoreLabel={inStoreLabel} onlineLabel={onlineLabel} totalLabel={t('table.total')} />}
                   cursor={{ fill: 'var(--orange-light)', opacity: 0.35 }} />
                 <Legend content={<ChartLegend />} verticalAlign="top" align="right" height={30} />
@@ -509,7 +504,7 @@ export default function SalesDashboard() {
               <div className="space-y-2.5">
                 {week.map((d, i) => (
                   <div key={d.key} className="flex items-center gap-3">
-                    <span className="w-10 flex-shrink-0 text-[12px] font-medium text-sub">{d.key}</span>
+                    <span className="w-10 flex-shrink-0 text-[12px] font-medium text-sub">{dayjs().day(d.index).format('ddd')}</span>
                     <div className="flex-1 h-6 rounded-md overflow-hidden"
                       style={{ background: 'color-mix(in srgb, var(--text-muted) 10%, transparent)' }}>
                       <div className="chart-bar-grow h-full rounded-md"
@@ -586,19 +581,11 @@ export default function SalesDashboard() {
       ) : (
         <>
           <div className="flex justify-end">
-            <div className="inline-flex rounded-lg border border-app overflow-hidden">
-              {PERIODS.map(p => (
-                <button key={p} onClick={() => setPeriod(p)}
-                  className={`px-3 py-1.5 text-xs cursor-pointer transition-colors ${period === p ? 'bg-brand text-white' : 'bg-card text-sub hover:bg-brand-light'}`}>
-                  {t(`posDash.period_${p}`)}
-                </button>
-              ))}
-            </div>
+            <PeriodPicker value={period} onChange={setPeriod} />
           </div>
           <PlaygroundAnalytics
             start={start}
             end={end}
-            days={PERIOD_DAYS[period]}
             mode={source}
             retailTotals={totals}
             retailDays={s.by_day}

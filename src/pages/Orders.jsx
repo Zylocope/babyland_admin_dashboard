@@ -12,6 +12,7 @@ import { SkeletonRows, Skeleton } from '../components/common/Skeleton';
 import {
   getOrders, getOrderDetail, advanceOrderStatus, nextStatus, ORDER_STATUSES,
 } from '../services/orderService';
+import { getStaff } from '../services/staffService';
 
 const PAGE_SIZE = 20;
 
@@ -45,6 +46,18 @@ export default function Orders() {
   const [openId, setOpenId] = useState(null);
   const [detail, setDetail] = useState({ id: null, status: 'loading', order: null });
   const [advancing, setAdvancing] = useState(null);
+  // Who changed a status arrives as an admin id. Only managers can read the
+  // staff list, so others see the time and status without a name, never the id.
+  const [staffNames, setStaffNames] = useState(() => new Map());
+
+  useEffect(() => {
+    if (!isManager) return undefined;
+    let active = true;
+    getStaff()
+      .then(list => { if (active) setStaffNames(new Map((list ?? []).map(s => [s.id, s.username]))); })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [isManager]);
 
   const requestKey = `${status}|${page}|${reloadKey}`;
   const loading = state.key !== requestKey;
@@ -270,7 +283,7 @@ export default function Orders() {
                       <span className="text-mute tabular-nums">
                         {formatShopTime(entry.created_at, 'YYYY-MM-DD HH:mm')}
                       </span>
-                      {entry.changed_by && <span className="text-mute truncate">{entry.changed_by}</span>}
+                      {staffNames.get(entry.changed_by) && <span className="text-mute truncate">{staffNames.get(entry.changed_by)}</span>}
                     </div>
                   ))}
                 </div>

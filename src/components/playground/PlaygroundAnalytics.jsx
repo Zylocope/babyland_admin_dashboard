@@ -10,8 +10,9 @@ import {
 } from 'recharts';
 import StatCard from '../common/StatCard';
 import { getPlaygroundSummary, getPlaygroundPurchases } from '../../services/playgroundAdminService';
-import { formatMMK, formatMMKShort } from '../../utils/currency';
-import { formatShopTime, shopDayStart, shopDaysAgo } from '../../utils/shopDay';
+import { formatMMK, formatMMKShort, formatMMKCompact } from '../../utils/currency';
+import { formatShopTime, shopDayStart } from '../../utils/shopDay';
+import { chartBuckets, bucketOf } from '../../utils/periods';
 import { colorAt, seriesColor } from '../../utils/chartPalette';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -69,8 +70,8 @@ function ChartTooltip({ active, payload, label, t }) {
   );
 }
 
-export default function PlaygroundAnalytics({ start, end, days, mode = 'playground', retailTotals, retailDays = [] }) {
-  const { t } = useTranslation();
+export default function PlaygroundAnalytics({ start, end, mode = 'playground', retailTotals, retailDays = [] }) {
+  const { t, i18n } = useTranslation();
   const { darkMode } = useTheme();
   const chartId = useId().replace(/:/g, '');
   const [result, setResult] = useState(() => ({ key: '', summary: normalizeSummary(null), error: '' }));
@@ -131,25 +132,34 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
   } : pg;
 
   const chart = useMemo(() => {
-    const pgDays = new Map(summary.by_day.map(row => [row.date, row]));
-    const shopDays = new Map(retailDays.map(row => [row.date, row]));
-    return Array.from({ length: days }, (_, index) => {
-      const date = shopDaysAgo(days - 1 - index, shopDayStart(end));
-      const playground = pgDays.get(date) ?? {};
-      const retail = shopDays.get(date) ?? {};
-      const playgroundRevenue = num(playground.revenue_mmk);
-      const retailRevenue = num(retail.revenue_mmk);
+    const { unit, keys } = chartBuckets(start, end);
+    const sums = new Map(keys.map(k => [k, { retail: 0, playground: 0, paid: 0, free: 0 }]));
+    for (const row of summary.by_day) {
+      const b = sums.get(bucketOf(row.date, unit));
+      if (!b) continue;
+      b.playground += num(row.revenue_mmk);
+      b.paid += num(row.paid_tickets);
+      b.free += num(row.free_tickets);
+    }
+    for (const row of retailDays) {
+      const b = sums.get(bucketOf(row.date, unit));
+      if (b) b.retail += num(row.revenue_mmk);
+    }
+    return keys.map(k => {
+      const b = sums.get(k);
       return {
-        date,
-        day: formatShopTime(shopDayStart(date), 'MMM D'),
-        revenue: combined ? retailRevenue + playgroundRevenue : playgroundRevenue,
-        retailRevenue,
-        playgroundRevenue,
-        paid: num(playground.paid_tickets),
-        free: num(playground.free_tickets),
+        date: k,
+        day: formatShopTime(shopDayStart(unit === 'month' ? `${k}-01` : k), unit === 'month' ? 'MMMM YYYY' : 'MMM D'),
+        revenue: combined ? b.retail + b.playground : b.playground,
+        retailRevenue: b.retail,
+        playgroundRevenue: b.playground,
+        paid: b.paid,
+        free: b.free,
       };
     });
-  }, [summary.by_day, retailDays, days, end, combined]);
+    // i18n.language: the month and day names follow the UI language.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [summary.by_day, retailDays, start, end, combined, i18n.language]);
 
   const show = value => loading ? '...' : value;
 
@@ -219,7 +229,7 @@ export default function PlaygroundAnalytics({ start, end, days, mode = 'playgrou
             </defs>
             <CartesianGrid strokeDasharray="2 6" stroke="var(--border)" vertical={false} />
             <XAxis dataKey="day" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} minTickGap={28} />
-            <YAxis yAxisId="money" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} tickFormatter={value => `${Math.round(value / 1000)}K`} />
+            <YAxis yAxisId="money" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} width={52} tickFormatter={formatMMKCompact} />
             {!combined && <YAxis yAxisId="tickets" orientation="right" tick={{ fontSize: 11, fill: 'var(--text-muted)' }} axisLine={false} tickLine={false} allowDecimals={false} />}
             <Tooltip content={<ChartTooltip t={t} />} cursor={{ fill: 'var(--orange-light)', opacity: 0.32 }} />
             <Legend wrapperStyle={{ fontSize: 12 }} />

@@ -10,7 +10,10 @@
 //
 // Pass to recharts as <Legend content={<ChartLegend />} verticalAlign="top"
 // align="right" />; recharts supplies `payload`.
-export default function ChartLegend({ payload = [] }) {
+export default function ChartLegend({ payload: all = [] }) {
+  // legendType="none" still arrives in the payload; it marks a series that is
+  // drawn for shape only and must not be listed.
+  const payload = all.filter(entry => entry.type !== 'none');
   if (!payload.length) return null;
   return (
     <ul className="flex flex-wrap justify-end gap-x-4 gap-y-1.5 pb-3 list-none m-0 p-0">

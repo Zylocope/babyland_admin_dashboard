@@ -15,5 +15,5 @@ window.fetch = async () => new Response(JSON.stringify([
 ]), { status: 200, headers: { 'Content-Type': 'application/json' } });
 
 createRoot(document.getElementById('root')).render(
-  <ThemeProvider><main className="min-h-screen bg-app p-4 sm:p-6"><PlaygroundAnalytics start="2026-09-18" end="2026-09-24" days={7} /></main></ThemeProvider>
+  <ThemeProvider><main className="min-h-screen bg-app p-4 sm:p-6"><PlaygroundAnalytics start="2026-09-18" end="2026-09-24" /></main></ThemeProvider>
 );
