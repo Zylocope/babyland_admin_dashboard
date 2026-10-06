@@ -22,6 +22,13 @@ const splitUnit = (value) => {
   return match ? { amount: match[1], unit: match[2] } : { amount: value, unit: null };
 };
 
+const Trend = ({ up, value, className }) => (
+  <span className={`items-center gap-0.5 font-semibold whitespace-nowrap ${className}`} style={{ color: up ? '#10B981' : '#EF4444' }}>
+    {up ? <IconArrowUpRight size={15} stroke={1.8} /> : <IconArrowDownRight size={15} stroke={1.8} />}
+    {value}
+  </span>
+);
+
 export default function StatCard({ icon: Icon, label, value, tone = 'store', trend, onClick }) {
   const c = TONES[tone] ?? TONES.store;
   const up = trend?.dir === 'up';
@@ -47,12 +54,7 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
         >
           <Icon size={20} stroke={1.8} style={{ color: c }} />
         </div>
-        {trend && (
-          <span className="inline-flex items-center gap-0.5 text-[13px] font-semibold" style={{ color: up ? '#10B981' : '#EF4444' }}>
-            {up ? <IconArrowUpRight size={15} stroke={1.8} /> : <IconArrowDownRight size={15} stroke={1.8} />}
-            {trend.value}
-          </span>
-        )}
+        {trend && <Trend up={up} value={trend.value} className="hidden sm:inline-flex text-[13px]" />}
       </div>
 
       {/* Down from 36px/extrabold/tracking-tight: at that weight "17.3M MMK"
@@ -63,6 +65,9 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
         {unit && <span className="ml-1.5 text-[0.55em] font-semibold text-sub tracking-normal align-baseline">{unit}</span>}
       </p>
       <p className="text-[13px] text-sub mt-2">{label}</p>
+      {/* A half-width phone card has no room beside the icon: "18.55% margin"
+          wrapped onto two lines there, so on a phone it sits under the label. */}
+      {trend && <Trend up={up} value={trend.value} className="flex sm:hidden mt-1 text-[12px]" />}
     </div>
   );
 }
