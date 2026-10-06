@@ -33,7 +33,7 @@ export default function Staff() {
   const filtered = staff.filter(s => !term || s.username.toLowerCase().includes(term));
 
   return (
-    <div className="space-y-5 max-w-2xl">
+    <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex-1 min-w-48">
           <SearchInput value={search} onChange={setSearch} placeholder={t('staff.search')} />
