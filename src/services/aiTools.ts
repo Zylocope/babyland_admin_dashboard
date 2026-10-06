@@ -1,6 +1,6 @@
 // The "data-driven" half of the assistant: every answer comes from these calls,
 // never from the model's memory. Tools run in the browser so they reuse the
-// existing admin session. Tool results then pass through /api/chat to Gemini.
+// existing admin session. Tool results then pass through the backend's /admin/ai/chat to Gemini.
 import { parseISO, getDay } from "date-fns";
 import { shopToday, shopDaysAgo, shopDayStart } from "../utils/shopDay";
 import { LOW_STOCK_AT } from "../utils/stock";

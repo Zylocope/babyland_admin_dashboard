@@ -25,8 +25,8 @@ export default defineConfig([
     },
   },
   {
-    // Run under Node, not the browser: the Gemini proxy, the build config and the tests.
-    files: ['api/**/*.js', 'vite.config.js', '**/*.test.js'],
+    // Run under Node, not the browser: the build config and the tests.
+    files: ['vite.config.js', '**/*.test.js'],
     languageOptions: { globals: globals.node },
   },
 ])

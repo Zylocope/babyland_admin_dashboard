@@ -1,9 +1,9 @@
 import { baseURL } from "./baseService";
 
-// The assistant's one call to Gemini, now through the backend instead of the
-// Vercel function.
+// The assistant's one call to Gemini, through the backend.
 //
-// Why it moved: `api/chat.js` is a public URL with no authentication. Its only
+// Why not a Vercel function (the old `api/chat.js`, now deleted): it was a
+// public URL with no authentication. Its only
 // gate was a per-IP counter held in process memory, which reset on every cold
 // start — a quota guard, never auth. Anyone who found the URL could spend the
 // shop's Gemini allowance. `POST /admin/ai/chat` checks the admin session,
@@ -21,8 +21,7 @@ import { baseURL } from "./baseService";
 //
 // The model comes from the backend's GEMINI_MODEL setting on Render (its code
 // default, gemini-2.5-flash, is retired and answers 404). If every question
-// fails with a 404 message, that setting is missing; flipping this back to
-// false falls back to the Vercel proxy.
+// fails with a 404 message, that setting is missing.
 
 export class AiError extends Error {
   kind: "auth" | "role" | "quota" | "timeout" | "blocked" | "other";
@@ -37,26 +36,17 @@ export interface GeminiContent {
   parts: unknown[];
 }
 
-const USE_BACKEND = true;
-
 export const askGeminiViaBackend = async (
   body: unknown,
   signal?: AbortSignal
 ): Promise<GeminiContent> => {
-  const res = USE_BACKEND
-    ? await fetch(`${baseURL}/admin/ai/chat`, {
-        method: "POST",
-        signal,
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      })
-    : await fetch("/api/chat", {
-        method: "POST",
-        signal,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
+  const res = await fetch(`${baseURL}/admin/ai/chat`, {
+    method: "POST",
+    signal,
+    credentials: "include",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 
   let data: {
     candidates?: { content?: GeminiContent }[];
