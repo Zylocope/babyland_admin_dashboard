@@ -34,12 +34,12 @@ export default function AppLayout() {
   }, []);
 
   return (
-    <div className="app-shell flex overflow-hidden gap-3 p-3 lg:gap-4 lg:p-4">
+    <div className="app-shell flex overflow-hidden gap-2 p-2 sm:gap-3 sm:p-3 lg:gap-4 lg:p-4">
       <a className="skip-link" href="#main-content">{t('navigation.skip')}</a>
       <div className="sidebar-slot">
         <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
       </div>
-      <div className="flex flex-col flex-1 min-w-0 min-h-0 gap-3 lg:gap-4">
+      <div className="flex flex-col flex-1 min-w-0 min-h-0 gap-2 sm:gap-3 lg:gap-4">
         <Header titleKey={titleKey} />
         <main id="main-content" tabIndex={-1} key={pathname}
           className={`page-enter workspace-main flex-1 min-h-0 overflow-y-auto p-1 ${pathname === '/pos' ? 'workspace-pos' : ''}`}>

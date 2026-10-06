@@ -105,7 +105,7 @@ export default function Dashboard() {
     <div className="space-y-6">
       {status === 'error' && <NotConnected>{t('dashboard.loadFailed')}</NotConnected>}
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
         <StatCard icon={IconCash} tone="store" label={t('dashboard.storeSales')}
           value={show(formatMMKShort(todayRow?.revenue_mmk ?? 0))} />
         <StatCard icon={IconReportMoney} tone="combined" label={t('dashboard.sales7d')}

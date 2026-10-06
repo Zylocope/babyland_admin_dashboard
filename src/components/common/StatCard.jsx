@@ -30,7 +30,7 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
   return (
     <div
       onClick={onClick}
-      className={`surface-card p-5 relative overflow-hidden
+      className={`surface-card p-4 sm:p-5 relative overflow-hidden
         hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Decorative circle, top-right */}
@@ -58,7 +58,7 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
       {/* Down from 36px/extrabold/tracking-tight: at that weight "17.3M MMK"
           wrapped onto two lines in a narrow card. tabular-nums keeps the digits
           aligned as the figure changes. */}
-      <p className="mt-3 leading-[1.1] text-ink font-bold tracking-[-0.01em] tabular-nums text-[26px] sm:text-[30px]">
+      <p className="mt-3 leading-[1.1] text-ink font-bold tracking-[-0.01em] tabular-nums text-[22px] sm:text-[30px]">
         {amount}
         {unit && <span className="ml-1.5 text-[0.55em] font-semibold text-sub tracking-normal align-baseline">{unit}</span>}
       </p>

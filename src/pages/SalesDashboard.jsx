@@ -416,7 +416,7 @@ export default function SalesDashboard() {
         <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{t('posDash.summaryFailed')}</div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
         <StatCard icon={IconCash}        tone="store"     label={t('posDash.sales')}  value={show(formatMMKShort(totals.revenue_mmk))} />
         <StatCard icon={IconReportMoney} tone="completed" label={t('posDash.profit')} value={show(formatMMKShort(totals.profit_mmk))} trend={{ dir: 'up', value: t('posDash.margin', { n: totals.margin_pct }) }} />
         <StatCard icon={IconReceipt}     tone="combined"  label={t('posDash.txns')}   value={show(totals.transactions)} />

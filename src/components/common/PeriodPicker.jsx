@@ -6,11 +6,11 @@ import { shopToday, formatShopTime, shopDayStart } from '../../utils/shopDay';
 export default function PeriodPicker({ value, onChange }) {
   const { t, i18n } = useTranslation();
   const months = monthOptions(shopToday());
-  const btn = (active) => `px-3 py-1.5 text-xs cursor-pointer transition-colors ${active ? 'bg-brand text-white' : 'bg-card text-sub hover:bg-brand-light'}`;
+  const btn = (active) => `flex-1 sm:flex-none whitespace-nowrap px-2 sm:px-3 py-1.5 text-xs cursor-pointer transition-colors ${active ? 'bg-brand text-white' : 'bg-card text-sub hover:bg-brand-light'}`;
 
   return (
-    <div className="inline-flex flex-wrap items-center gap-2">
-      <div className="inline-flex rounded-lg border border-app overflow-hidden" role="group" aria-label={t('posDash.periodLabel')}>
+    <div className="flex sm:inline-flex flex-wrap items-center gap-2 w-full sm:w-auto">
+      <div className="flex w-full sm:inline-flex sm:w-auto rounded-lg border border-app overflow-hidden" role="group" aria-label={t('posDash.periodLabel')}>
         {PERIOD_KEYS.map(p => (
           <button key={p} type="button" onClick={() => onChange(p)} aria-pressed={value === p} className={btn(value === p)}>
             {t(`posDash.period_${p}`)}
