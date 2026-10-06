@@ -32,10 +32,20 @@ export const periodRange = (period, today) => {
   }
 };
 
-// Newest first, the current month included.
-// ponytail: a fixed 24 months back; start from the shop's first sale if older months matter.
-export const monthOptions = (today, count = 24) =>
-  Array.from({ length: count }, (_, i) => day(today).startOf('month').subtract(i, 'month').format('YYYY-MM'));
+// The month of the shop's first recorded sale. Months before it hold no data,
+// so the picker does not offer them.
+export const FIRST_MONTH = '2026-06';
+
+// Newest first, from the current month back to the shop's first month, and no
+// more than `max` months so the dropdown stays a usable length. It grows on its
+// own as months pass; future months never appear.
+export const monthOptions = (today, { since = FIRST_MONTH, max = 36 } = {}) => {
+  const out = [];
+  for (let m = day(today).startOf('month'); out.length < max && m.format('YYYY-MM') >= since; m = m.subtract(1, 'month')) {
+    out.push(m.format('YYYY-MM'));
+  }
+  return out;
+};
 
 // A chart point per day up to two months, a point per month beyond that: a year
 // of daily bars is 365 slivers nobody can read.

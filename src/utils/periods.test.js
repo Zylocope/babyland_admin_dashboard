@@ -16,8 +16,13 @@ assert.deepEqual(periodRange('2026-10', today), { start: '2026-10-01', end: toda
 assert.equal(isMonth('2026-10'), true);
 assert.equal(isMonth('week'), false);
 
-assert.deepEqual(monthOptions(today, 3), ['2026-10', '2026-09', '2026-08']);
-assert.deepEqual(monthOptions('2026-01-15', 2), ['2026-01', '2025-12']);
+// From the current month back to the shop's first month, never earlier.
+assert.deepEqual(monthOptions(today), ['2026-10', '2026-09', '2026-08', '2026-07', '2026-06']);
+// It grows as time passes, and stops at the cap.
+assert.equal(monthOptions('2027-03-10')[0], '2027-03');
+assert.equal(monthOptions('2027-03-10').length, 10);
+assert.equal(monthOptions('2031-01-01').length, 36);
+assert.deepEqual(monthOptions('2026-01-15', { since: '2025-11' }), ['2026-01', '2025-12', '2025-11']);
 
 // Up to two months: a bucket per day. Beyond: a bucket per month.
 const week = chartBuckets('2026-09-29', today);
