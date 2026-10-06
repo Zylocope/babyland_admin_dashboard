@@ -310,6 +310,9 @@
     "appTitle": "Playground",
     "openStaffApp": "Staff app",
     "backToAdmin": "Back to admin",
+    "backShort": "Admin",
+    "logoutTitle": "Log out?",
+    "logoutMsg": "You will need to sign in again to sell tickets.",
     "tabToday": "Today",
     "period": {
       "today": "Today",

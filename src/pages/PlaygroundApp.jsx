@@ -10,6 +10,7 @@ import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { setLanguage } from '../i18n';
 import Modal from '../components/common/Modal';
+import ConfirmDialog from '../components/common/ConfirmDialog';
 
 import { createPlaygroundToken, getPlaygroundCheckout } from '../services/playgroundService';
 import { checkoutStatus, amountDue, freeTickets, isSettled } from '../services/playgroundCheckout';
@@ -96,6 +97,7 @@ export default function PlaygroundApp() {
   const navigate = useNavigate();
   const [tab, setTab] = useState('sell');
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   // Selling a ticket is the ONE thing the backend supports for staff: mint a
   // claim token. The customer scans it with their own Appleland account, so
@@ -172,8 +174,9 @@ export default function PlaygroundApp() {
           {isManager && (
             <button onClick={() => navigate('/playground')} title={t('playground.backToAdmin')}
               aria-label={t('playground.backToAdmin')}
-              className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-brand cursor-pointer">
-              <IconArrowLeft size={17} stroke={1.8} />
+              className="press-spring h-9 px-3 rounded-full border border-app flex items-center gap-1.5 text-[12px] font-semibold text-mute hover:text-brand cursor-pointer whitespace-nowrap">
+              <IconArrowLeft size={15} stroke={1.8} />
+              {t('playground.backShort')}
             </button>
           )}
           <button onClick={() => setSettingsOpen(true)} title={t('titles.settings')}
@@ -181,7 +184,9 @@ export default function PlaygroundApp() {
             className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-brand cursor-pointer">
             <IconSettings size={17} stroke={1.6} />
           </button>
-          <button onClick={logout} title={t('sidebar.logout')}
+          {/* Staff kept hitting this thinking it was "back", so it asks first. */}
+          <button onClick={() => setLogoutOpen(true)} title={t('sidebar.logout')}
+            aria-label={t('sidebar.logout')}
             className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-[#EF4444] cursor-pointer">
             <IconLogout size={17} stroke={1.6} />
           </button>
@@ -356,6 +361,10 @@ export default function PlaygroundApp() {
             a dark mode for an evening shift, and the price staff would
             otherwise retype all day. No style themes — that is a desk
             decision, not a door one. */}
+        <ConfirmDialog open={logoutOpen} onClose={() => setLogoutOpen(false)} onConfirm={logout}
+          title={t('playground.logoutTitle')} message={t('playground.logoutMsg')}
+          confirmLabel={t('sidebar.logout')} danger />
+
         <Modal open={settingsOpen} onClose={() => setSettingsOpen(false)} title={t('titles.settings')} size="sm">
           <div className="space-y-5">
             <div>

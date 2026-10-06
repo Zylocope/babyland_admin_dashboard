@@ -310,6 +310,9 @@
     "appTitle": "ကစားကွင်း",
     "openStaffApp": "ဝန်ထမ်း app",
     "backToAdmin": "Admin သို့ ပြန်ရန်",
+    "backShort": "Admin",
+    "logoutTitle": "ထွက်မလား?",
+    "logoutMsg": "လက်မှတ်ရောင်းရန် ပြန်လည် ဝင်ရောက်ရပါမည်။",
     "tabToday": "ယနေ့",
     "period": {
       "today": "ယနေ့",
