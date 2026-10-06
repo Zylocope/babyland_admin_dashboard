@@ -27,6 +27,7 @@ import { formatShopTime, shopToday, shopDaysAgo, shopDayStart } from '../utils/s
 import PlaygroundAnalytics from '../components/playground/PlaygroundAnalytics';
 import PeriodPicker from '../components/common/PeriodPicker';
 import { periodRange, chartBuckets, bucketOf } from '../utils/periods';
+import { sortRows, nextSort } from '../utils/tableSort';
 import dayjs from 'dayjs';
 
 function SalesTooltip({ active, payload, label, inStoreLabel, onlineLabel, totalLabel }) {
@@ -64,7 +65,9 @@ function Panel({ title, children }) {
 }
 
 // One table renderer for every view — columns carry both the cell and the CSV value.
-function DataTable({ columns, rows, empty, onRowClick }) {
+// Given `sort` and `onSort`, a column with a `sort` function gets a clickable
+// header; the caller owns the order so an export follows what is on screen.
+function DataTable({ columns, rows, empty, onRowClick, sort, onSort }) {
   if (!rows.length) return <Empty label={empty} />;
   return (
     // Header matches the Products list: a quiet tinted strip, not a filled
@@ -74,9 +77,21 @@ function DataTable({ columns, rows, empty, onRowClick }) {
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
-            {columns.map(c => (
-              <th key={c.key} className={`px-4 py-3.5 font-semibold ${c.align === 'right' ? 'text-right' : 'text-left'}`}>{c.label}</th>
-            ))}
+            {columns.map(c => {
+              const active = sort?.key === c.key;
+              return (
+                <th key={c.key} aria-sort={active ? (sort.dir === 'asc' ? 'ascending' : 'descending') : undefined}
+                  className={`px-4 py-3.5 font-semibold ${c.align === 'right' ? 'text-right' : 'text-left'}`}>
+                  {onSort && c.sort ? (
+                    <button type="button" onClick={() => onSort(c)}
+                      className={`inline-flex items-center gap-1 uppercase tracking-[0.08em] cursor-pointer hover:text-brand ${active ? 'text-brand' : ''}`}>
+                      {c.label}
+                      <span aria-hidden="true" className={active ? '' : 'opacity-30'}>{active && sort.dir === 'asc' ? '▲' : '▼'}</span>
+                    </button>
+                  ) : c.label}
+                </th>
+              );
+            })}
           </tr>
         </thead>
         <tbody className="divide-y divide-app">
@@ -114,6 +129,9 @@ export default function SalesDashboard() {
   // only runs when the view is actually looked at, not on page load.
   const [sold, setSold] = useState({ key: '', rows: [], partial: false, error: '' });
   const [loading, setLoading] = useState(true);
+  // Table order, owned here so the report export follows what is on screen.
+  const [soldSort, setSoldSort] = useState({ key: 'units', dir: 'desc' });
+  const [dailySort, setDailySort] = useState({ key: 'date', dir: 'asc' });
 
   const { start, end } = useMemo(() => periodRange(period, shopToday()), [period]);
 
@@ -215,18 +233,25 @@ export default function SalesDashboard() {
   // lines, which store both as they were at the moment of sale. That is also
   // the only way a price change mid-period shows up honestly.
   const perUnit = (total, units) => (units ? Math.round(total / units) : 0);
+  const marginOf = r => (r.revenue_mmk > 0 ? Math.round((r.profit_mmk / r.revenue_mmk) * 1000) / 10 : 0);
   const soldCols = [
-    { key: 'name', label: t('table.item'), value: r => r.name },
-    { key: 'units', label: t('salesTable.unitsSold'), align: 'right', value: r => r.units },
+    { key: 'name', label: t('table.item'), value: r => r.name, sort: r => r.name, firstDir: 'asc' },
+    { key: 'units', label: t('salesTable.unitsSold'), align: 'right', value: r => r.units, sort: r => r.units },
     { key: 'buy', label: t('salesTable.buyPrice'), align: 'right',
-      value: r => formatMMK(perUnit(r.cost_mmk, r.units)) },
+      value: r => formatMMK(perUnit(r.cost_mmk, r.units)), sort: r => perUnit(r.cost_mmk, r.units) },
     { key: 'sell', label: t('salesTable.sellPrice'), align: 'right',
-      value: r => formatMMK(perUnit(r.revenue_mmk, r.units)) },
-    { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: r => formatMMK(Math.round(r.revenue_mmk)) },
+      value: r => formatMMK(perUnit(r.revenue_mmk, r.units)), sort: r => perUnit(r.revenue_mmk, r.units) },
+    { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: r => formatMMK(Math.round(r.revenue_mmk)), sort: r => r.revenue_mmk },
+    // Profit alone favours expensive items; margin shows which ones earn well
+    // for what they cost.
+    { key: 'margin', label: t('salesTable.marginCol'), align: 'right', value: r => `${marginOf(r)}%`, sort: marginOf,
+      cell: r => (
+        <span style={marginOf(r) < 0 ? { color: 'var(--status-cancelled)', fontWeight: 600 } : undefined}>{marginOf(r)}%</span>
+      ) },
     // A product sold below cost is the whole reason to look at this table, so
     // it is coloured rather than left as one number among six.
     { key: 'profit', label: t('posDash.profit'), align: 'right',
-      value: r => formatMMK(Math.round(r.profit_mmk)),
+      value: r => formatMMK(Math.round(r.profit_mmk)), sort: r => r.profit_mmk,
       cell: r => (
         <span style={r.profit_mmk < 0 ? { color: 'var(--status-cancelled)', fontWeight: 600 } : undefined}>
           {formatMMK(Math.round(r.profit_mmk))}
@@ -243,14 +268,14 @@ export default function SalesDashboard() {
   ];
 
   const dailyCols = [
-    { key: 'date', label: t('salesTable.date'), value: d => d.date },
-    { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: d => d.revenue_mmk, cell: d => formatMMK(d.revenue_mmk) },
-    { key: 'profit', label: t('posDash.profit'), align: 'right', value: d => d.profit_mmk, cell: d => formatMMK(d.profit_mmk) },
-    { key: 'margin', label: t('salesTable.marginCol'), align: 'right', value: d => d.margin_pct, cell: d => `${d.margin_pct}%` },
-    { key: 'txns', label: t('posDash.txns'), align: 'right', value: d => d.transactions },
-    { key: 'items', label: t('posDash.items'), align: 'right', value: d => d.items_sold },
-    { key: 'instore', label: inStoreLabel, align: 'right', value: d => d.in_store_mmk, cell: d => formatMMK(d.in_store_mmk) },
-    { key: 'online', label: onlineLabel, align: 'right', value: d => d.online_mmk, cell: d => formatMMK(d.online_mmk) },
+    { key: 'date', label: t('salesTable.date'), value: d => d.date, sort: d => d.date, firstDir: 'asc' },
+    { key: 'revenue', label: t('posDash.revenue'), align: 'right', value: d => d.revenue_mmk, cell: d => formatMMK(d.revenue_mmk), sort: d => d.revenue_mmk },
+    { key: 'profit', label: t('posDash.profit'), align: 'right', value: d => d.profit_mmk, cell: d => formatMMK(d.profit_mmk), sort: d => d.profit_mmk },
+    { key: 'margin', label: t('salesTable.marginCol'), align: 'right', value: d => d.margin_pct, cell: d => `${d.margin_pct}%`, sort: d => d.margin_pct },
+    { key: 'txns', label: t('posDash.txns'), align: 'right', value: d => d.transactions, sort: d => d.transactions },
+    { key: 'items', label: t('posDash.items'), align: 'right', value: d => d.items_sold, sort: d => d.items_sold },
+    { key: 'instore', label: inStoreLabel, align: 'right', value: d => d.in_store_mmk, cell: d => formatMMK(d.in_store_mmk), sort: d => d.in_store_mmk },
+    { key: 'online', label: onlineLabel, align: 'right', value: d => d.online_mmk, cell: d => formatMMK(d.online_mmk), sort: d => d.online_mmk },
   ];
 
   const channelCols = [
@@ -301,9 +326,12 @@ export default function SalesDashboard() {
     { key: 'items', label: t('posDash.items'), align: 'right', value: m => m.items_sold },
   ];
 
+  const sortedSold = sortRows(sold.rows, soldCols, soldSort);
+  const sortedDaily = sortRows(s.by_day, dailyCols, dailySort);
+
   const reportSections = [
     { key: 'channel', name: t('salesViews.channel'), columns: channelCols, rows: channelRows },
-    { key: 'daily', name: t('salesViews.daily'), columns: dailyCols, rows: s.by_day },
+    { key: 'daily', name: t('salesViews.daily'), columns: dailyCols, rows: sortedDaily },
     { key: 'bestworst', name: t('salesViews.bestworst'), columns: dailyCols, rows: ranked },
     { key: 'receipts', name: t('salesViews.receipts'), columns: receiptCols, rows: periodReceipts },
     { key: 'monthly', name: t('salesTable.monthly'), columns: monthlyCols, rows: monthlyRows },
@@ -315,7 +343,7 @@ export default function SalesDashboard() {
       columns: soldCols,
       rows: [],
       count: sold.key === soldKey ? sold.rows.length : (totals.transactions > 0 ? null : 0),
-      load: async () => (sold.key === soldKey ? sold.rows : (await getProductSales(start, end)).rows),
+      load: async () => (sold.key === soldKey ? sortedSold : sortRows((await getProductSales(start, end)).rows, soldCols, soldSort)),
     },
     // Every receipt the shop has, not the page currently on screen. Loaded only
     // when ticked, because it walks the pagination and that is many requests.
@@ -492,7 +520,8 @@ export default function SalesDashboard() {
 
       {view === 'daily' && (
         <Panel title={t('salesViews.daily')}>
-          <DataTable columns={dailyCols} rows={s.by_day} empty={t('posDash.noData')} />
+          <DataTable columns={dailyCols} rows={sortedDaily} empty={t('posDash.noData')}
+            sort={dailySort} onSort={c => setDailySort(cur => nextSort(cur, c))} />
         </Panel>
       )}
 
@@ -570,8 +599,8 @@ export default function SalesDashboard() {
                   {t('salesTable.productsPartial')}
                 </p>
               )}
-              <DataTable columns={soldCols} rows={sold.rows.map((r, i) => ({ ...r, _key: r.product_id ?? i }))}
-                empty={t('posDash.noData')} />
+              <DataTable columns={soldCols} rows={sortedSold.map((r, i) => ({ ...r, _key: r.product_id ?? i }))}
+                empty={t('posDash.noData')} sort={soldSort} onSort={c => setSoldSort(cur => nextSort(cur, c))} />
             </>
           )}
         </Panel>
