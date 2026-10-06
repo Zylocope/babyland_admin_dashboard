@@ -19,10 +19,10 @@ export default function SubBar({ views, view, onView, children }) {
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <div className="relative" ref={ref}>
+      <div className="relative w-full sm:w-auto" ref={ref}>
         <button
           onClick={() => setOpen(o => !o)}
-          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-app bg-card text-ink hover:border-brand transition-colors cursor-pointer min-w-52 justify-between"
+          className="inline-flex items-center gap-2 px-3.5 py-2 text-sm font-medium rounded-lg border border-app bg-card text-ink hover:border-brand transition-colors cursor-pointer w-full sm:w-auto sm:min-w-52 justify-between"
         >
           <span className="inline-flex items-center gap-2">
             {current.icon && <current.icon size={16} stroke={1.7} className="text-brand" />}
@@ -55,7 +55,7 @@ export default function SubBar({ views, view, onView, children }) {
         )}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">{children}</div>
+      <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">{children}</div>
     </div>
   );
 }

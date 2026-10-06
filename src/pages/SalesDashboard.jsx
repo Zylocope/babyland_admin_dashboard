@@ -382,15 +382,16 @@ export default function SalesDashboard() {
 
       <PrintSheet sections={printing} onDone={setPrinting}
         subtitle={`${t('report.range', { start, end })} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
-      <div className="inline-flex rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
+      <div className="flex w-full sm:inline-flex sm:w-auto rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
         {[
           { key: 'retail', label: t('salesSource.retail'), icon: IconShoppingBag },
           { key: 'playground', label: t('salesSource.playground'), icon: IconTicket },
           { key: 'combined', label: t('salesSource.combined'), icon: IconChartHistogram },
         ].map(({ key, label, icon: Icon }) => (
           <button key={key} type="button" onClick={() => setSource(key)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${source === key ? 'bg-brand text-white shadow-sm' : 'text-sub hover:text-brand hover:bg-brand-light'}`}>
-            <Icon size={15} stroke={1.8} /> {label}
+            className={`flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-2 sm:px-3 py-2 rounded-lg text-xs font-medium transition-colors cursor-pointer ${source === key ? 'bg-brand text-white shadow-sm' : 'text-sub hover:text-brand hover:bg-brand-light'}`}>
+            {/* No icons on a phone: three labelled tabs only just fit. */}
+            <Icon size={15} stroke={1.8} className="hidden sm:block" /> {label}
           </button>
         ))}
       </div>

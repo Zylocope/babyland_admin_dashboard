@@ -179,16 +179,16 @@ export default function Products() {
       <PrintSheet sections={printing} onDone={setPrinting}
         subtitle={`${t('titles.products')} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
       <SubBar views={VIEWS} view={view} onView={pickView}>
-        <div className="w-48"><SearchInput value={search} onChange={pickSearch} placeholder={t('products.search')} /></div>
+        <div className="w-full sm:w-48"><SearchInput value={search} onChange={pickSearch} placeholder={t('products.search')} /></div>
         <select
           value={catFilter}
           onChange={e => pickCategory(e.target.value)}
-          className="px-3 py-2 text-sm border border-app rounded-lg bg-card text-ink focus:outline-none focus:ring-2 focus:ring-brand"
+          className="flex-1 min-w-0 sm:flex-none px-3 py-2 text-sm border border-app rounded-lg bg-card text-ink focus:outline-none focus:ring-2 focus:ring-brand"
         >
           <option value="All">{t('common.allCategories')}</option>
           {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
         </select>
-        <span className="text-sm text-sub whitespace-nowrap">{t('products.count', { count: filtered.length })}</span>
+        <span className="hidden sm:inline text-sm text-sub whitespace-nowrap">{t('products.count', { count: filtered.length })}</span>
         {/* Manager only. Runs in the browser, so it is a UI gate — a server-side
             export would need the same role check that restock has. */}
         {isManager && (
@@ -200,7 +200,7 @@ export default function Products() {
           </button>
         )}
         {isManager && (
-          <button onClick={() => navigate('/products/new')} className="btn-primary">
+          <button onClick={() => navigate('/products/new')} className="btn-primary w-full sm:w-auto justify-center">
             <IconPlus size={16} stroke={2} /> {t('products.add')}
           </button>
         )}
@@ -346,7 +346,7 @@ export default function Products() {
 
             {isManager && (
               <div className="flex items-center gap-2 pt-3">
-                <button onClick={() => setStockFor(p)} className="btn-primary flex-1 justify-center py-2 text-xs">
+                <button onClick={() => setStockFor(p)} className="btn-primary flex-1 justify-center whitespace-nowrap py-2! px-3! text-[13px]!">
                   <IconPackageImport stroke={1.6} size={15} /> {t('stockIn.addStock')}
                 </button>
                 <button aria-label={`${t('adjustStock.open')} ${p.name}`} onClick={() => setAdjustFor(p)} className="control-icon border border-app text-sub hover:text-brand hover:bg-brand-light cursor-pointer">
