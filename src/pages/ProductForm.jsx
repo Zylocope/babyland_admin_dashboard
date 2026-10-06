@@ -166,20 +166,25 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="max-w-2xl">
+    <div className="max-w-2xl lg:max-w-5xl">
       <button
         onClick={() => navigate('/products')}
-        className="inline-flex items-center gap-1.5 text-sm text-sub hover:text-brand mb-4 cursor-pointer"
+        className="inline-flex items-center gap-1.5 text-sm text-sub hover:text-brand mb-3 cursor-pointer"
       >
         <IconArrowLeft size={16} stroke={1.8} /> {t('productForm.back')}
       </button>
 
       <div className="surface-card is-sheet p-6">
-        <h2 className="text-lg font-semibold text-ink mb-5">
+        <h2 className="text-lg font-semibold text-ink mb-4">
           {isEdit ? t('productForm.editHeading') : t('productForm.addHeading')}
         </h2>
 
         <form onSubmit={submit} className="space-y-4">
+          {/* Two columns on a laptop so the whole form fits one screen without
+              scrolling: what the product is on the left, its picture, stock
+              and switches on the right. One column on smaller screens. */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-6 gap-y-4 items-start">
+          <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-ink mb-1">{t('table.barcode')}</label>
@@ -229,6 +234,9 @@ export default function ProductForm() {
               className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
           </div>
 
+          </div>
+
+          <div className="space-y-4">
           <div>
             <label className="block text-xs font-medium text-ink mb-1">{t('productForm.image')}</label>
             <div className="flex items-start gap-3">
@@ -300,6 +308,9 @@ export default function ProductForm() {
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.is_shown_online ? 'bg-brand' : 'bg-app'}`}>
               <span className={`inline-block h-4 w-4 transform rounded-full bg-card shadow transition-transform ${form.is_shown_online ? 'translate-x-6' : 'translate-x-1'}`} />
             </button>
+          </div>
+
+          </div>
           </div>
 
           {error && (
