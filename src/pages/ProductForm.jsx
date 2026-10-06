@@ -7,6 +7,7 @@ import { getCategories } from '../services/categoryService';
 import { getProductById, createProduct, updateProduct, insertInventory } from '../services/productService';
 import { uploadProductImage, validateProductImage, ImageTooLargeError } from '../services/uploadService';
 import { useAuth } from '../context/AuthContext';
+import { shopToday } from '../utils/shopDay';
 
 const EMPTY = { barcode: '', name: '', selling_price: '', original_price: '', category_id: '', sub_category_id: '', is_shown_online: true, is_perishable: false, description: '', image_url: '' };
 
@@ -27,6 +28,7 @@ export default function ProductForm() {
   const [addInventory, setAddInventory] = useState(false);
   const [quantityReceived, setQuantityReceived] = useState('');
   const [unitCost, setUnitCost] = useState('');
+  const [expiry, setExpiry] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -106,6 +108,18 @@ export default function ProductForm() {
     }
 
     const hasInventory = addInventory && quantityReceived && unitCost;
+    // Checked before anything is saved: the backend refuses stock for a
+    // perishable product without an expiry date, and on edit the product
+    // details would already be saved by the time the stock was refused.
+    if (hasInventory && form.is_perishable && !expiry) {
+      setError(t('stockIn.errExpiry'));
+      return;
+    }
+    const batch = {
+      quantity_received: Number(quantityReceived),
+      unit_cost: String(unitCost),
+      ...(form.is_perishable && expiry ? { expiry_date: new Date(expiry).toISOString() } : {}),
+    };
 
     const body = {
       barcode: form.barcode.trim(),
@@ -125,7 +139,7 @@ export default function ProductForm() {
     // Only the create endpoint accepts a nested inventory batch; on update the
     // stock goes through insertInventory instead.
     const createBody = hasInventory
-      ? { ...body, inventory: { quantity_received: Number(quantityReceived), unit_cost: String(unitCost) } }
+      ? { ...body, inventory: batch }
       : body;
 
     setSaving(true);
@@ -133,10 +147,7 @@ export default function ProductForm() {
       if (isEdit) {
         await updateProduct(id, body);
         if (hasInventory) {
-          await insertInventory(id, {
-            quantity_received: Number(quantityReceived),
-            unit_cost: String(unitCost),
-          });
+          await insertInventory(id, batch);
         }
       } else {
         await createProduct(createBody);
@@ -289,6 +300,15 @@ export default function ProductForm() {
                   <input type="number" min="0" step="1" value={unitCost} onChange={e => setUnitCost(e.target.value)} required={addInventory}
                     className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
                 </div>
+                {/* The date belongs to this delivery, not the product, so it is
+                    asked for here, and only when the product is perishable. */}
+                {form.is_perishable && (
+                  <div>
+                    <label className="block text-xs font-medium text-ink mb-1">{t('stockIn.expiry')}</label>
+                    <input type="date" value={expiry} min={shopToday()} onChange={e => setExpiry(e.target.value)} required
+                      className="w-full px-3 py-2 text-sm border border-app rounded-lg focus:outline-none focus:ring-2 focus:ring-brand" />
+                  </div>
+                )}
               </div>
             )}
           </div>
