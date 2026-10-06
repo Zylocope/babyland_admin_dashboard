@@ -216,16 +216,16 @@ export default function ProductForm() {
                 {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </div>
-          </div>
-
-          {/* sub_category_id is a FK to categories(id) — same table, so reuse the list. */}
-          <div>
-            <label className="block text-xs font-medium text-ink mb-1">{t('productForm.subCategory')}</label>
-            <select value={form.sub_category_id} onChange={e => set('sub_category_id', e.target.value)}
-              className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
-              <option value="">{t('productForm.noSubCategory')}</option>
-              {categories.filter(c => c.id !== form.category_id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-            </select>
+            {/* sub_category_id is a FK to categories(id) — same table, so reuse the list.
+                Beside the category rather than below it, so the form fits one laptop screen. */}
+            <div>
+              <label className="block text-xs font-medium text-ink mb-1">{t('productForm.subCategory')}</label>
+              <select value={form.sub_category_id} onChange={e => set('sub_category_id', e.target.value)}
+                className="w-full px-3 py-2 text-sm border border-app rounded-lg bg-card focus:outline-none focus:ring-2 focus:ring-brand">
+                <option value="">{t('productForm.noSubCategory')}</option>
+                {categories.filter(c => c.id !== form.category_id).map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
           </div>
 
           <div>
