@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
-  IconDatabase, IconChevronLeft, IconChevronRight, IconTruck, IconExternalLink,
+  IconDatabase, IconChevronLeft, IconChevronRight, IconTruck, IconExternalLink, IconPencil,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
@@ -10,7 +10,7 @@ import Modal from '../components/common/Modal';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { SkeletonRows, Skeleton } from '../components/common/Skeleton';
 import {
-  getOrders, getOrderDetail, advanceOrderStatus, nextStatus, ORDER_STATUSES,
+  getOrders, getOrderDetail, advanceOrderStatus, updateOrderTrackingUrl, nextStatus, ORDER_STATUSES,
 } from '../services/orderService';
 import { getStaff } from '../services/staffService';
 
@@ -46,6 +46,10 @@ export default function Orders() {
   const [openId, setOpenId] = useState(null);
   const [detail, setDetail] = useState({ id: null, status: 'loading', order: null });
   const [advancing, setAdvancing] = useState(null);
+  const [trackingEdit, setTrackingEdit] = useState(false);
+  const [trackingUrl, setTrackingUrl] = useState('');
+  const [trackingSaving, setTrackingSaving] = useState(false);
+  const [trackingError, setTrackingError] = useState('');
   // Who changed a status arrives as an admin id. Only managers can read the
   // staff list, so others see the time and status without a name, never the id.
   const [staffNames, setStaffNames] = useState(() => new Map());
@@ -59,14 +63,20 @@ export default function Orders() {
     return () => { active = false; };
   }, [isManager]);
 
+  const openOrder = (id) => {
+    setTrackingEdit(false);
+    setTrackingError('');
+    setOpenId(id);
+  };
+
   // Rows and cards open an order by click, Enter or Space, so the list works
   // from the keyboard too, not only with a mouse or a finger.
   const openable = (id) => ({
     role: 'button',
     tabIndex: 0,
-    onClick: () => setOpenId(id),
+    onClick: () => openOrder(id),
     onKeyDown: (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenId(id); }
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openOrder(id); }
     },
   });
 
@@ -110,6 +120,36 @@ export default function Orders() {
 
   const pickStatus = (value) => { setStatus(value); setPage(1); };
   const reload = useCallback(() => setReloadKey(k => k + 1), []);
+
+  const beginTrackingEdit = () => {
+    setTrackingUrl(order?.order_tracking_url ?? '');
+    setTrackingError('');
+    setTrackingEdit(true);
+  };
+
+  const saveTrackingUrl = async () => {
+    const value = trackingUrl.trim();
+    try {
+      const parsed = new URL(value);
+      if (!['http:', 'https:'].includes(parsed.protocol)) throw new Error('invalid protocol');
+    } catch {
+      setTrackingError(t('orders.trackingInvalid'));
+      return;
+    }
+
+    setTrackingSaving(true);
+    setTrackingError('');
+    try {
+      await updateOrderTrackingUrl(order.id, { order_tracking_url: value });
+      const updated = await getOrderDetail(order.id);
+      setDetail({ id: order.id, status: 'ok', order: updated });
+      setTrackingEdit(false);
+    } catch (err) {
+      setTrackingError(err?.message || t('orders.trackingFailed'));
+    } finally {
+      setTrackingSaving(false);
+    }
+  };
 
   const { rows, total, pages, error } = state;
 
@@ -276,12 +316,47 @@ export default function Orders() {
               ))}
             </div>
 
-            {order.order_tracking_url && (
-              <a href={order.order_tracking_url} target="_blank" rel="noreferrer"
-                className="inline-flex items-center gap-1.5 text-[13px] text-brand hover:underline">
-                <IconExternalLink size={15} stroke={1.7} /> {t('orders.tracking')}
-              </a>
-            )}
+            <div className="space-y-2">
+              <div className="flex flex-wrap items-center gap-3">
+                {order.order_tracking_url && (
+                  <a href={order.order_tracking_url} target="_blank" rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[13px] text-brand hover:underline min-w-0">
+                    <IconExternalLink size={15} stroke={1.7} className="flex-shrink-0" />
+                    <span className="truncate">{t('orders.tracking')}</span>
+                  </a>
+                )}
+                {isManager && !trackingEdit && (
+                  <button type="button" onClick={beginTrackingEdit}
+                    className="inline-flex items-center gap-1.5 text-[13px] text-sub hover:text-brand transition-colors cursor-pointer">
+                    <IconPencil size={14} stroke={1.7} />
+                    {order.order_tracking_url ? t('orders.editTracking') : t('orders.addTracking')}
+                  </button>
+                )}
+              </div>
+
+              {isManager && trackingEdit && (
+                <div className="rounded-xl border border-app bg-base/45 p-3 space-y-2.5">
+                  <label className="block text-[12px] text-sub" htmlFor="order-tracking-url">
+                    {t('orders.trackingUrl')}
+                  </label>
+                  <input id="order-tracking-url" type="url" inputMode="url" autoFocus
+                    value={trackingUrl} onChange={e => setTrackingUrl(e.target.value)}
+                    placeholder="https://..." disabled={trackingSaving}
+                    className="w-full rounded-lg border border-app bg-card px-3 py-2 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand" />
+                  {trackingError && <p role="alert" className="text-[12px] text-red-500">{trackingError}</p>}
+                  <div className="flex justify-end gap-2">
+                    <button type="button" onClick={() => { setTrackingEdit(false); setTrackingError(''); }} disabled={trackingSaving}
+                      className="px-3 py-1.5 rounded-lg border border-app text-xs text-sub hover:bg-brand-light disabled:opacity-50 cursor-pointer">
+                      {t('common.cancel')}
+                    </button>
+                    <button type="button" onClick={saveTrackingUrl} disabled={trackingSaving || !trackingUrl.trim()}
+                      className="px-3 py-1.5 rounded-lg bg-brand text-white text-xs font-medium hover:bg-brand-hover disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+                      {trackingSaving ? t('common.loading') : t('common.saveChanges')}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Every status change, oldest first — who moved it and when. */}
             {(order.status_history?.length ?? 0) > 0 && (

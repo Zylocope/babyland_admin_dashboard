@@ -3,6 +3,7 @@ import type {
   AdminOrderDetail,
   AdminOrderRow,
   PaginatedResponseAdminOrderRow,
+  UpdateOrderTrackingUrlPayload,
 } from "../types";
 
 // Delivery status exactly as the wire spells it: the list and detail carry the
@@ -55,5 +56,14 @@ export const getOrderDetail = (orderId: string): Promise<AdminOrderDetail> =>
 // twice, which is why the screen asks before sending.
 export const advanceOrderStatus = (orderId: string): Promise<unknown> =>
   request(`/admin/orders/update_status/${orderId}`, { method: "PATCH" });
+
+export const updateOrderTrackingUrl = (
+  orderId: string,
+  body: UpdateOrderTrackingUrlPayload
+): Promise<string> =>
+  request(`/admin/orders/${orderId}`, {
+    method: "PATCH",
+    body: JSON.stringify(body),
+  });
 
 export type { AdminOrderRow, AdminOrderDetail };
