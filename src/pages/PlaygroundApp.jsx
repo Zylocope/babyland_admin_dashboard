@@ -184,12 +184,6 @@ export default function PlaygroundApp() {
             className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-brand cursor-pointer">
             <IconSettings size={17} stroke={1.6} />
           </button>
-          {/* Staff kept hitting this thinking it was "back", so it asks first. */}
-          <button onClick={() => setLogoutOpen(true)} title={t('sidebar.logout')}
-            aria-label={t('sidebar.logout')}
-            className="press-spring w-9 h-9 rounded-full border border-app flex items-center justify-center text-mute hover:text-[#EF4444] cursor-pointer">
-            <IconLogout size={17} stroke={1.6} />
-          </button>
         </header>
 
         <main className="flex-1 overflow-y-auto px-5 pt-1 pb-28 space-y-4">
@@ -410,6 +404,13 @@ export default function PlaygroundApp() {
               </label>
               <p className="text-[12px] text-sub mt-2 leading-relaxed">{t('playground.defaultPriceHelp')}</p>
             </div>
+            {/* Lives here, not in the header: staff kept tapping it thinking it
+                was "back". It still asks first. */}
+            <button onClick={() => { setSettingsOpen(false); setLogoutOpen(true); }}
+              className="press-spring w-full h-11 rounded-xl border border-app flex items-center justify-center gap-2 text-[13px] font-semibold text-[#EF4444] cursor-pointer">
+              <IconLogout size={17} stroke={1.6} />
+              {t('sidebar.logout')}
+            </button>
           </div>
         </Modal>
 
