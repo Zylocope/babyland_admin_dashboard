@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
-  IconTicket, IconLayoutDashboard, IconBabyCarriage, IconLogout, IconArrowLeft,
+  IconTicket, IconLayoutDashboard, IconBabyCarriage, IconArrowLeft,
   IconCircleCheck, IconClockOff, IconSettings, IconMoon, IconSun,
 } from '@tabler/icons-react';
 import { QRCodeSVG } from 'qrcode.react';
@@ -169,7 +169,15 @@ export default function PlaygroundApp() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="font-bold text-ink text-[15px] leading-tight truncate">{t('playground.appTitle')}</p>
-            <p className="text-[11px] text-mute truncate">{user?.name}</p>
+            {/* Logout is a labelled link under the name, away from the back and
+                settings buttons: as an icon on the right, staff kept tapping it
+                thinking it was "back". It still asks first. */}
+            <p className="text-[11px] text-mute truncate">
+              {user?.name} ·{' '}
+              <button onClick={() => setLogoutOpen(true)} className="font-semibold text-[#EF4444] cursor-pointer">
+                {t('sidebar.logout')}
+              </button>
+            </p>
           </div>
           {isManager && (
             <button onClick={() => navigate('/playground')} title={t('playground.backToAdmin')}
@@ -404,13 +412,6 @@ export default function PlaygroundApp() {
               </label>
               <p className="text-[12px] text-sub mt-2 leading-relaxed">{t('playground.defaultPriceHelp')}</p>
             </div>
-            {/* Lives here, not in the header: staff kept tapping it thinking it
-                was "back". It still asks first. */}
-            <button onClick={() => { setSettingsOpen(false); setLogoutOpen(true); }}
-              className="press-spring w-full h-11 rounded-xl border border-app flex items-center justify-center gap-2 text-[13px] font-semibold text-[#EF4444] cursor-pointer">
-              <IconLogout size={17} stroke={1.6} />
-              {t('sidebar.logout')}
-            </button>
           </div>
         </Modal>
 
