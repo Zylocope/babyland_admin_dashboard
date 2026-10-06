@@ -37,7 +37,7 @@ export default function StatCard({ icon: Icon, label, value, tone = 'store', tre
   return (
     <div
       onClick={onClick}
-      className={`surface-card p-4 sm:p-5 relative overflow-hidden
+      className={`stat-card surface-card p-4 sm:p-5 relative overflow-hidden
         hover:-translate-y-0.5 ${onClick ? 'cursor-pointer' : ''}`}
     >
       {/* Decorative circle, top-right */}

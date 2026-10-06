@@ -156,7 +156,7 @@ export default function Orders() {
   const filters = ['All', ...ORDER_STATUSES];
 
   return (
-    <div className="space-y-5">
+    <div className="mobile-page orders-page space-y-5">
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap gap-1.5">
           {filters.map(value => (

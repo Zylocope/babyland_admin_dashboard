@@ -188,8 +188,8 @@ export default function PlaygroundAnalytics({ start, end, mode = 'playground', r
   }
 
   return (
-    <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
+    <div className="playground-analytics space-y-4">
+      <div className="playground-kpis grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
         <StatCard icon={IconCash} tone="store" label={combined ? t('playgroundAnalytics.combinedRevenue') : t('playgroundAnalytics.revenue')} value={show(formatMMKShort(totals.revenue_mmk))} />
         {combined
           ? <StatCard icon={IconShoppingBag} tone="completed" label={t('playgroundAnalytics.retailRevenue')} value={show(formatMMKShort(retailTotals?.revenue_mmk ?? 0))} />

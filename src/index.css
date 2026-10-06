@@ -725,12 +725,98 @@ html[data-style="flat"] .sidebar-shell { border-radius: 8px; }
   .pos-checkout { position: sticky; bottom: 0; z-index: 1; }
 }
 @media (max-width: 639px) {
+  /* The phone keeps the real navigation rail. A slightly narrower collapsed
+     rail gives the workspace useful room without changing the desktop shell
+     or replacing navigation with a menu. */
+  .app-shell { padding: 6px; gap: 6px; }
+  .sidebar-slot { width: 56px; }
+  .sidebar-slot > .sidebar-shell[data-collapsed="true"] { width: 56px; }
+  .sidebar-shell[data-collapsed="true"] .sidebar-logo { padding-inline: 11px; }
+  .sidebar-shell[data-collapsed="true"] .sidebar-link { padding-inline: 10px; }
+  .sidebar-shell[data-collapsed="true"] .sidebar-logout { padding-inline: 12px; }
+  .sidebar-toggle { right: -11px; }
+
+  .workspace-main { padding: 2px; scrollbar-gutter: auto; }
+  .workspace-main + * { min-width: 0; }
+  .app-shell header { height: 56px; padding-inline: 12px; border-radius: 14px; }
+  .app-shell header h1 { font-size: 16px; }
+  .app-shell header > div:last-child { gap: 8px; }
+
+  /* Shared mobile rhythm. Desktop spacing remains owned by the page's
+     existing Tailwind classes. */
+  .mobile-page.space-y-4 > :not(:last-child),
+  .mobile-page.space-y-5 > :not(:last-child),
+  .mobile-page.space-y-6 > :not(:last-child) { margin-bottom: 12px; }
+  .mobile-page .surface-card.is-sheet.p-5,
+  .mobile-page .surface-card.is-sheet.p-6 { padding: 14px; }
+
   input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: 16px; }
   .surface-card.is-sheet.p-6 { padding: 18px; }
   .pos-quantity button, .pos-remove { width: 40px; height: 40px; }
-  .chart-summary-grid { grid-template-columns: 1fr; }
-  .chart-summary-grid > div { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-block: 8px; }
-  .chart-summary-grid strong { margin-top: 0; text-align: right; }
+
+  /* Filter groups scroll in place instead of squeezing labels or building a
+     tall stack above the data. The scrollbar is hidden but touch swiping stays. */
+  .period-options { overflow-x: auto; overscroll-behavior-inline: contain; scrollbar-width: none; }
+  .period-options::-webkit-scrollbar { display: none; }
+  .period-options > button { flex: 1 0 auto; min-height: 36px; padding-inline: 8px; }
+  .sales-page .subbar { display: block; }
+  .sales-page .subbar-view { margin-bottom: 8px; }
+  .sales-page .subbar-view > button { min-height: 40px; }
+  .sales-page .subbar-actions { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .sales-page .period-picker { display: contents; }
+  .sales-page .period-options { grid-column: 1 / -1; }
+  .sales-page .period-month { width: 100%; min-width: 0; min-height: 38px; }
+  .sales-page .subbar-actions > button { min-height: 38px; justify-content: center; }
+
+  /* Compact KPIs reveal the first chart sooner. The fifth Sales card uses the
+     full row rather than leaving a blank card-sized hole beside it. */
+  .stat-card { padding: 12px; }
+  .stat-card > .flex > div { width: 36px; height: 36px; }
+  .stat-card > .flex > div svg { width: 18px; height: 18px; }
+  .stat-card > p.mt-3 { margin-top: 10px; font-size: 21px; }
+  .stat-card > p.mt-2 { margin-top: 6px; font-size: 12px; }
+  .sales-kpis { gap: 10px; }
+  .sales-kpis > .stat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .playground-kpis { gap: 10px; }
+  .playground-kpis > .stat-card:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .playground-analytics > .surface-card { padding: 14px; }
+  .sales-panel { padding: 14px; }
+  .sales-panel > h3 { margin-bottom: 10px; }
+
+  .chart-summary-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+  .chart-summary-grid > div { min-width: 0; padding: 9px 7px; }
+  .chart-summary-grid span { font-size: 10px; }
+  .chart-summary-grid strong { margin-top: 3px; font-size: 11px; overflow-wrap: anywhere; }
+
+  /* Wide analytical tables remain readable: columns keep their useful width
+     and the table alone scrolls, not the whole page. */
+  .data-table { min-width: 560px; }
+  .data-table-scroll { margin-inline: -14px; padding-inline: 14px; scrollbar-width: thin; }
+
+  /* The recent-order row becomes two calm reading lines on a phone instead of
+     compressing four columns into the remaining space beside the rail. */
+  .dashboard-orders-head { padding: 12px 14px; }
+  .dashboard-order-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 5px 12px;
+    padding: 11px 14px;
+  }
+  .dashboard-order-customer { grid-column: 1; grid-row: 1; }
+  .dashboard-order-total { grid-column: 2; grid-row: 1; width: auto; }
+  .dashboard-order-id { grid-column: 1; grid-row: 2; }
+  .dashboard-order-status { grid-column: 2; grid-row: 2; text-align: right; }
+
+  .category-create-row { flex-direction: column; }
+  .category-create-row .btn-primary { justify-content: center; }
+  .product-form-page > .surface-card { padding: 14px; }
+
+  /* Dialogs use the phone viewport efficiently and keep their close action in
+     a comfortable fixed header. */
+  .modal-stage { padding: 8px; align-items: flex-end; }
+  .modal-panel { max-height: calc(100dvh - 16px); border-radius: 16px; }
+  .modal-head { padding: 12px 14px; }
+  .modal-body { padding: 14px; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

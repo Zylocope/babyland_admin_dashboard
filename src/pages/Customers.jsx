@@ -41,7 +41,7 @@ export default function Customers() {
   const { rows, total, pages, error } = result;
 
   return (
-    <div className="space-y-5">
+    <div className="mobile-page customers-page space-y-5">
       <div className="flex items-center justify-end">
         <span className="text-sm text-sub">{loading ? '…' : t('customers.count', { count: total })}</span>
       </div>

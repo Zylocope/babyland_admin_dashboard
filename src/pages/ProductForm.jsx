@@ -164,7 +164,7 @@ export default function ProductForm() {
     // The form's own shape — label, field, repeated — rather than a line of
     // text where the form is about to be.
     return (
-      <div className="max-w-2xl surface-card is-sheet p-6 space-y-5 skeleton-row">
+      <div className="mobile-page product-form-page max-w-2xl surface-card is-sheet p-6 space-y-5 skeleton-row">
         <Skeleton w={160} h={20} />
         {Array.from({ length: 5 }, (_, i) => (
           <div key={i} className="space-y-2">
@@ -177,7 +177,7 @@ export default function ProductForm() {
   }
 
   return (
-    <div className="max-w-2xl lg:max-w-5xl">
+    <div className="mobile-page product-form-page max-w-2xl lg:max-w-5xl">
       <button
         onClick={() => navigate('/products')}
         className="inline-flex items-center gap-1.5 text-sm text-sub hover:text-brand mb-3 cursor-pointer"

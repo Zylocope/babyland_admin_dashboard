@@ -13,7 +13,7 @@ export default function Playground() {
   const { start, end } = useMemo(() => periodRange(period, shopToday()), [period]);
 
   return (
-    <div className="space-y-4">
+    <div className="mobile-page playground-page space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold text-ink">{t('playgroundAnalytics.title')}</h2>

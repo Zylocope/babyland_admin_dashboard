@@ -102,7 +102,7 @@ export default function Dashboard() {
   const best = days.reduce((top, d) => (d.revenue > (top?.revenue ?? 0) ? d : top), null);
 
   return (
-    <div className="space-y-6">
+    <div className="mobile-page dashboard-page space-y-6">
       {status === 'error' && <NotConnected>{t('dashboard.loadFailed')}</NotConnected>}
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -266,8 +266,8 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="surface-card is-sheet overflow-hidden">
-        <div className="px-6 py-4 border-b border-app">
+      <div className="dashboard-orders surface-card is-sheet overflow-hidden">
+        <div className="dashboard-orders-head px-6 py-4 border-b border-app">
           <h3 className="font-semibold text-ink">{t('dashboard.recentOrders')}</h3>
         </div>
         {orders.status === 'loading' && (
@@ -292,16 +292,16 @@ export default function Dashboard() {
             <div className="divide-y divide-app">
               {orders.rows.map(o => (
                 <Link key={o.id} to="/orders"
-                  className="flex items-center gap-4 px-6 py-3.5 hover:bg-brand-light transition-colors">
-                  <span className="font-mono text-xs text-brand flex-shrink-0">{o.id.slice(0, 8)}</span>
-                  <span className="flex-1 min-w-0 truncate text-sm text-ink">
+                  className="dashboard-order-row flex items-center gap-4 px-6 py-3.5 hover:bg-brand-light transition-colors">
+                  <span className="dashboard-order-id font-mono text-xs text-brand flex-shrink-0">{o.id.slice(0, 8)}</span>
+                  <span className="dashboard-order-customer flex-1 min-w-0 truncate text-sm text-ink">
                     {o.customer || t('orders.noCustomer')}
                   </span>
-                  <span className="text-[11px] flex-shrink-0 whitespace-nowrap"
+                  <span className="dashboard-order-status text-[11px] flex-shrink-0 whitespace-nowrap"
                     style={{ color: ORDER_TONE[o.delivery_status] ?? 'var(--text-secondary)' }}>
                     {t(`orderStatus.${o.delivery_status}`, o.delivery_status)}
                   </span>
-                  <span className="text-sm text-ink font-medium tabular-nums flex-shrink-0 w-24 text-right">
+                  <span className="dashboard-order-total text-sm text-ink font-medium tabular-nums flex-shrink-0 w-24 text-right">
                     {formatMMK(Number(o.total_amount))}
                   </span>
                 </Link>

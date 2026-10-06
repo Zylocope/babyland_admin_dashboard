@@ -40,7 +40,7 @@ export default function Settings() {
   const isMy = i18n.resolvedLanguage === 'my';
 
   return (
-    <div className="max-w-3xl space-y-5">
+    <div className="mobile-page settings-page max-w-3xl space-y-5">
       {/* Language */}
       <Section title={t('settings.language')} desc={t('settings.languageDesc')}>
         <div className="flex items-center gap-2">
@@ -64,7 +64,7 @@ export default function Settings() {
 
       {/* Theme style */}
       <Section title={t('settings.theme')} desc={t('settings.themeDesc')}>
-        <div className="grid grid-cols-1 min-[360px]:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {STYLE_OPTIONS.map(opt => {
             const enabled = activeStyles.includes(opt.id);
             const selected = styleTheme === opt.id;

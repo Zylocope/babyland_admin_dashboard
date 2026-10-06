@@ -146,7 +146,7 @@ export default function Products() {
 
   const stamp = `appleland-products-${new Date().toISOString().slice(0, 10)}`;
   return (
-    <div className="space-y-4">
+    <div className="mobile-page products-page space-y-4">
       {reportOpen && (
         <ReportDialog
           open intro={t('report.introNow')}

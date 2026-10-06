@@ -142,7 +142,7 @@ export default function StockIn() {
   const alerts = history.status === 'ok' ? costChanges(history.batches) : [];
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+    <div className="mobile-page stock-page grid grid-cols-1 lg:grid-cols-12 gap-5">
       <div className="lg:col-span-7 space-y-4">
         <div className="surface-card is-sheet p-5">
           <label className="block">

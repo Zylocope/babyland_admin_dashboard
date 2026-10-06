@@ -57,7 +57,7 @@ function Empty({ label }) {
 
 function Panel({ title, children }) {
   return (
-    <div className="surface-card p-5">
+    <div className="sales-panel surface-card p-5">
       <h3 className="text-[13px] font-semibold text-ink mb-3">{title}</h3>
       {children}
     </div>
@@ -73,8 +73,8 @@ function DataTable({ columns, rows, empty, onRowClick, sort, onSort }) {
     // Header matches the Products list: a quiet tinted strip, not a filled
     // brand-coloured bar. The panel around this already draws the container,
     // so the table adds no border of its own.
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
+    <div className="data-table-scroll overflow-x-auto">
+      <table className="data-table w-full text-sm">
         <thead>
           <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
             {columns.map(c => {
@@ -372,7 +372,7 @@ export default function SalesDashboard() {
 
   const stamp = `appleland-${start}_${end}`;
   return (
-    <div className="space-y-4">
+    <div className="mobile-page sales-page space-y-4">
       {reportOpen && (
         <ReportDialog
           open onClose={() => setReportOpen(false)} sections={reportSections}
@@ -384,7 +384,7 @@ export default function SalesDashboard() {
 
       <PrintSheet sections={printing} onDone={setPrinting}
         subtitle={`${t('report.range', { start, end })} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
-      <div className="flex w-full sm:inline-flex sm:w-auto rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
+      <div className="sales-source-tabs flex w-full sm:inline-flex sm:w-auto rounded-xl border border-app bg-card p-1" aria-label={t('salesSource.label')}>
         {[
           { key: 'retail', label: t('salesSource.retail'), icon: IconShoppingBag },
           { key: 'playground', label: t('salesSource.playground'), icon: IconTicket },
@@ -418,7 +418,7 @@ export default function SalesDashboard() {
         <div role="alert" className="rounded-lg border border-red-200 bg-red-50 px-4 py-2.5 text-sm text-red-700">{t('posDash.summaryFailed')}</div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
+      <div className="sales-kpis grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 sm:gap-4">
         <StatCard icon={IconCash}        tone="store"     label={t('posDash.sales')}  value={show(formatMMKShort(totals.revenue_mmk))} />
         <StatCard icon={IconReportMoney} tone="completed" label={t('posDash.profit')} value={show(formatMMKShort(totals.profit_mmk))} trend={{ dir: 'up', value: t('posDash.margin', { n: totals.margin_pct }) }} />
         <StatCard icon={IconReceipt}     tone="combined"  label={t('posDash.txns')}   value={show(totals.transactions)} />

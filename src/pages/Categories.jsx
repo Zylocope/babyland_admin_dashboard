@@ -151,7 +151,7 @@ export default function Categories() {
   ];
 
   return (
-    <div className="max-w-2xl space-y-5">
+    <div className="mobile-page categories-page max-w-2xl space-y-5">
       {reportOpen && (
         <ReportDialog open onClose={() => setReportOpen(false)} sections={reportSections}
           intro={t('report.introNow')}
@@ -168,9 +168,9 @@ export default function Categories() {
           <IconPrinter size={14} stroke={1.7} /> {t('report.button')}
         </button>
       </div>
-      <form onSubmit={add} className="surface-card is-sheet p-5">
+      <form onSubmit={add} className="category-create surface-card is-sheet p-5">
         <label className="block text-xs font-medium text-ink mb-1">{t('categories.name')}</label>
-        <div className="flex gap-3">
+        <div className="category-create-row flex gap-3">
           <input
             value={name}
             onChange={e => setName(e.target.value)}

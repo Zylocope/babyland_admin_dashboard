@@ -53,7 +53,7 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
   const widths = { sm: 'max-w-sm', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' };
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="modal-stage fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="overlay-enter absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={panelRef}
@@ -61,16 +61,16 @@ export default function Modal({ open, onClose, title, children, size = 'md' }) {
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
-        className={`dialog-enter relative surface-card no-lens w-full ${widths[size]} max-h-[90dvh] flex flex-col focus:outline-none`}
+        className={`modal-panel dialog-enter relative surface-card no-lens w-full ${widths[size]} max-h-[90dvh] flex flex-col focus:outline-none`}
       >
-        <div className="flex items-center justify-between px-5 py-4 border-b border-app">
+        <div className="modal-head flex items-center justify-between px-5 py-4 border-b border-app">
           <h2 id={titleId} className="text-md font-semibold text-ink">{title}</h2>
           <button onClick={onClose} aria-label={t('common.close')}
             className="control-icon text-mute hover:text-ink hover:bg-brand-light transition-colors cursor-pointer">
             <IconX size={18} stroke={1.5} />
           </button>
         </div>
-        <div className="overflow-y-auto flex-1 p-5">{children}</div>
+        <div className="modal-body overflow-y-auto flex-1 p-5">{children}</div>
       </div>
     </div>, document.body
   );
