@@ -128,16 +128,18 @@ export default function SalesDashboard() {
   // no line items, so this opens every receipt in the period — which is why it
   // only runs when the view is actually looked at, not on page load.
   const [sold, setSold] = useState({ key: '', rows: [], partial: false, error: '' });
-  const [loading, setLoading] = useState(true);
+  // Loading is "the data on screen is not for this period yet", derived rather
+  // than set at the top of the effect.
+  const [loadedRange, setLoadedRange] = useState(null);
   // Table order, owned here so the report export follows what is on screen.
   const [soldSort, setSoldSort] = useState({ key: 'units', dir: 'desc' });
   const [dailySort, setDailySort] = useState({ key: 'date', dir: 'asc' });
 
   const { start, end } = useMemo(() => periodRange(period, shopToday()), [period]);
+  const loading = loadedRange !== `${start}|${end}`;
 
   useEffect(() => {
     let active = true;
-    setLoading(true);
     Promise.all([
       getSaleSummary({ start_date: start, end_date: end }).catch(() => null),
       salesSince({ listSales: getSales, since: shopDayStart(start) }).catch(() => null),
@@ -148,7 +150,7 @@ export default function SalesDashboard() {
         setRecords(Array.isArray(summary) ? summary : []);
         setReceipts({ data: sales?.rows ?? [], total: sales?.totalItems ?? 0, complete: sales?.complete ?? true, failed: sales === null });
       })
-      .finally(() => { if (active) setLoading(false); });
+      .finally(() => { if (active) setLoadedRange(`${start}|${end}`); });
     return () => { active = false; };
   }, [start, end]);
 

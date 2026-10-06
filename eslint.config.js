@@ -13,14 +13,20 @@ export default defineConfig([
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite,
     ],
+    rules: {
+      // A context file exporting its provider and its hook is the usual React
+      // pattern; the only cost is a full reload instead of a hot swap when
+      // one of these two files is edited.
+      'react-refresh/only-export-components': ['error', { allowConstantExport: true, allowExportNames: ['useAuth', 'useTheme'] }],
+    },
     languageOptions: {
       globals: globals.browser,
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
   {
-    // Server-side: the Gemini proxy and the build config run under Node, not the browser.
-    files: ['api/**/*.js', 'vite.config.js'],
+    // Run under Node, not the browser: the Gemini proxy, the build config and the tests.
+    files: ['api/**/*.js', 'vite.config.js', '**/*.test.js'],
     languageOptions: { globals: globals.node },
   },
 ])

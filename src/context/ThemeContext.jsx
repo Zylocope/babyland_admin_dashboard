@@ -3,7 +3,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext(null);
 
 // Visual style themes — all backed by the shared surface-token system in index.css.
-export const STYLE_THEMES = ['glass', 'neumorphism', 'flat', 'skeuomorphism'];
+const STYLE_THEMES = ['glass', 'neumorphism', 'flat', 'skeuomorphism'];
 const ACTIVE_STYLES = STYLE_THEMES;
 
 export function ThemeProvider({ children }) {

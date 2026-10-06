@@ -2,7 +2,7 @@ import { createContext, useContext, useState } from 'react';
 import { loginAdmin, logoutAdmin } from '../services/authService';
 import { toUiRole } from '../utils/roles';
 
-export const AuthContext = createContext(null);
+const AuthContext = createContext(null);
 
 const hydrateUser = (value) => {
   if (!value) return null;

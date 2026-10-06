@@ -11,6 +11,20 @@ import { downloadCsvSections } from '../utils/csv';
 import { downloadExcelWorkbook } from '../utils/excel';
 import { formatShopTime } from '../utils/shopDay';
 
+// Products are fetched too, to count what each category still holds; a
+// product failure only loses that count, so it falls back to none.
+const fetchCategoryData = async () => {
+  try {
+    const [cats, prods] = await Promise.all([
+      getAllCategoriesIncludingDeleted(),
+      getAllProducts().catch(() => []),
+    ]);
+    return { cats: Array.isArray(cats) ? cats : [], prods: Array.isArray(prods) ? prods : [], failed: null };
+  } catch (e) {
+    return { cats: [], prods: [], failed: e ?? {} };
+  }
+};
+
 export default function Categories() {
   const { t } = useTranslation();
   const [categories, setCategories] = useState([]);
@@ -34,26 +48,31 @@ export default function Categories() {
   // cascade: the row is flagged, every product keeps pointing at it, and the
   // category then disappears from every filter — so those products become
   // unreachable without anyone being told.
+  const show = ({ cats, prods, failed }) => {
+    setCategories(cats);
+    setProducts(prods);
+    setError(failed ? (failed.message || t('categories.loadFailed')) : '');
+    setLoading(false);
+  };
+
   const load = async () => {
     setLoading(true);
     setError('');
-    try {
-      const [cats, prods] = await Promise.all([
-        getAllCategoriesIncludingDeleted(),
-        getAllProducts().catch(() => []),
-      ]);
-      setCategories(Array.isArray(cats) ? cats : []);
-      setProducts(Array.isArray(prods) ? prods : []);
-    } catch (e) {
-      setError(e?.message || t('categories.loadFailed'));
-      setCategories([]);
-      setProducts([]);
-    } finally {
-      setLoading(false);
-    }
+    show(await fetchCategoryData());
   };
 
-  useEffect(() => { load(); }, []);
+  // State is only set once the fetch resolves, never in the effect body.
+  useEffect(() => {
+    let active = true;
+    fetchCategoryData().then(r => {
+      if (!active) return;
+      setCategories(r.cats);
+      setProducts(r.prods);
+      if (r.failed) setError(r.failed.message || t('categories.loadFailed'));
+      setLoading(false);
+    });
+    return () => { active = false; };
+  }, [t]);
 
   const add = async (e) => {
     e.preventDefault();
