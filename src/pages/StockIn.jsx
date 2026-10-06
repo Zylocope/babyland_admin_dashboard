@@ -276,7 +276,7 @@ export default function StockIn() {
           still leaves a healthy margin is information; one that turns the
           margin negative is a decision. */}
       {alerts.length > 0 && (
-        <div className="surface-card is-sheet p-5">
+        <div className="surface-card is-sheet p-5 lg:col-span-12">
           <h3 className="text-[13px] font-semibold text-ink mb-1 flex items-center gap-2">
             <IconAlertTriangle size={16} stroke={1.7} style={{ color: 'var(--status-pending)' }} />
             {t('stockIn.costAlertTitle')}
@@ -316,7 +316,7 @@ export default function StockIn() {
 
       {/* The batches themselves. Two rows for the same product at different
           costs is how a cost change gets noticed in the first place. */}
-      <div className="surface-card is-sheet p-5">
+      <div className="surface-card is-sheet p-5 lg:col-span-12">
         <h3 className="text-[13px] font-semibold text-ink mb-4 flex items-center gap-2">
           <IconHistory size={16} stroke={1.7} className="text-brand" />
           {t('stockIn.historyTitle')}
