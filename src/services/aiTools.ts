@@ -14,7 +14,7 @@ import { getStaff } from "./staffService";
 // @ts-expect-error plain-JS reducer, kept untyped so it runs under bare node in its test
 import { summarizeSales } from "./salesRollup.js";
 // @ts-expect-error plain-JS reducers, kept untyped so they run under bare node in their test
-import { stockDetail, salesBreakdown, expiringSoon } from "./assistantReports.js";
+import { stockDetail, salesBreakdown, expiringSoon, productHealth, latestUnitCost } from "./assistantReports.js";
 // @ts-expect-error plain-JS walk, kept untyped so it runs under bare node in its test
 import { salesSince } from "./salesWalk.js";
 import { getProductSales, getCategorySales, getExpiringSoon } from "./analyticsService";
@@ -185,6 +185,41 @@ const expiringSoonTool = async ({ days }: { days?: number }) => {
   };
 };
 
+// Every product with stock, judged by how fast it is selling: the source for
+// "what is selling badly" and "what should I discount" questions. Costs for
+// products that did not sell are read from their batches, but only for the
+// rows that will be shown, so a large catalogue costs a handful of requests.
+const productHealthTool = async ({ days, limit }: { days?: number; limit?: number }) => {
+  const window = Math.max(7, Math.min(365, Math.round(Number(days ?? 90)) || 90));
+  const lim = Math.max(1, Math.min(50, Math.round(Number(limit ?? 15)) || 15));
+  const start = shopDaysAgo(window - 1);
+  const end = today();
+  const [products, sold, expiring] = await Promise.all([
+    getAllProducts(),
+    getProductSales(start, end),
+    getExpiringSoon(60),
+  ]);
+  const base = { products, sold: sold.rows, expiring: Array.isArray(expiring) ? expiring : [], days: window, today: today(), limit: lim };
+  type HealthItem = { id: string; units_sold: number; latest_unit_cost_mmk: number | null };
+  const first = productHealth(base);
+  const unpriced = (first.items as HealthItem[])
+    .filter(i => i.latest_unit_cost_mmk == null || i.units_sold === 0)
+    .map(i => i.id);
+  const costs = new Map(await Promise.all(unpriced.map(async id => {
+    const r = await getInventoryRecords(id, { page: 1, page_size: 100 }).catch(() => null);
+    return [id, latestUnitCost(r?.data ?? [])] as [string, number | null];
+  })));
+  for (const [id, cost] of costs) if (cost == null) costs.delete(id);
+  const out = productHealth({ ...base, costs });
+  return {
+    range: { start_date: start, end_date: end },
+    covers_whole_range: sold.complete,
+    ...out,
+    // Product ids mean nothing to the manager; names identify each row.
+    items: (out.items as HealthItem[]).map(i => Object.fromEntries(Object.entries(i).filter(([k]) => k !== "id"))),
+  };
+};
+
 const categoryList = async () => {
   const cats = await getCategories();
   return { count: cats.length, categories: cats.map((c) => c.name) };
@@ -337,6 +372,7 @@ const TOOLS = {
   product_stock_detail: productStockDetail,
   sales_breakdown: salesBreakdownTool,
   expiring_soon: expiringSoonTool,
+  product_health: productHealthTool,
   sales_by_category: salesByCategory,
   playground_summary: playgroundSummary,
   order_summary: orderSummary,
@@ -452,6 +488,18 @@ export const toolDeclarations = [
     },
   },
   {
+    name: "product_health",
+    description:
+      "How every product WITH STOCK is moving, including products that sold nothing (product_performance cannot see those). For each product that needs attention: units sold in the window, stock, days of stock left at the current pace, the nearest expiry within 60 days and whether it will sell before then, price, latest unit cost, margin, the largest discount that still does not lose money, a suggested discount, stock value at cost, whether it is already discounted and whether it is shown online. reasons: expiring_unsold (will expire before it sells), no_sales (nothing sold in the window), slow (more than about 6 months of stock at the current pace). Also returns best_sellers as bundling partners. Use for: what is selling badly, slow or dead stock, overstock, what to discount or put on promotion, what to stop reordering, how to clear stock, money tied up in stock. Defaults to the last 90 days.",
+    parameters: {
+      type: "object",
+      properties: {
+        days: { type: "number", description: "Sales window in days, 7 to 365. Default 90 (about three months)." },
+        limit: { type: "number", description: "How many products to return, up to 50. Default 15." },
+      },
+    },
+  },
+  {
     name: "sales_by_category",
     description:
       "What actually SOLD grouped by category in a date range: units, revenue and profit, ranked by revenue. Use for which category sells most or makes the most money. This is sales, not stock on hand — use stock_by_category for what is sitting on the shelf. Defaults to the last 30 days. If covers_whole_range is false the answer is partial — say so.",
@@ -532,4 +580,6 @@ Rules:
 - A payment-method split (cash vs mobile) is not available yet — say so plainly instead of estimating.
 - Customer names and contact details are deliberately not available to you; report only counts. Staff appear only as login names, and only in sales_breakdown.
 - If a tool returns covers_whole_range false, say the answer covers only part of the range.
-- Reply in the language the manager writes in (English or Burmese).`;
+- Reply in the language the manager writes in (English or Burmese).
+- You may give management advice. When the manager asks what is selling badly, what to discount, what to stop reordering, how to clear stock or what to promote, call product_health (and other tools if they help), then give a short numbered list of concrete suggestions, one per product, each tied to its numbers. Options: a discount up to max_discount_pct_without_loss (start from suggested_discount_pct); pausing reorders for slow or no-sales items; bundling with a product from best_sellers; moving it to the counter or front display; showing it online if shown_online is false. For stock that will expire before it sells, say plainly if clearing it means selling below cost, and that this is usually better than throwing it away. If max_discount_pct_without_loss is 0, do not suggest a discount; suggest bundling or display instead. Call them suggestions: the manager decides. Never invent a number that no tool returned.
+- For broad or unusual questions, combine several tools rather than refusing, and say which figures the answer is based on.`;

@@ -589,6 +589,14 @@
     "failed": "The camera could not be started. Check it and try again."
   },
   "quick": {
+    "discount": "Discount ideas (90 days)",
+    "discountLine": "{{count}} products need attention (last {{days}} days):",
+    "noDiscount": "Every product with stock is selling at a healthy pace over the last {{days}} days.",
+    "reasonExpiring": "{{units}} expire in {{days}} days and will not sell in time",
+    "reasonNoSales": "no sales in {{days}} days, {{stock}} in stock",
+    "reasonSlow": "{{stock}} in stock, about {{months}} months of sales",
+    "upTo": "up to {{pct}}% off without a loss",
+    "noRoom": "no margin for a discount, bundle or display it instead",
     "title": "Instant",
     "today": "Today's sales",
     "week": "Last 7 days",

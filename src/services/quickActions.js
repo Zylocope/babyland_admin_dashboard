@@ -96,6 +96,25 @@ const expiringLine = (res, t) => {
   return [t('quick.expiringLine', { batches: res.batches, units: res.units, days: res.days }), ...rows].join('\n');
 };
 
+// One line per product to act on: why it needs attention, then how far the
+// price can drop before it sells at a loss.
+const discountLine = (res, t) => {
+  if (isFailed(res)) return t('quick.failed');
+  if (!res.needs_attention) return t('quick.noDiscount', { days: res.days });
+  const why = (i) => {
+    if (i.reasons.includes('expiring_unsold')) return t('quick.reasonExpiring', { units: i.next_expiry.units, days: i.next_expiry.days });
+    if (i.reasons.includes('no_sales')) return t('quick.reasonNoSales', { days: res.days, stock: i.stock });
+    return t('quick.reasonSlow', { stock: i.stock, months: Math.round(i.days_of_stock_at_current_pace / 30) });
+  };
+  const offer = (i) => (i.max_discount_pct_without_loss > 0
+    ? t('quick.upTo', { pct: i.max_discount_pct_without_loss })
+    : t('quick.noRoom'));
+  const rows = res.items.map(i => `- ${i.name} — ${why(i)} → ${offer(i)}`);
+  const out = [t('quick.discountLine', { count: res.needs_attention, days: res.days }), ...rows];
+  if (res.covers_whole_range === false) out.push(t('quick.partial'));
+  return out.join('\n');
+};
+
 const categoriesLine = (res, t) =>
   isFailed(res) ? t('quick.failed') : t('quick.categoriesLine', { count: res.count, list: res.categories.join(', ') });
 
@@ -134,6 +153,13 @@ export const QUICK_ACTIONS = [
     tool: 'expiring_soon',
     args: () => ({ days: 30 }),
     render: expiringLine,
+  },
+  {
+    key: 'discount',
+    labelKey: 'quick.discount',
+    tool: 'product_health',
+    args: () => ({ days: 90, limit: 10 }),
+    render: discountLine,
   },
   {
     key: 'lowStock',

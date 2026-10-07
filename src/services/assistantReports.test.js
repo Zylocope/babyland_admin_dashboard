@@ -1,6 +1,6 @@
 // node src/services/assistantReports.test.js
 import assert from 'node:assert/strict';
-import { stockDetail, salesBreakdown, expiringSoon } from './assistantReports.js';
+import { stockDetail, salesBreakdown, expiringSoon, productHealth } from './assistantReports.js';
 
 const product = { selling_price: '22500' };
 const batches = [
@@ -41,5 +41,39 @@ assert.deepEqual(e.items.map(i => [i.product, i.days_left]), [['Milk', 0], ['Bis
 assert.equal(e.units, 12);
 assert.equal(e.products, 2);
 assert.equal(e.items[0].batch, 'cccccccc');
+
+// productHealth: starts from stock, so a product that never sold is still seen.
+const prods = [
+  { id: 'milk', name: 'Milk', quantity_in_stock: 30, selling_price: '10000', is_shown_online: true },
+  { id: 'toy', name: 'Toy', quantity_in_stock: 8, selling_price: '20000', is_shown_online: false },
+  { id: 'pen', name: 'Pen', quantity_in_stock: 100, selling_price: '1000', is_shown_online: true },
+  { id: 'soap', name: 'Soap', quantity_in_stock: 5, selling_price: '3000', original_price: '3500', is_shown_online: true },
+  { id: 'gone', name: 'Gone', quantity_in_stock: 0, selling_price: '5000', is_shown_online: true },
+];
+const sold = [
+  { product_id: 'milk', units: 9, cost_mmk: 72000 },   // 0.1/day: 30 left need 300 days
+  { product_id: 'pen', units: 9, cost_mmk: 8100 },     // 0.1/day: 100 left = 1000 days; cost 900
+  { product_id: 'soap', units: 90, cost_mmk: 180000 }, // 1/day: 5 left = 5 days
+];
+const exp = [{ product_id: 'milk', quantity_remaining: 20, expiry_date: '2026-10-24T00:00:00Z' }]; // 20 days
+const h = productHealth({ products: prods, sold, expiring: exp, costs: new Map([['toy', 25000]]), days: 90, today: '2026-10-04', limit: 10 });
+assert.equal(h.products_with_stock, 4, 'out-of-stock products are not considered');
+assert.deepEqual(h.items.map(i => i.name), ['Milk', 'Toy', 'Pen'], 'expiring first, then never sold, then slow');
+assert.deepEqual(h.counts, { expiring_unsold: 1, no_sales: 1, slow: 2 });
+assert.equal(h.moving_well, 1);
+const milk = h.items[0];
+assert.deepEqual(milk.next_expiry, { days: 20, units: 20, sells_before_expiry: false });
+assert.equal(milk.latest_unit_cost_mmk, 8000, 'average cost of what sold when no batch cost is given');
+assert.equal(milk.max_discount_pct_without_loss, 20);
+assert.equal(milk.suggested_discount_pct, 20, 'never suggests more than the room above cost');
+const toy = h.items[1];
+assert.equal(toy.units_sold, 0);
+assert.equal(toy.days_of_stock_at_current_pace, null);
+assert.equal(toy.max_discount_pct_without_loss, 0, 'already priced below cost: no room');
+assert.equal(toy.margin_pct, -25);
+assert.equal(h.items[2].days_of_stock_at_current_pace, 1000);
+assert.equal(h.items[2].suggested_discount_pct, 10, 'slow sellers are capped at a 10% nudge');
+assert.deepEqual(h.best_sellers[0], { name: 'Soap', units_sold: 90 });
+assert.ok(!('score' in milk), 'internal ranking score is not sent to the model');
 
 console.log('assistantReports ok');
