@@ -310,6 +310,9 @@ export default function Orders() {
                     {item.product_name} <span className="text-mute tabular-nums">×{item.quantity}</span>
                   </span>
                   <span className="tabular-nums text-ink flex-shrink-0">
+                    {Number(item.original_price) > Number(item.selling_price) && (
+                      <span className="text-mute line-through mr-1.5">{formatMMK(Number(item.original_price) * item.quantity)}</span>
+                    )}
                     {formatMMK(Number(item.selling_price) * item.quantity)}
                   </span>
                 </div>

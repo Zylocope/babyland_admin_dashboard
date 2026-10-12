@@ -504,6 +504,7 @@
     "weekdayCount_plural": "{{count}} days",
     "receiptTitle": "Receipt",
     "receiptFailed": "Could not load this receipt.",
+    "discountSaved": "Discount",
     "noCashier": "No cashier (online)",
     "unitsSold": "Units sold",
     "productsReading": "Reading every receipt in this period — the sale list does not carry line items, so this takes a few seconds.",

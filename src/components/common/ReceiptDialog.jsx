@@ -32,6 +32,9 @@ export default function ReceiptDialog({ saleId, onClose }) {
 
   const { status, sale } = state.id === saleId ? state : { status: 'loading', sale: null };
   const items = sale?.sale_items ?? [];
+  // Sales from before 2026-10-11 have no original_price, so they show no discount.
+  const was = item => (Number(item.original_price) > Number(item.selling_price) ? Number(item.original_price) : null);
+  const saved = items.reduce((n, item) => n + (was(item) ? (was(item) - Number(item.selling_price)) * item.quantity : 0), 0);
 
   return (
     <Modal open={!!saleId} onClose={onClose} title={t('salesTable.receiptTitle')} size="md">
@@ -81,7 +84,10 @@ export default function ReceiptDialog({ saleId, onClose }) {
                         the product is renamed or deleted. */}
                     <td className="py-2.5 text-ink">{item.product_name}</td>
                     <td className="py-2.5 text-right text-ink tabular-nums">{item.quantity}</td>
-                    <td className="py-2.5 text-right text-sub tabular-nums">{formatMMK(Number(item.selling_price))}</td>
+                    <td className="py-2.5 text-right text-sub tabular-nums">
+                      {was(item) && <span className="block text-[11px] text-mute line-through">{formatMMK(was(item))}</span>}
+                      {formatMMK(Number(item.selling_price))}
+                    </td>
                     <td className="py-2.5 text-right text-ink font-medium tabular-nums">
                       {formatMMK(Number(item.selling_price) * item.quantity)}
                     </td>
@@ -91,7 +97,13 @@ export default function ReceiptDialog({ saleId, onClose }) {
             </table>
           </div>
 
-          <div className="flex items-baseline justify-between mt-4 pt-3 border-t border-app">
+          {saved > 0 && (
+            <div className="flex items-baseline justify-between mt-4 pt-3 border-t border-app text-sm">
+              <span className="text-sub">{t('salesTable.discountSaved')}</span>
+              <span className="text-emerald-600 tabular-nums">−{formatMMK(saved)}</span>
+            </div>
+          )}
+          <div className={`flex items-baseline justify-between pt-3 ${saved > 0 ? 'mt-1' : 'mt-4 border-t border-app'}`}>
             <span className="text-sm text-sub">{t('table.total')}</span>
             <span className="text-lg font-bold text-ink tabular-nums">{formatMMK(Number(sale.total_amount))}</span>
           </div>

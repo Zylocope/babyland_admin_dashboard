@@ -504,6 +504,7 @@
     "weekdayCount_plural": "{{count}} ရက်",
     "receiptTitle": "ဘောက်ချာ",
     "receiptFailed": "ဤဘောက်ချာကို မဖတ်နိုင်ပါ။",
+    "discountSaved": "လျှော့စျေး",
     "noCashier": "ငွေကိုင် မရှိ (online)",
     "unitsSold": "ရောင်းရ အရေအတွက်",
     "productsReading": "ဤကာလအတွင်း ဘောက်ချာအားလုံးကို ဖတ်နေသည် — စက္ကန့်အနည်းငယ် ကြာပါမည်။",
