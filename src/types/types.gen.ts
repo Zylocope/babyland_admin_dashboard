@@ -260,6 +260,7 @@ export type OrderItem = {
     cost_price: string;
     created_at: string;
     id: string;
+    original_price?: string | null;
     product_id: string;
     product_name: string;
     quantity: number;
@@ -466,6 +467,7 @@ export type SaleItem = {
     cost_price: string;
     created_at: string;
     id: string;
+    original_price?: string | null;
     product_id: string;
     product_name: string;
     quantity: number;
@@ -493,6 +495,16 @@ export type SaleSummary = {
 export type SaleSummaryFilter = {
     end_date?: string | null;
     start_date?: string | null;
+};
+
+export type SettingResponse = {
+    created_at: string;
+    description?: string | null;
+    key: string;
+    updated_at: string;
+    updated_by?: string | null;
+    value: unknown;
+    value_type: string;
 };
 
 export type StockLevel = {
@@ -538,6 +550,10 @@ export type UpdateProductPayload = {
     original_price?: string | null;
     selling_price: string;
     sub_category_id?: string | null;
+};
+
+export type UpdateSettingPayload = {
+    value: unknown;
 };
 
 export type UploadResponse = {
@@ -1748,6 +1764,73 @@ export type GetSaleDetailByIdResponses = {
 };
 
 export type GetSaleDetailByIdResponse = GetSaleDetailByIdResponses[keyof GetSaleDetailByIdResponses];
+
+export type GetAllSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/settings';
+};
+
+export type GetAllSettingsErrors = {
+    /**
+     * Forbidden - Requires a SuperAdmin session
+     */
+    403: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type GetAllSettingsResponses = {
+    /**
+     * All settings
+     */
+    200: Array<SettingResponse>;
+};
+
+export type GetAllSettingsResponse = GetAllSettingsResponses[keyof GetAllSettingsResponses];
+
+export type UpdateSettingValueData = {
+    body: UpdateSettingPayload;
+    path: {
+        /**
+         * The setting key to update
+         */
+        key: string;
+    };
+    query?: never;
+    url: '/admin/settings/{key}';
+};
+
+export type UpdateSettingValueErrors = {
+    /**
+     * Value does not match the setting's declared type
+     */
+    400: unknown;
+    /**
+     * Forbidden - Requires a SuperAdmin session
+     */
+    403: unknown;
+    /**
+     * Setting not found
+     */
+    404: unknown;
+    /**
+     * Internal server error
+     */
+    500: unknown;
+};
+
+export type UpdateSettingValueResponses = {
+    /**
+     * The updated setting
+     */
+    200: SettingResponse;
+};
+
+export type UpdateSettingValueResponse = UpdateSettingValueResponses[keyof UpdateSettingValueResponses];
 
 export type GetAllAdminStaffData = {
     body?: never;

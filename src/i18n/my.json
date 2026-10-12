@@ -61,7 +61,18 @@
     "styleSkeu": "Skeuomorphism",
     "styleFlat": "Flat Design",
     "available": "အသုံးပြုနိုင်",
-    "comingSoon": "မကြာမီ"
+    "comingSoon": "မကြာမီ",
+    "storeRules": "ဆိုင် Reward ဆက်တင်များ",
+    "storeRulesDesc": "ဆိုင်စနစ်နှင့် လက်ရှိချိတ်ဆက်ထားသော reward စည်းမျဉ်းများကို ပြင်ဆင်ပါ။",
+    "kyatPerPoint": "Point ပြောင်းလဲနှုန်း",
+    "kyatPerPointHelp": "Reward ရနိုင်သော ပစ္စည်းများတွင် သုံးစွဲသည့် ပမာဏမှ loyalty point တစ်မှတ်တွက်ရန် အသုံးပြုသည်။",
+    "mmk": "ကျပ်",
+    "saved": "သိမ်းပြီးပါပြီ",
+    "saving": "သိမ်းနေသည်...",
+    "saveFailed": "ဤဆက်တင်ကို မသိမ်းနိုင်ပါ။",
+    "storeRulesFailed": "ဆိုင် Reward ဆက်တင်များကို မဖတ်နိုင်ပါ။",
+    "noStoreRules": "လက်ရှိချိတ်ဆက်ထားသော ဆိုင် Reward ဆက်တင် မရှိပါ။",
+    "positiveNumber": "သုညထက်ကြီးသော ဂဏန်းထည့်ပါ။"
   },
   "header": {
     "search": "ရှာဖွေရန်...",

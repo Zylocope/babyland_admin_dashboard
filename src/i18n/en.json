@@ -61,7 +61,18 @@
     "styleSkeu": "Skeuomorphism",
     "styleFlat": "Flat Design",
     "available": "Available",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "storeRules": "Store rewards",
+    "storeRulesDesc": "Manage the reward rules currently connected to the shop system.",
+    "kyatPerPoint": "Point conversion rate",
+    "kyatPerPointHelp": "Amount spent on eligible products used to calculate one loyalty point.",
+    "mmk": "MMK",
+    "saved": "Saved",
+    "saving": "Saving...",
+    "saveFailed": "Could not save this setting.",
+    "storeRulesFailed": "Could not load the store reward settings.",
+    "noStoreRules": "No connected store reward settings are available.",
+    "positiveNumber": "Enter a number greater than zero."
   },
   "header": {
     "search": "Search anything...",
