@@ -275,6 +275,7 @@
     "backToCart": "Back to cart"
   },
   "orders": {
+    "paidWith": "Paid with {{method}}",
     "search": "Search by order ID, customer, phone...",
     "count": "{{count}} order",
     "none": "No orders in this view.",

@@ -294,6 +294,9 @@ export default function Orders() {
               <span className="font-mono">{order.id.slice(0, 8)}</span>
               <span className="tabular-nums">{formatShopTime(order.created_at, 'YYYY-MM-DD HH:mm')}</span>
               <StatusBadge status={order.delivery_status} t={t} />
+              {order.payment_method && (
+                <span>{t('orders.paidWith', { method: order.payment_method })}</span>
+              )}
             </div>
 
             <div>
