@@ -331,7 +331,7 @@ export default function Orders() {
                     <span className="truncate">{t('orders.tracking')}</span>
                   </a>
                 )}
-                {isManager && !trackingEdit && (
+                {!trackingEdit && (
                   <button type="button" onClick={beginTrackingEdit}
                     className="inline-flex items-center gap-1.5 text-[13px] text-sub hover:text-brand transition-colors cursor-pointer">
                     <IconPencil size={14} stroke={1.7} />
@@ -340,7 +340,7 @@ export default function Orders() {
                 )}
               </div>
 
-              {isManager && trackingEdit && (
+              {trackingEdit && (
                 <div className="rounded-xl border border-app bg-base/45 p-3 space-y-2.5">
                   <label className="block text-[12px] text-sub" htmlFor="order-tracking-url">
                     {t('orders.trackingUrl')}
@@ -382,7 +382,7 @@ export default function Orders() {
               </div>
             )}
 
-            {isManager && nextStatus(order.delivery_status) && (
+            {nextStatus(order.delivery_status) && (
               <button type="button" onClick={() => setAdvancing(order)}
                 className="press-spring w-full py-3 rounded-2xl bg-brand text-white font-medium hover:bg-brand-hover transition-colors cursor-pointer inline-flex items-center justify-center gap-2">
                 <IconTruck size={17} stroke={1.7} />
