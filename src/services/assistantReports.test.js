@@ -41,6 +41,15 @@ assert.deepEqual(e.items.map(i => [i.product, i.days_left]), [['Milk', 0], ['Bis
 assert.equal(e.units, 12);
 assert.equal(e.products, 2);
 assert.equal(e.items[0].batch, 'cccccccc');
+assert.deepEqual([e.expired_batches, e.expired_units], [0, 0]);
+
+// include_expired: a batch past its date comes first with negative days and is counted apart.
+const ex = expiringSoon([
+  { product_id: 'p1', product_name: 'Milk', batch_id: 'dddddddd-4', quantity_remaining: 3, expiry_date: '2026-10-03T00:00:00Z' },
+  { product_id: 'p2', product_name: 'Biscuit', batch_id: 'eeeeeeee-5', quantity_remaining: 6, expiry_date: '2026-10-07T00:00:00Z' },
+], '2026-10-06');
+assert.deepEqual(ex.items.map(i => [i.product, i.days_left]), [['Milk', -3], ['Biscuit', 1]]);
+assert.deepEqual([ex.expired_batches, ex.expired_units], [1, 3]);
 
 // productHealth: starts from stock, so a product that never sold is still seen.
 const prods = [

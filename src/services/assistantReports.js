@@ -186,9 +186,13 @@ export const expiringSoon = (rows, today) => {
       };
     })
     .sort((a, b) => (a.days_left ?? 1e9) - (b.days_left ?? 1e9));
+  const expired = batches.filter(b => b.days_left != null && b.days_left < 0);
   return {
     batches: batches.length,
     units: batches.reduce((n, b) => n + b.units_left, 0),
+    // Past their date but still on the shelf: pull these, do not sell them.
+    expired_batches: expired.length,
+    expired_units: expired.reduce((n, b) => n + b.units_left, 0),
     products: new Set(rows.map(r => r.product_id)).size,
     items: batches,
   };

@@ -317,7 +317,8 @@
     "orderHistory": "Order History",
     "noOrders": "No orders yet.",
     "loading": "Loading customers...",
-    "loadFailed": "Unable to load customers."
+    "loadFailed": "Unable to load customers.",
+    "points": "Points"
   },
   "staff": {
     "search": "Search staff...",
@@ -642,7 +643,10 @@
     "expiringLine": "{{batches}} batches ({{units}} units) expire within {{days}} days:",
     "noExpiring": "Nothing with an expiry date expires within {{days}} days. Products not marked perishable have no expiry date.",
     "daysLeft_one": "{{count}} day left",
-    "daysLeft_other": "{{count}} days left"
+    "daysLeft_other": "{{count}} days left",
+    "expiredAgo_one": "expired {{count}} day ago",
+    "expiredAgo_other": "expired {{count}} days ago",
+    "expiredLine": "⚠ {{batches}} batches ({{units}} units) are already past their expiry date: remove them from sale."
   },
   "aiChart": {
     "titles": {

@@ -63,10 +63,11 @@ export default function Customers() {
                 <th className="px-5 py-3.5 font-semibold">{t('table.customer')}</th>
                 <th className="px-4 py-3.5 font-semibold">{t('table.phone')}</th>
                 <th className="px-4 py-3.5 font-semibold">{t('customers.address')}</th>
+                <th className="px-5 py-3.5 font-semibold text-right">{t('customers.points')}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-app">
-              {loading && <SkeletonRows rows={8} cols={['60%', '55%', '75%']} />}
+              {loading && <SkeletonRows rows={8} cols={['60%', '55%', '75%', '30%']} />}
               {!loading && rows.map(c => (
                 <tr key={c.id} className="hover:bg-brand-light transition-colors">
                   <td className="px-5 py-3.5">
@@ -82,6 +83,8 @@ export default function Customers() {
                       as a loading bug; a dash reads as "not given". */}
                   <td className="px-4 py-3.5 text-sub tabular-nums whitespace-nowrap">{c.phone_number || '—'}</td>
                   <td className="px-4 py-3.5 text-sub">{c.address_line_1 || '—'}</td>
+                  {/* Earned on online purchases of non-discounted items. */}
+                  <td className="px-5 py-3.5 text-right tabular-nums font-medium text-ink">{c.points_balance ?? '—'}</td>
                 </tr>
               ))}
             </tbody>
@@ -111,7 +114,11 @@ export default function Customers() {
               <div className="w-11 h-11 rounded-full bg-brand-light flex items-center justify-center font-semibold text-brand flex-shrink-0">
                 {(c.username || '?')[0].toUpperCase()}
               </div>
-              <p className="font-semibold text-sm text-ink min-w-0 truncate">{c.username}</p>
+              <p className="flex-1 font-semibold text-sm text-ink min-w-0 truncate">{c.username}</p>
+              <span className="text-right flex-shrink-0">
+                <span className="block text-[10px] uppercase tracking-wide text-mute">{t('customers.points')}</span>
+                <span className="text-sm font-semibold text-ink tabular-nums">{c.points_balance ?? '—'}</span>
+              </span>
             </div>
             <dl className="grid grid-cols-2 gap-3 py-3.5 mt-3 border-t border-app">
               <div className="min-w-0">

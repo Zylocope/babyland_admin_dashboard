@@ -174,7 +174,7 @@ const salesBreakdownTool = async ({ start_date, end_date }: { start_date?: strin
 
 const expiringSoonTool = async ({ days }: { days?: number }) => {
   const window = Math.max(0, Math.min(365, Math.round(Number(days ?? 30)) || 0));
-  const rows = await getExpiringSoon(window);
+  const rows = await getExpiringSoon(window, true);
   const out = expiringSoon(Array.isArray(rows) ? rows : [], today());
   return {
     range: { start_date: today(), end_date: shopDaysAgo(-window) },
@@ -481,7 +481,7 @@ export const toolDeclarations = [
   {
     name: "expiring_soon",
     description:
-      "Stock that expires soon: every batch with units left whose expiry date falls between today and today + days (shop calendar), soonest first, with product, batch, units left, expiry date and days left. Use for what expires this week/month, what to sell or discount first. Defaults to 30 days. It does NOT include stock that has already expired, and products not marked perishable have no expiry dates, so they never appear: say so when the answer is empty.",
+      "Stock that expires soon: every batch with units left whose expiry date falls between today and today + days (shop calendar), soonest first, with product, batch, units left, expiry date and days left. Use for what expires this week/month, what to sell or discount first. Defaults to 30 days. It ALSO returns batches that have already expired but still have stock (negative days_left; counted in expired_batches/expired_units): these come first and must be removed from sale, never discounted. Products not marked perishable have no expiry dates, so they never appear: say so when the answer is empty.",
     parameters: {
       type: "object",
       properties: { days: { type: "number", description: "How many days ahead to look, 0 = today only. Default 30." } },

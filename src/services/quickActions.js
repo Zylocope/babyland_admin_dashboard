@@ -92,8 +92,11 @@ const profitLine = (res, t) => {
 const expiringLine = (res, t) => {
   if (isFailed(res)) return t('quick.failed');
   if (!res.batches) return t('quick.noExpiring', { days: res.days });
-  const rows = res.items.map(b => `- ${b.product} — ${b.units_left} (${b.expiry_date}, ${t('quick.daysLeft', { count: b.days_left })})`);
-  return [t('quick.expiringLine', { batches: res.batches, units: res.units, days: res.days }), ...rows].join('\n');
+  const when = b => (b.days_left < 0 ? t('quick.expiredAgo', { count: -b.days_left }) : t('quick.daysLeft', { count: b.days_left }));
+  const rows = res.items.map(b => `- ${b.product} — ${b.units_left} (${b.expiry_date}, ${when(b)})`);
+  const head = [t('quick.expiringLine', { batches: res.batches, units: res.units, days: res.days })];
+  if (res.expired_batches) head.push(t('quick.expiredLine', { batches: res.expired_batches, units: res.expired_units }));
+  return [...head, ...rows].join('\n');
 };
 
 // One line per product to act on: why it needs attention, then how far the

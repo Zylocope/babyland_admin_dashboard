@@ -408,6 +408,7 @@ export type PaginatedResponseUserResponse = {
         address_line_1?: string | null;
         id: string;
         phone_number?: string | null;
+        points_balance: number;
         username: string;
     }>;
     total_items: number;
@@ -564,6 +565,7 @@ export type UserResponse = {
     address_line_1?: string | null;
     id: string;
     phone_number?: string | null;
+    points_balance: number;
     username: string;
 };
 

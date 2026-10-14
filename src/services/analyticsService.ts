@@ -178,6 +178,7 @@ export interface ExpiringBatch {
 }
 
 // Batches with stock left that expire from today to today + days, shop dates.
-// Already-expired stock is not included by the backend.
-export const getExpiringSoon = (days = 30): Promise<ExpiringBatch[]> =>
-  request(`/admin/analytics/ai/expiring-soon?days=${days}`, { method: "GET" });
+// includeExpired also returns batches already past their date that still have
+// stock (backend 8dfc30d; an older backend ignores the flag).
+export const getExpiringSoon = (days = 30, includeExpired = false): Promise<ExpiringBatch[]> =>
+  request(`/admin/analytics/ai/expiring-soon?days=${days}${includeExpired ? "&include_expired=true" : ""}`, { method: "GET" });
