@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock, IconCoin, IconDeviceFloppy, IconRefresh, IconTicket } from '@tabler/icons-react';
+import { useSearchParams } from 'react-router-dom';
+import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock, IconCoin, IconDeviceFloppy, IconRefresh, IconTicket, IconAdjustments, IconBuildingStore } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -65,6 +66,11 @@ export default function Settings() {
   const [drafts, setDrafts] = useState({});
   const [saving, setSaving] = useState('');
   const [notice, setNotice] = useState({ key: '', type: '', text: '' });
+  // General changes only this browser's view; store rules change how the whole
+  // shop behaves, so they get their own tab. ?tab=store links straight to it.
+  const [params, setParams] = useSearchParams();
+  const tab = isManager && params.get('tab') === 'store' ? 'store' : 'general';
+  const pickTab = next => setParams(next === 'store' ? { tab: 'store' } : {}, { replace: true });
 
   useEffect(() => {
     if (!isManager) return undefined;
@@ -121,6 +127,18 @@ export default function Settings() {
 
   return (
     <div className="mobile-page settings-page max-w-3xl space-y-5">
+      {isManager && (
+        <div role="tablist" className="flex gap-2">
+          <Toggle active={tab === 'general'} onClick={() => pickTab('general')}>
+            <span className="inline-flex items-center gap-1.5"><IconAdjustments size={16} stroke={1.6} /> {t('settings.tabGeneral')}</span>
+          </Toggle>
+          <Toggle active={tab === 'store'} onClick={() => pickTab('store')}>
+            <span className="inline-flex items-center gap-1.5"><IconBuildingStore size={16} stroke={1.6} /> {t('settings.storeRules')}</span>
+          </Toggle>
+        </div>
+      )}
+
+      {tab === 'general' && (<>
       {/* Language */}
       <Section title={t('settings.language')} desc={t('settings.languageDesc')}>
         <div className="flex items-center gap-2">
@@ -171,8 +189,9 @@ export default function Settings() {
           })}
         </div>
       </Section>
+      </>)}
 
-      {isManager && (
+      {tab === 'store' && (
         <Section title={t('settings.storeRules')} desc={t('settings.storeRulesDesc')}>
           {store.status === 'loading' && (
             <div className="space-y-3 skeleton-row" aria-label={t('common.loading')}>
