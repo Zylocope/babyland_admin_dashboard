@@ -13,6 +13,8 @@ import { loadRecentBatches, costChanges } from '../services/inventoryHistory';
 // Shop-wide history and cost alerts: 3 requests (products + 2 pages of the
 // newest received batches) instead of the old one request per product.
 const SHOP_WIDE_HISTORY = true;
+// Cost-change alerts are off on request; the received list stays.
+const COST_ALERTS = false;
 import { Skeleton } from '../components/common/Skeleton';
 import BarcodeCameraScanner from '../components/common/BarcodeCameraScanner';
 
@@ -280,7 +282,7 @@ export default function StockIn() {
       {/* The alert first, because it is the thing someone acts on. A rise that
           still leaves a healthy margin is information; one that turns the
           margin negative is a decision. */}
-      {SHOP_WIDE_HISTORY && alerts.length > 0 && (
+      {COST_ALERTS && alerts.length > 0 && (
         <div className="surface-card is-sheet p-5 lg:col-span-12">
           <h3 className="text-[13px] font-semibold text-ink mb-1 flex items-center gap-2">
             <IconAlertTriangle size={16} stroke={1.7} style={{ color: 'var(--status-pending)' }} />
