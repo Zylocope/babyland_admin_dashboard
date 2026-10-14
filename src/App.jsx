@@ -78,7 +78,9 @@ function AppRoutes() {
         <Route path="products/:id/edit" element={<RoleRoute roles={[]}><ProductForm /></RoleRoute>} />
         <Route path="stock-in" element={<RoleRoute roles={[]}><StockIn /></RoleRoute>} />
         <Route path="categories" element={<RoleRoute roles={[]}><Categories /></RoleRoute>} />
-        <Route path="orders" element={<RoleRoute roles={['SaleStaff']}><Orders /></RoleRoute>} />
+        {/* Manager only: every /admin/orders endpoint is RequiresRole<SuperAdminRole>,
+            so Sale Staff only ever got 403s here. */}
+        <Route path="orders" element={<RoleRoute roles={[]}><Orders /></RoleRoute>} />
         <Route path="customers" element={<RoleRoute roles={[]}><Customers /></RoleRoute>} />
         <Route path="staff" element={<RoleRoute roles={[]}><Staff /></RoleRoute>} />
         <Route path="assistant" element={<RoleRoute roles={[]}><Assistant /></RoleRoute>} />
