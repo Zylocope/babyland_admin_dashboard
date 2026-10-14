@@ -72,7 +72,10 @@
     "saveFailed": "Could not save this setting.",
     "storeRulesFailed": "Could not load the store reward settings.",
     "noStoreRules": "No connected store reward settings are available.",
-    "positiveNumber": "Enter a number greater than zero."
+    "positiveNumber": "Enter a number greater than zero.",
+    "freeTicketAmount": "Tickets for one free entry",
+    "freeTicketAmountHelp": "How many purchased playground tickets a customer needs to claim one free ticket.",
+    "tickets": "tickets"
   },
   "header": {
     "search": "Search anything...",
@@ -520,7 +523,8 @@
     "low": "Low stock",
     "out": "Out of stock",
     "hidden": "Hidden products",
-    "perishable": "Perishable"
+    "perishable": "Perishable",
+    "discount": "On discount"
   },
   "stockIn": {
     "title": "Add stock — {{name}}",
@@ -688,5 +692,17 @@
     "pending": "Pending",
     "on_delivery": "On delivery",
     "received": "Received"
+  },
+  "discounts": {
+    "button": "Discounts",
+    "title": "Manage discounts",
+    "intro": "Tick products, choose a percentage and apply it. The current price is kept as the original price, so receipts and the POS show what was saved. Discounted items do not earn loyalty points.",
+    "percent": "Discount percentage",
+    "off": "off",
+    "apply": "Apply {{pct}}% to {{count}}",
+    "remove": "Remove discount ({{count}})",
+    "done": "Updated {{count}} products.",
+    "failed": "Failed: {{names}}",
+    "percentRange": "Enter a whole number from 1 to 90."
   }
 }

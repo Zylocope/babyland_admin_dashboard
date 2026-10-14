@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock, IconCoin, IconDeviceFloppy, IconRefresh } from '@tabler/icons-react';
+import { IconLanguage, IconSun, IconMoon, IconCheck, IconLock, IconCoin, IconDeviceFloppy, IconRefresh, IconTicket } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../context/AuthContext';
@@ -15,16 +15,21 @@ const STYLE_OPTIONS = [
   { id: 'skeuomorphism',labelKey: 'settings.styleSkeu' },
 ];
 
-// Only expose rules that the backend actually reads today. The database also
-// seeds free_ticket_amount and one_point_to_kyat, but no service consumes them
-// yet; showing editable controls for them would imply a change takes effect
-// when it does not.
+// Only expose rules that the backend actually reads. one_point_to_kyat is
+// seeded too, but nothing redeems points yet, so a control for it would save
+// without changing anything.
 const ACTIVE_STORE_SETTINGS = {
   kyat_per_point: {
     labelKey: 'settings.kyatPerPoint',
     helpKey: 'settings.kyatPerPointHelp',
     unitKey: 'settings.mmk',
     icon: IconCoin,
+  },
+  free_ticket_amount: {
+    labelKey: 'settings.freeTicketAmount',
+    helpKey: 'settings.freeTicketAmountHelp',
+    unitKey: 'settings.tickets',
+    icon: IconTicket,
   },
 };
 

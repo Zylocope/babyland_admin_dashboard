@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   IconPencil, IconPackage, IconPlus, IconChevronLeft, IconChevronRight,
   IconList, IconAlertTriangle, IconCircleOff, IconEyeOff, IconClockHour4, IconPackageImport, IconAdjustmentsHorizontal, IconPrinter,
-  IconTrash } from '@tabler/icons-react';
+  IconTrash, IconDiscount2 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import { downloadCsvSections } from '../utils/csv';
@@ -19,6 +19,7 @@ import StockInModal from '../components/common/StockInModal';
 import AdjustStockModal from '../components/common/AdjustStockModal';
 import { SkeletonRows } from '../components/common/Skeleton';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import DiscountModal from '../components/common/DiscountModal';
 import { getAllProducts, deleteProduct } from '../services/productService';
 import { getCategories } from '../services/categoryService';
 import { isLowStock, isOutOfStock, needsRestock } from '../utils/stock';
@@ -48,6 +49,7 @@ const VIEW_FILTERS = {
   out: isOutOfStock,
   hidden: p => !p.is_shown_online,
   perishable: p => p.is_perishable,
+  discount: p => p.original_price != null && p.original_price > p.selling_price,
 };
 
 export default function Products() {
@@ -56,6 +58,10 @@ export default function Products() {
   const navigate = useNavigate();
 
   const [allProducts, setAllProducts] = useState([]);
+  // The discount editor saves with a full PUT, so it needs the untouched rows
+  // (description and all), not the normalized copies.
+  const [rawProducts, setRawProducts] = useState([]);
+  const [discountOpen, setDiscountOpen] = useState(false);
   const [categories, setCategories] = useState([]);
   const [view, setView] = useState('all');
   const [search, setSearch] = useState('');
@@ -78,7 +84,9 @@ export default function Products() {
     return Promise.all([getAllProducts(), getCategories().catch(() => [])])
       .then(([products, cats]) => {
         setError('');
-        setAllProducts((Array.isArray(products) ? products : []).map(normalizeProduct));
+        const list = Array.isArray(products) ? products : [];
+        setRawProducts(list);
+        setAllProducts(list.map(normalizeProduct));
         setCategories((Array.isArray(cats) ? cats : []).filter(Boolean));
       })
       .catch(err => {
@@ -107,6 +115,7 @@ export default function Products() {
     { key: 'out', label: t('productViews.out'), icon: IconCircleOff },
     { key: 'hidden', label: t('productViews.hidden'), icon: IconEyeOff },
     { key: 'perishable', label: t('productViews.perishable'), icon: IconClockHour4 },
+    { key: 'discount', label: t('productViews.discount'), icon: IconDiscount2 },
   ];
 
   const exportCols = [
@@ -137,7 +146,7 @@ export default function Products() {
 
   const reportSections = Object.entries(VIEW_FILTERS).map(([key, match]) => ({
     key,
-    name: t(`products.view_${key}`),
+    name: t(`productViews.${key}`),
     columns: exportCols,
     rows: allProducts.map(normalizeProduct).filter(match),
   })).concat([
@@ -176,6 +185,10 @@ export default function Products() {
           }
         }}
       />
+      {isManager && (
+        <DiscountModal open={discountOpen} onClose={() => setDiscountOpen(false)}
+          products={rawProducts} onSaved={reload} />
+      )}
       <PrintSheet sections={printing} onDone={setPrinting}
         subtitle={`${t('titles.products')} · ${t('report.generated', { at: formatShopTime(new Date(), 'YYYY-MM-DD HH:mm') })}`} />
       <SubBar views={VIEWS} view={view} onView={pickView}>
@@ -197,6 +210,13 @@ export default function Products() {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
             <IconPrinter size={14} stroke={1.7} /> {t('report.button')}
+          </button>
+        )}
+        {isManager && (
+          <button onClick={() => setDiscountOpen(true)} disabled={loading}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+          >
+            <IconDiscount2 size={14} stroke={1.7} /> {t('discounts.button')}
           </button>
         )}
         {isManager && (
