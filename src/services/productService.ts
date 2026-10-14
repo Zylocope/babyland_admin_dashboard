@@ -113,6 +113,15 @@ export const getInventoryRecords = (
     method: "GET",
   });
 
+// Every product's batches in one list, newest received first (backend 3d0e367).
+// page_size is clamped to 100 by the server.
+export const getReceivedInventory = (
+  { page = 1, page_size = 100 }: { page?: number; page_size?: number } = {}
+): Promise<PaginatedInventory> =>
+  request(`/admin/inventory/received?page=${page}&page_size=${page_size}`, {
+    method: "GET",
+  });
+
 // received_at / expiry_date exist on the backend but not yet in the generated
 // types. expiry_date is required for perishable products and rejected for the rest.
 export interface StockInPayload {

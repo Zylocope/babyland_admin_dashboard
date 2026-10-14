@@ -19,6 +19,36 @@ const money = (v) => Number(v ?? 0) || 0;
 const byNewest = (a, b) =>
   String(b.received_at ?? b.created_at ?? '').localeCompare(String(a.received_at ?? a.created_at ?? ''));
 
+// The cheap way, once the backend has GET /admin/inventory/received: the newest
+// batches across the whole shop, a few pages instead of one request per
+// product. A product whose previous batch is older than the window has nothing
+// to compare against here, so its cost change is missed until it is restocked
+// again; 200 batches covers months of deliveries for this shop.
+export const loadRecentBatches = async ({ products, fetchReceived, pages = 2 }) => {
+  const byId = new Map(products.map(p => [p.id, p]));
+  const out = [];
+  for (let page = 1; page <= pages; page += 1) {
+    const res = await fetchReceived({ page, page_size: 100 });
+    for (const r of Array.isArray(res?.data) ? res.data : []) {
+      const p = byId.get(r.product_id);
+      out.push({
+        id: r.id,
+        product_id: r.product_id,
+        // Deleted products are still in the list; they have no name or price here.
+        name: p?.name ?? '—',
+        selling_price: money(p?.selling_price),
+        unit_cost: money(r.unit_cost),
+        quantity_received: Number(r.quantity_received) || 0,
+        quantity_remaining: Number(r.quantity_remaining) || 0,
+        received_at: r.received_at ?? r.created_at ?? null,
+        expiry_date: r.expiry_date ?? null,
+      });
+    }
+    if (page >= (Number(res?.total_pages) || 1)) break;
+  }
+  return { batches: out.sort(byNewest), failed: 0 };
+};
+
 export const loadBatches = async ({ products, fetchRecords }) => {
   const out = [];
   let failed = 0;

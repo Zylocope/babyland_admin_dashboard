@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { loadBatches, costChanges } from './inventoryHistory.js';
+import { loadBatches, loadRecentBatches, costChanges } from './inventoryHistory.js';
 
 const PRODUCTS = [
   { id: 'p1', name: "Set Kaung's T-shirt", selling_price: '13300' },
@@ -115,3 +115,23 @@ assert.equal(costChanges(batches, { minPct: 500 }).length, 0);
 }
 
 console.log('inventoryHistory ok');
+
+// loadRecentBatches: one shop-wide list in pages instead of a request per product,
+// and the same cost-change result as the per-product walk.
+{
+  const all = Object.entries(RECORDS).flatMap(([pid, rows]) => rows.map(r => ({ ...r, product_id: pid })))
+    .sort((a, b) => b.received_at.localeCompare(a.received_at));
+  const calls = [];
+  const fetchReceived = async ({ page, page_size }) => {
+    calls.push(page);
+    const size = 2;   // tiny pages so the paging is exercised
+    return { data: all.slice((page - 1) * size, page * size), total_pages: Math.ceil(all.length / size), page_size };
+  };
+  const recent = await loadRecentBatches({ products: PRODUCTS, fetchReceived, pages: 5 });
+  assert.deepEqual(calls, [1, 2, 3], 'stops at the last page');
+  assert.equal(recent.batches.length, 5);
+  assert.equal(recent.batches[0].name, "Set Kaung's T-shirt");
+  assert.deepEqual(costChanges(recent.batches).map(c => c.name), costChanges(batches).map(c => c.name));
+  const capped = await loadRecentBatches({ products: [], fetchReceived, pages: 1 });
+  assert.equal(capped.batches[0].name, '—', 'a deleted product has no name');
+}

@@ -7,13 +7,12 @@ import { useTranslation } from 'react-i18next';
 import { formatMMK } from '../utils/currency';
 import { shopToday, formatShopTime } from '../utils/shopDay';
 import { validateStockIn } from '../utils/stockIn';
-import { searchProductsSimple, insertInventory, getAllProducts, getInventoryRecords } from '../services/productService';
-import { loadBatches, costChanges } from '../services/inventoryHistory';
+import { searchProductsSimple, insertInventory, getAllProducts, getReceivedInventory } from '../services/productService';
+import { loadRecentBatches, costChanges } from '../services/inventoryHistory';
 
-// ponytail: off. The shop-wide history and cost alerts cost one request per
-// product on every visit (~35 today), which strains the backend rate limiter.
-// Turn back on once the backend has a single cost-changes endpoint.
-const SHOP_WIDE_HISTORY = false;
+// Shop-wide history and cost alerts: 3 requests (products + 2 pages of the
+// newest received batches) instead of the old one request per product.
+const SHOP_WIDE_HISTORY = true;
 import { Skeleton } from '../components/common/Skeleton';
 import BarcodeCameraScanner from '../components/common/BarcodeCameraScanner';
 
@@ -136,9 +135,9 @@ export default function StockIn() {
     if (!SHOP_WIDE_HISTORY) return undefined;
     let active = true;
     getAllProducts()
-      .then(products => loadBatches({
+      .then(products => loadRecentBatches({
         products: Array.isArray(products) ? products : [],
-        fetchRecords: getInventoryRecords,
+        fetchReceived: getReceivedInventory,
       }))
       .then(out => { if (active) setHistory({ status: 'ok', ...out }); })
       .catch(() => { if (active) setHistory({ status: 'error', batches: [], failed: 0 }); });
@@ -322,7 +321,9 @@ export default function StockIn() {
 
       {/* The batches themselves. Two rows for the same product at different
           costs is how a cost change gets noticed in the first place. */}
-      {SHOP_WIDE_HISTORY && (
+      {/* An older backend without /admin/inventory/received fails the load:
+          hide the section rather than show an empty history. */}
+      {SHOP_WIDE_HISTORY && history.status !== 'error' && (
       <div className="surface-card is-sheet p-5 lg:col-span-12">
         <h3 className="text-[13px] font-semibold text-ink mb-4 flex items-center gap-2">
           <IconHistory size={16} stroke={1.7} className="text-brand" />
