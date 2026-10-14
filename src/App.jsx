@@ -26,6 +26,7 @@ const Customers = lazy(() => import('./pages/Customers'));
 const Staff = lazy(() => import('./pages/Staff'));
 const Information = lazy(() => import('./pages/Information'));
 const Assistant = lazy(() => import('./pages/Assistant'));
+const Rewards = lazy(() => import('./pages/Rewards'));
 
 function ProtectedRoute({ children }) {
   const { user } = useAuth();
@@ -81,6 +82,7 @@ function AppRoutes() {
         <Route path="customers" element={<RoleRoute roles={[]}><Customers /></RoleRoute>} />
         <Route path="staff" element={<RoleRoute roles={[]}><Staff /></RoleRoute>} />
         <Route path="assistant" element={<RoleRoute roles={[]}><Assistant /></RoleRoute>} />
+        <Route path="rewards" element={<RoleRoute roles={[]}><Rewards /></RoleRoute>} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />

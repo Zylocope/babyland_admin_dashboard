@@ -15,7 +15,8 @@
     "pos": "POS",
     "sales": "အရောင်း",
     "assistant": "AI Assistant",
-    "stockIn": "ပစ္စည်းသွင်း"
+    "stockIn": "ပစ္စည်းသွင်း",
+    "rewards": "ဆိုင် Reward"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -29,7 +30,8 @@
     "pos": "ရောင်းချမှု (POS)",
     "sales": "ဆိုင်တွင်း အရောင်း",
     "assistant": "AI Assistant",
-    "stockIn": "ပစ္စည်းသွင်း"
+    "stockIn": "ပစ္စည်းသွင်း",
+    "rewards": "ဆိုင် Reward"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -62,21 +64,12 @@
     "styleFlat": "Flat Design",
     "available": "အသုံးပြုနိုင်",
     "comingSoon": "မကြာမီ",
-    "storeRules": "ဆိုင် Reward ဆက်တင်များ",
-    "storeRulesDesc": "ဆိုင်စနစ်နှင့် လက်ရှိချိတ်ဆက်ထားသော reward စည်းမျဉ်းများကို ပြင်ဆင်ပါ။",
-    "kyatPerPoint": "Point ပြောင်းလဲနှုန်း",
-    "kyatPerPointHelp": "Reward ရနိုင်သော ပစ္စည်းများတွင် သုံးစွဲသည့် ပမာဏမှ loyalty point တစ်မှတ်တွက်ရန် အသုံးပြုသည်။",
-    "mmk": "ကျပ်",
     "saved": "သိမ်းပြီးပါပြီ",
     "saving": "သိမ်းနေသည်...",
     "saveFailed": "ဤဆက်တင်ကို မသိမ်းနိုင်ပါ။",
     "storeRulesFailed": "ဆိုင် Reward ဆက်တင်များကို မဖတ်နိုင်ပါ။",
     "noStoreRules": "လက်ရှိချိတ်ဆက်ထားသော ဆိုင် Reward ဆက်တင် မရှိပါ။",
-    "positiveNumber": "သုညထက်ကြီးသော ဂဏန်းထည့်ပါ။",
-    "freeTicketAmount": "အခမဲ့ဝင်ခွင့်အတွက် လက်မှတ်အရေအတွက်",
-    "freeTicketAmountHelp": "အခမဲ့လက်မှတ် တစ်စောင်ရရန် ဝယ်ယူရမည့် ကစားကွင်းလက်မှတ် အရေအတွက်။",
-    "tickets": "စောင်",
-    "tabGeneral": "အထွေထွေ"
+    "positiveNumber": "သုညထက်ကြီးသော ဂဏန်းထည့်ပါ။"
   },
   "header": {
     "search": "ရှာဖွေရန်...",
@@ -709,5 +702,26 @@
     "done": "ပစ္စည်း {{count}} ခု ပြင်ဆင်ပြီးပါပြီ။",
     "failed": "မအောင်မြင်ပါ: {{names}}",
     "percentRange": "1 မှ 90 အထိ ကိန်းပြည့် ထည့်ပါ။"
+  },
+  "rewards": {
+    "intro": "Loyalty point နှင့် ကစားကွင်း အခမဲ့လက်မှတ် စည်းမျဉ်းများ။ သိမ်းလိုက်သည်နှင့် ဖောက်သည်အားလုံးအတွက် ချက်ချင်း သက်ရောက်ပါသည်။",
+    "settingsLink": "Loyalty point နှင့် ကစားကွင်း အခမဲ့လက်မှတ်",
+    "earnTitle": "Point ရယူခြင်း",
+    "earnHelp": "Point တစ်မှတ်ရရန် online တွင် သုံးစွဲရမည့်ပမာဏ။ လျှော့စျေးပစ္စည်းနှင့် ဆိုင်တွင်းအရောင်းများ point မရပါ။",
+    "earnBefore": "",
+    "earnAfter": "သုံးစွဲတိုင်း point 1 မှတ် ရမည်",
+    "earnExample": "ဥပမာ - {{amount}} ဖိုး online မှာယူမှုသည် point 5 မှတ် ရပါမည်။",
+    "worthTitle": "Point တန်ဖိုး",
+    "worthHelp": "ဖောက်သည်က point တစ်မှတ် အသုံးပြုသည့်အခါ ရရှိမည့်တန်ဖိုး။",
+    "worthBefore": "Point 1 မှတ် တန်ဖိုး",
+    "cashback": "ရယူနှုန်းနှင့် ပေါင်းလျှင် ဖောက်သည်များ သုံးစွဲငွေ၏ {{pct}}% ပြန်ရပါမည် (point {{points}} = {{value}})။",
+    "worthPending": "ဖောက်သည်များ point ကို မသုံးနိုင်သေးပါ။ ဤတန်ဖိုးကို ယခု သိမ်းထားပြီး point လဲလှယ်ခြင်း ထည့်သွင်းသည့်အခါ အသုံးပြုပါမည်။",
+    "ticketTitle": "ကစားကွင်း အခမဲ့လက်မှတ်",
+    "ticketHelp": "အခမဲ့ဝင်ခွင့် တစ်ကြိမ်ရရန် ဝယ်ရမည့် လက်မှတ်အရေအတွက်။",
+    "ticketRule_one": "ဝယ်ယူသော လက်မှတ် {{count}} စောင်တိုင်း အခမဲ့ဝင်ခွင့် 1 ကြိမ်",
+    "ticketRule_other": "ဝယ်ယူသော လက်မှတ် {{count}} စောင်တိုင်း အခမဲ့ဝင်ခွင့် 1 ကြိမ်",
+    "fewer": "လက်မှတ် တစ်စောင် လျှော့",
+    "more": "လက်မှတ် တစ်စောင် တိုး",
+    "undo": "ပြန်ပြင်"
   }
 }
