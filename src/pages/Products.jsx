@@ -213,10 +213,12 @@ export default function Products() {
           </button>
         )}
         {isManager && (
+          // Tinted, not filled: stands out from the outline buttons but stays
+          // below the solid Add product button.
           <button onClick={() => setDiscountOpen(true)} disabled={loading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs rounded-lg border border-app text-sub hover:text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 text-sm font-medium rounded-lg border border-brand/40 bg-brand-light text-brand hover:border-brand disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
           >
-            <IconDiscount2 size={14} stroke={1.7} /> {t('discounts.button')}
+            <IconDiscount2 size={16} stroke={1.8} /> {t('discounts.button')}
           </button>
         )}
         {isManager && (

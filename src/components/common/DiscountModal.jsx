@@ -56,11 +56,11 @@ export default function DiscountModal({ open, onClose, products, onSaved }) {
 
       <div className="flex flex-col sm:flex-row gap-2 mb-3">
         <div className="flex-1 min-w-0"><SearchInput value={search} onChange={setSearch} placeholder={t('products.search')} /></div>
-        <div className="relative sm:w-28">
+        <div className="relative sm:w-32">
           <input type="number" min="1" max="90" step="1" inputMode="numeric" value={pct}
             onChange={e => setPct(e.target.value)} aria-label={t('discounts.percent')}
-            className="w-full rounded-lg border border-app bg-card px-3 py-2 pr-12 text-sm text-ink focus:outline-none focus:ring-2 focus:ring-brand" />
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-medium text-mute">% {t('discounts.off')}</span>
+            className="w-full rounded-lg border border-brand/40 bg-brand-light px-3 py-2 pr-16 text-base font-semibold text-brand tabular-nums focus:outline-none focus:ring-2 focus:ring-brand [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none" />
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-brand">% {t('discounts.off')}</span>
         </div>
       </div>
 
