@@ -9,6 +9,11 @@ import { shopToday, formatShopTime } from '../utils/shopDay';
 import { validateStockIn } from '../utils/stockIn';
 import { searchProductsSimple, insertInventory, getAllProducts, getInventoryRecords } from '../services/productService';
 import { loadBatches, costChanges } from '../services/inventoryHistory';
+
+// ponytail: off. The shop-wide history and cost alerts cost one request per
+// product on every visit (~35 today), which strains the backend rate limiter.
+// Turn back on once the backend has a single cost-changes endpoint.
+const SHOP_WIDE_HISTORY = false;
 import { Skeleton } from '../components/common/Skeleton';
 import BarcodeCameraScanner from '../components/common/BarcodeCameraScanner';
 
@@ -128,6 +133,7 @@ export default function StockIn() {
   const totalUnits = done.reduce((sum, d) => sum + d.quantity, 0);
 
   useEffect(() => {
+    if (!SHOP_WIDE_HISTORY) return undefined;
     let active = true;
     getAllProducts()
       .then(products => loadBatches({
@@ -275,7 +281,7 @@ export default function StockIn() {
       {/* The alert first, because it is the thing someone acts on. A rise that
           still leaves a healthy margin is information; one that turns the
           margin negative is a decision. */}
-      {alerts.length > 0 && (
+      {SHOP_WIDE_HISTORY && alerts.length > 0 && (
         <div className="surface-card is-sheet p-5 lg:col-span-12">
           <h3 className="text-[13px] font-semibold text-ink mb-1 flex items-center gap-2">
             <IconAlertTriangle size={16} stroke={1.7} style={{ color: 'var(--status-pending)' }} />
@@ -316,6 +322,7 @@ export default function StockIn() {
 
       {/* The batches themselves. Two rows for the same product at different
           costs is how a cost change gets noticed in the first place. */}
+      {SHOP_WIDE_HISTORY && (
       <div className="surface-card is-sheet p-5 lg:col-span-12">
         <h3 className="text-[13px] font-semibold text-ink mb-4 flex items-center gap-2">
           <IconHistory size={16} stroke={1.7} className="text-brand" />
@@ -371,6 +378,7 @@ export default function StockIn() {
           </>
         )}
       </div>
+      )}
 
       <BarcodeCameraScanner
         open={cameraOpen}
