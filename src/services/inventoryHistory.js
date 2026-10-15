@@ -36,6 +36,7 @@ export const loadRecentBatches = async ({ products, fetchReceived, pages = 2 }) 
         product_id: r.product_id,
         // Deleted products are still in the list; they have no name or price here.
         name: p?.name ?? '—',
+        supplier_id: r.supplier_id ?? null,
         selling_price: money(p?.selling_price),
         unit_cost: money(r.unit_cost),
         quantity_received: Number(r.quantity_received) || 0,

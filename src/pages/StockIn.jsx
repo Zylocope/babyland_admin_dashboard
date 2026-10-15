@@ -9,6 +9,7 @@ import { shopToday, formatShopTime } from '../utils/shopDay';
 import { validateStockIn } from '../utils/stockIn';
 import { searchProductsSimple, insertInventory, getAllProducts, getReceivedInventory } from '../services/productService';
 import { loadRecentBatches, costChanges } from '../services/inventoryHistory';
+import { getSuppliers } from '../services/supplierService';
 
 // Shop-wide history and cost alerts: 3 requests (products + 2 pages of the
 // newest received batches) instead of the old one request per product.
@@ -36,6 +37,9 @@ export default function StockIn() {
   const [searching, setSearching] = useState(false);
   const [product, setProduct] = useState(null);
   const [form, setForm] = useState(EMPTY);
+  // Kept across scans: a whole delivery usually comes from one supplier.
+  const [suppliers, setSuppliers] = useState([]);
+  const [supplierId, setSupplierId] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [cameraOpen, setCameraOpen] = useState(false);
@@ -102,6 +106,7 @@ export default function StockIn() {
       await insertInventory(product.id, {
         quantity_received: Number(form.quantity),
         unit_cost: String(form.unitCost),
+        ...(supplierId ? { supplier_id: supplierId } : {}),
         // The shop's day, not the device's. Everything else in the app moved to
         // shopDay; a received date from a laptop in another timezone would file
         // an early-morning delivery under yesterday.
@@ -145,6 +150,14 @@ export default function StockIn() {
       .catch(() => { if (active) setHistory({ status: 'error', batches: [], failed: 0 }); });
     return () => { active = false; };
   }, []);
+
+  // Optional: an older backend without suppliers just leaves the list empty.
+  useEffect(() => {
+    let active = true;
+    getSuppliers().then(rows => { if (active) setSuppliers(Array.isArray(rows) ? rows : []); }).catch(() => {});
+    return () => { active = false; };
+  }, []);
+  const supplierName = new Map(suppliers.map(s => [s.id, s.name]));
 
   const alerts = history.status === 'ok' ? costChanges(history.batches) : [];
 
@@ -224,6 +237,16 @@ export default function StockIn() {
                   type="number" min="0" step="any" inputMode="decimal" required className={`${field} mt-1`} />
               </label>
             </div>
+
+            {suppliers.length > 0 && (
+              <label className="block">
+                <span className="text-[12px] text-sub">{t('stockIn.supplier')}</span>
+                <select value={supplierId} onChange={e => setSupplierId(e.target.value)} className={`${field} mt-1`}>
+                  <option value="">{t('stockIn.noSupplier')}</option>
+                  {suppliers.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                </select>
+              </label>
+            )}
 
             {product.is_perishable && (
               <label className="block">
@@ -356,6 +379,7 @@ export default function StockIn() {
                   <tr className="border-b border-app bg-base/55 text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-mute">
                     <th className="px-4 py-3.5 font-semibold">{t('table.date')}</th>
                     <th className="px-4 py-3.5 font-semibold">{t('table.item')}</th>
+                    <th className="px-4 py-3.5 font-semibold">{t('stockIn.supplierCol')}</th>
                     <th className="px-4 py-3.5 text-right font-semibold">{t('table.qty')}</th>
                     <th className="px-4 py-3.5 text-right font-semibold">{t('salesTable.buyPrice')}</th>
                     <th className="px-4 py-3.5 text-right font-semibold">{t('table.total')}</th>
@@ -368,6 +392,7 @@ export default function StockIn() {
                         {b.received_at ? formatShopTime(b.received_at, 'MMM D, YYYY') : '-'}
                       </td>
                       <td className="px-4 py-3 text-ink min-w-0 truncate">{b.name}</td>
+                      <td className="px-4 py-3 text-sub min-w-0 truncate">{supplierName.get(b.supplier_id) ?? '—'}</td>
                       <td className="px-4 py-3 text-right text-ink tabular-nums">{b.quantity_received}</td>
                       <td className="px-4 py-3 text-right text-sub tabular-nums">{formatMMK(b.unit_cost)}</td>
                       <td className="px-4 py-3 text-right text-ink font-medium tabular-nums">

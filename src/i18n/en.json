@@ -557,7 +557,10 @@
     "historyEmpty": "No stock has been received yet.",
     "historyPartial": "Could not read inventory for {{count}} product, so the list below is incomplete.",
     "historyPartial_plural": "Could not read inventory for {{count}} products, so the list below is incomplete.",
-    "suspectCost": "That is a very large change - worth checking it was typed correctly."
+    "suspectCost": "That is a very large change - worth checking it was typed correctly.",
+    "supplier": "Supplier (optional)",
+    "noSupplier": "No supplier",
+    "supplierCol": "Supplier"
   },
   "adjustStock": {
     "open": "Adjust stock",

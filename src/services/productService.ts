@@ -127,6 +127,7 @@ export const getReceivedInventory = (
 export interface StockInPayload {
   quantity_received: number;
   unit_cost: string;
+  supplier_id?: string;
   received_at?: string;
   expiry_date?: string;
 }
