@@ -12,7 +12,7 @@ import RouteFallback from '../common/RouteFallback';
 const TITLE_KEYS = {
   '/': 'dashboard', '/pos': 'pos', '/sales': 'sales', '/products': 'products',
   '/categories': 'categories', '/orders': 'orders', '/playground': 'playground',
-  '/customers': 'customers', '/staff': 'staff', '/settings': 'settings', '/assistant': 'assistant', '/rewards': 'rewards',
+  '/customers': 'customers', '/staff': 'staff', '/settings': 'settings', '/assistant': 'assistant', '/rewards': 'rewards', '/suppliers': 'suppliers',
   '/stock-in': 'stockIn',
 };
 

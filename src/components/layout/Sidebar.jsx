@@ -4,7 +4,7 @@ import {
   IconLayoutDashboard, IconPackage, IconPackageImport, IconShoppingCart, IconGift,
   IconUsers, IconUserCog, IconLogout, IconBabyCarriage,
   IconChevronLeft, IconSun, IconMoon, IconTags, IconCashRegister, IconChartHistogram,
-  IconSparkles, IconSettings, IconAward,
+  IconSparkles, IconSettings, IconAward, IconTruckDelivery,
 } from '@tabler/icons-react';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../context/AuthContext';
@@ -33,6 +33,7 @@ const NAV_ITEMS = [
   { to: '/sales', icon: IconChartHistogram, key: 'sales', roles: [] },
   { to: '/products', icon: IconPackage, key: 'products', roles: ['SaleStaff'] },
   { to: '/stock-in', icon: IconPackageImport, key: 'stockIn', roles: [] },
+  { to: '/suppliers', icon: IconTruckDelivery, key: 'suppliers', roles: [] },
   { to: '/categories', icon: IconTags, key: 'categories', roles: [] },
   { to: '/orders', icon: IconShoppingCart, key: 'orders', roles: ['SaleStaff'] },
   { to: '/playground', icon: IconGift, key: 'playground', roles: [] },

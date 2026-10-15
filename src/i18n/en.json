@@ -16,7 +16,8 @@
     "sales": "Sales",
     "assistant": "AI Assistant",
     "stockIn": "Stock in",
-    "rewards": "Store Rewards"
+    "rewards": "Store Rewards",
+    "suppliers": "Suppliers"
   },
   "titles": {
     "dashboard": "Dashboard",
@@ -31,7 +32,8 @@
     "sales": "In-store Sales",
     "assistant": "AI Assistant",
     "stockIn": "Stock in",
-    "rewards": "Store Rewards"
+    "rewards": "Store Rewards",
+    "suppliers": "Suppliers"
   },
   "sidebar": {
     "subtitle": "Admin Panel",
@@ -723,5 +725,18 @@
     "fewer": "One ticket fewer",
     "more": "One ticket more",
     "undo": "Undo"
+  },
+  "suppliers": {
+    "intro": "The companies you buy stock from.",
+    "add": "Add supplier",
+    "edit": "Edit supplier",
+    "delete": "Delete supplier",
+    "name": "Name",
+    "contact": "Contact number",
+    "none": "No suppliers yet.",
+    "required": "Enter a name and a contact number.",
+    "loadFailed": "Could not load suppliers.",
+    "saveFailed": "Could not save the supplier.",
+    "deleteMsg": "Delete {{name}}? Past deliveries keep their record."
   }
 }
